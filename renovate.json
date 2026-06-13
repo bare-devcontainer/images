@@ -1,0 +1,20 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    "schedule:weekly"
+  ],
+  "minimumReleaseAge": "14 days",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "\\.devcontainer/devcontainer\\.json"
+      ],
+      "matchStrings": [
+        "// renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\"[^\"@]+@(?<currentValue>[^\"]+)\""
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+    }
+  ]
+}
