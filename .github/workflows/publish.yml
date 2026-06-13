@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
-      artifact-metadata:write
+      artifact-metadata: write
       attestations: write
       contents: read
       id-token: write
@@ -89,6 +89,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          sbom: true
       - name: Generate artifact attestation
         if: github.event_name != 'pull_request'
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
