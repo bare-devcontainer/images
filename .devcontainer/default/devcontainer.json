@@ -1,5 +1,5 @@
 {
-  "name": "Bare Dev Container",
+  "name": "default",
   "build": {
     "dockerfile": "./Dockerfile"
   },
