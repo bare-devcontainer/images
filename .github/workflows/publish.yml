@@ -93,10 +93,7 @@ jobs:
           build-args: |
             DEBIAN_TAG=${{ steps.read.outputs.debian_tag }}
           tags: ${{ steps.tag.outputs.tags }}
-          labels: |
-            ${{ steps.meta.outputs.labels }}
-            org.opencontainers.image.base.name=${{ steps.tag.outputs.base_name }}
-            org.opencontainers.image.base.digest=${{ steps.tag.outputs.base_digest }}
+          labels: ${{ steps.meta.outputs.labels }}
           sbom: true
       - name: Generate artifact attestation
         if: steps.check.outputs.exists != 'true' && github.event_name != 'pull_request'
