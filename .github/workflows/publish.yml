@@ -10,46 +10,13 @@ on:
 permissions: {}
 
 env:
-  IMAGE_REF: ghcr.io/${{ github.repository_owner }}/debian13
+  IMAGE_REF: ghcr.io/${{ github.repository_owner }}/debian
 
 jobs:
-  preflight:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: read
-    outputs:
-      exists: ${{ steps.check.outputs.exists }}
-      timestamp: ${{ steps.debian-tag.outputs.timestamp }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          persist-credentials: false
-      - name: Extract Debian timestamp from Dockerfile
-        id: debian-tag
-        run: |
-          TIMESTAMP=$(sed -n 's/FROM debian:[^-]*-\([0-9]\{8\}\).*/\1/p' debian13/Dockerfile)
-          echo "timestamp=$TIMESTAMP" >> "$GITHUB_OUTPUT"
-      - name: Log in to the Container registry
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check if tag already exists
-        id: check
-        run: |
-          if docker manifest inspect ${{ env.IMAGE_REF }}:${{ steps.debian-tag.outputs.timestamp }} > /dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "Tag ${{ steps.debian-tag.outputs.timestamp }} already exists, skipping build."
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
-
   build:
-    needs: preflight
-    if: needs.preflight.outputs.exists != 'true'
+    strategy:
+      matrix:
+        variant: [trixie, bookworm]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -63,35 +30,76 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
+      - name: Read debian tag from base-images file
+        id: read
+        run: |
+          DEBIAN_TAG=$(grep '^${{ matrix.variant }} = ' debian/base-images \
+            | sed 's/^[^ ]* = //')
+          if [ -z "$DEBIAN_TAG" ]; then
+            echo "Error: no entry for variant '${{ matrix.variant }}' in debian/base-images" >&2
+            exit 1
+          fi
+          echo "debian_tag=$DEBIAN_TAG" >> "$GITHUB_OUTPUT"
+      - name: Set build tags and base image metadata
+        id: tag
+        run: |
+          BUILD_DATE=$(date +%Y%m%d)
+          DATED_TAG="${{ matrix.variant }}-$BUILD_DATE"
+          BASE_TAG="${{ steps.read.outputs.debian_tag }}"
+          {
+            echo "dated_tag=$DATED_TAG"
+            echo "tags<<EOF"
+            echo "${{ env.IMAGE_REF }}:$DATED_TAG"
+            echo "${{ env.IMAGE_REF }}:${{ matrix.variant }}"
+            echo "EOF"
+            echo "base_name=debian:${BASE_TAG%%@*}"
+            echo "base_digest=${BASE_TAG##*@}"
+          } >> "$GITHUB_OUTPUT"
       - name: Log in to the Container registry
         uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check if tag already exists
+        id: check
+        run: |
+          if docker manifest inspect ${{ env.IMAGE_REF }}:${{ steps.tag.outputs.dated_tag }} > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Tag ${{ steps.tag.outputs.dated_tag }} already exists, skipping build."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Set up QEMU
+        if: steps.check.outputs.exists != 'true'
         uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4.1.0
       - name: Set up Docker Buildx
+        if: steps.check.outputs.exists != 'true'
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
-      - name: Extract metadata (tags, labels) for Docker
+      - name: Extract metadata (labels) for Docker
+        if: steps.check.outputs.exists != 'true'
         id: meta
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
         with:
           images: ${{ env.IMAGE_REF }}
-          tags: |
-            type=raw,value=${{ needs.preflight.outputs.timestamp }}
       - name: Build and push Docker image
+        if: steps.check.outputs.exists != 'true'
         id: push
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
-          context: ./debian13
+          context: ./debian
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            DEBIAN_TAG=${{ steps.read.outputs.debian_tag }}
+          tags: ${{ steps.tag.outputs.tags }}
+          labels: |
+            ${{ steps.meta.outputs.labels }}
+            org.opencontainers.image.base.name=${{ steps.tag.outputs.base_name }}
+            org.opencontainers.image.base.digest=${{ steps.tag.outputs.base_digest }}
           sbom: true
       - name: Generate artifact attestation
-        if: github.event_name != 'pull_request'
+        if: steps.check.outputs.exists != 'true' && github.event_name != 'pull_request'
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-name: ${{ env.IMAGE_REF }}

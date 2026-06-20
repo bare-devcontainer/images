@@ -9,10 +9,12 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "\\.devcontainer/devcontainer\\.json"
+        "\\.devcontainer/devcontainer\\.json",
+        "^debian/base-images$"
       ],
       "matchStrings": [
-        "// renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\"[^\"@]+@(?<currentValue>[^\"]+)\""
+        "// renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\"[^\"@]+@(?<currentValue>[^\"]+)\"",
+        "// renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\\S+ = (?<currentValue>\\S+)"
       ],
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
     }
