@@ -1,0 +1,5 @@
+- variant: "trixie"
+  tags:
+    - "trixie"
+  debian_variant: "trixie"
+  build_args: {}
