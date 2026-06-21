@@ -1,0 +1,7 @@
+{
+  "name": "sandbox-golang",
+  "build": {
+    "dockerfile": "../../golang/Dockerfile"
+  },
+  "remoteUser": "dev"
+}
