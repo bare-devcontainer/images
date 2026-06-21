@@ -1,30 +1,31 @@
 #
-name: Publish Docker Image
+name: Publish Docker Images
 
 on:
   pull_request:
     paths:
       - .github/workflows/publish.yml
+      - '*/Dockerfile'
   workflow_dispatch:
 
 permissions: {}
 
 env:
-  IMAGE_REF: ghcr.io/${{ github.repository_owner }}/debian
+  BASE_IMAGE_REF: ghcr.io/${{ github.repository_owner }}/debian
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        variant: [trixie, bookworm]
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+  build-base:
     permissions:
       artifact-metadata: write
       attestations: write
       contents: read
       id-token: write
       packages: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        variant: [trixie, bookworm]
     steps:
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -49,8 +50,8 @@ jobs:
           {
             echo "dated_tag=$DATED_TAG"
             echo "tags<<EOF"
-            echo "${{ env.IMAGE_REF }}:$DATED_TAG"
-            echo "${{ env.IMAGE_REF }}:${{ matrix.variant }}"
+            echo "${{ env.BASE_IMAGE_REF }}:$DATED_TAG"
+            echo "${{ env.BASE_IMAGE_REF }}:${{ matrix.variant }}"
             echo "EOF"
             echo "base_name=debian:${BASE_TAG%%@*}"
             echo "base_digest=${BASE_TAG##*@}"
@@ -64,7 +65,7 @@ jobs:
       - name: Check if tag already exists
         id: check
         run: |
-          if docker manifest inspect ${{ env.IMAGE_REF }}:${{ steps.tag.outputs.dated_tag }} > /dev/null 2>&1; then
+          if docker manifest inspect ${{ env.BASE_IMAGE_REF }}:${{ steps.tag.outputs.dated_tag }} > /dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
             echo "Tag ${{ steps.tag.outputs.dated_tag }} already exists, skipping build."
           else
@@ -81,7 +82,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
         with:
-          images: ${{ env.IMAGE_REF }}
+          images: ${{ env.BASE_IMAGE_REF }}
       - name: Build and push Docker image
         if: steps.check.outputs.exists != 'true'
         id: push
@@ -94,11 +95,104 @@ jobs:
             DEBIAN_TAG=${{ steps.read.outputs.debian_tag }}
           tags: ${{ steps.tag.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
           sbom: true
       - name: Generate artifact attestation
         if: steps.check.outputs.exists != 'true' && github.event_name != 'pull_request'
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
-          subject-name: ${{ env.IMAGE_REF }}
+          subject-name: ${{ env.BASE_IMAGE_REF }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+  build-derived:
+    permissions:
+      artifact-metadata: write
+      attestations: write
+      contents: read
+      id-token: write
+      packages: write
+    needs: build-base
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        include:
+          - name: golang
+            context: ./golang
+            image_suffix: golang
+            version_extract: "sed -n 's/FROM golang:\\([0-9][0-9.]*\\)-.*/\\1/p' golang/Dockerfile | head -1"
+            debian_variant: trixie
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Extract version from Dockerfile
+        id: version
+        run: |
+          VERSION=$(${{ matrix.version_extract }})
+          if [ -z "$VERSION" ]; then
+            echo "Error: could not extract version for '${{ matrix.name }}'" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Log in to the Container registry
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check if tag already exists
+        id: check
+        run: |
+          IMAGE_REF="ghcr.io/${{ github.repository_owner }}/${{ matrix.image_suffix }}"
+          if docker manifest inspect "${IMAGE_REF}:${{ steps.version.outputs.version }}" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Tag ${{ steps.version.outputs.version }} already exists, skipping build."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Get debian variant digest
+        if: steps.check.outputs.exists != 'true'
+        id: debian
+        run: |
+          DEBIAN_REF="ghcr.io/${{ github.repository_owner }}/debian:${{ matrix.debian_variant }}"
+          DIGEST=$(docker buildx imagetools inspect "${DEBIAN_REF}" \
+            --format '{{json .Manifest}}' | jq -r '.digest')
+          echo "debian_tag=${{ matrix.debian_variant }}@${DIGEST}" >> "$GITHUB_OUTPUT"
+      - name: Set up QEMU
+        if: steps.check.outputs.exists != 'true'
+        uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4.1.0
+      - name: Set up Docker Buildx
+        if: steps.check.outputs.exists != 'true'
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+      - name: Extract metadata (tags, labels) for Docker
+        if: steps.check.outputs.exists != 'true'
+        id: meta
+        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image_suffix }}
+          tags: |
+            type=raw,value=${{ steps.version.outputs.version }}
+      - name: Build and push Docker image
+        if: steps.check.outputs.exists != 'true'
+        id: push
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+        with:
+          context: ${{ matrix.context }}
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          build-args: |
+            DEBIAN_TAG=${{ steps.debian.outputs.debian_tag }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+          sbom: true
+      - name: Generate artifact attestation
+        if: steps.check.outputs.exists != 'true' && github.event_name != 'pull_request'
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-name: ghcr.io/${{ github.repository_owner }}/${{ matrix.image_suffix }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
