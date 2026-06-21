@@ -33,27 +33,29 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
-      - name: Read debian tag from base-images file
+      - name: Read build args from build.json
         id: read
         run: |
-          DEBIAN_TAG=$(grep '^${{ matrix.variant }} = ' debian/base-images \
-            | sed 's/^[^ ]* = //')
-          if [ -z "$DEBIAN_TAG" ]; then
-            echo "Error: no entry for variant '${{ matrix.variant }}' in debian/base-images" >&2
-            exit 1
-          fi
-          echo "debian_tag=$DEBIAN_TAG" >> "$GITHUB_OUTPUT"
+          BUILD_ARGS=$(bash scripts/build-json.sh debian/build.json build-args "${{ matrix.variant }}")
+          DEBIAN_TAG=$(echo "$BUILD_ARGS" | grep '^DEBIAN_TAG=' | cut -d= -f2-)
+          {
+            echo "build_args<<EOF"
+            echo "$BUILD_ARGS"
+            echo "EOF"
+            echo "debian_tag=$DEBIAN_TAG"
+          } >> "$GITHUB_OUTPUT"
       - name: Set build tags and base image metadata
         id: tag
         run: |
           BUILD_DATE=$(date +%Y%m%d)
           DATED_TAG="${{ matrix.variant }}-$BUILD_DATE"
           BASE_TAG="${{ steps.read.outputs.debian_tag }}"
+          STATIC_TAGS=$(bash scripts/build-json.sh debian/build.json tags "${{ matrix.variant }}" "${{ env.BASE_IMAGE_REF }}")
           {
             echo "dated_tag=$DATED_TAG"
             echo "tags<<EOF"
             echo "${{ env.BASE_IMAGE_REF }}:$DATED_TAG"
-            echo "${{ env.BASE_IMAGE_REF }}:${{ matrix.variant }}"
+            echo "$STATIC_TAGS"
             echo "EOF"
             echo "base_name=debian:${BASE_TAG%%@*}"
             echo "base_digest=${BASE_TAG##*@}"
@@ -93,8 +95,7 @@ jobs:
           context: ./debian
           platforms: ${{ env.PLATFORMS }}
           push: ${{ github.event_name != 'pull_request' }}
-          build-args: |
-            DEBIAN_TAG=${{ steps.read.outputs.debian_tag }}
+          build-args: ${{ steps.read.outputs.build_args }}
           tags: ${{ steps.tag.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           annotations: ${{ steps.meta.outputs.annotations }}
@@ -112,6 +113,9 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      # space-separated list of images to build
+      IMAGES: golang
     outputs:
       matrix: ${{ steps.build.outputs.matrix }}
     steps:
@@ -122,9 +126,8 @@ jobs:
       - name: Build image matrix
         id: build
         run: |
-          IMAGES=(golang)  # rust zig など追加時はここに列挙する
           MATRIX=$(
-            for IMAGE in "${IMAGES[@]}"; do
+            for IMAGE in $IMAGES; do
               bash scripts/build-json.sh "${IMAGE}/build.json" image-matrix "$IMAGE"
             done | jq -c -s 'add // []'
           )

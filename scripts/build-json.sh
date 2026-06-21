@@ -25,24 +25,19 @@ COMMAND="${2:?Missing command}"
 
 case "$COMMAND" in
   image-matrix)
-    # image-matrix <image_name>
-    # → [{"image":"golang","variant":"1.26","primary_tag":"1.26.4-trixie"}, ...]
     jq -c --arg img "${3:?Missing image name}" \
       '[.[] | {image: $img, variant, primary_tag: .tags[0]}]' "$FILE"
     ;;
   get-field)
-    # get-field <variant> <field>
     jq -r --arg tag "${3:?Missing variant}" --arg field "${4:?Missing field}" \
       '.[] | select(.variant == $tag) | .[$field]' "$FILE"
     ;;
   build-args)
-    # build-args <variant>  → "KEY=VALUE\n..." を出力
     jq -r --arg tag "${3:?Missing variant}" \
       '.[] | select(.variant == $tag) | .build_args | to_entries[] | "\(.key)=\(.value)"' \
       "$FILE"
     ;;
   tags)
-    # tags <variant> <image_ref>  → "image_ref:tag\n..." を出力
     jq -r --arg tag "${3:?Missing variant}" --arg ref "${4:?Missing image_ref}" \
       '.[] | select(.variant == $tag) | .tags[] | $ref + ":" + .' \
       "$FILE"

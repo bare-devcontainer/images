@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
                 git openssh-client gnupg2 \
                 # Network utilities
                 ca-certificates iproute2 curl wget \
-                # System moniroting utitilities
+                # System monitoring utilities
                 procps lsof psmisc \
                 # Archive utilities
                 unzip bzip2 xz-utils zip zlib1g \

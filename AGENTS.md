@@ -1,5 +1,9 @@
 # Bare Dev Container Images
 
+## General Guidelines
+
+- Use English for all documentation and comments.
+
 ## Dockerfile Guidelines
 
 - Pin image digests: Always pin base images to both a tag and a SHA256 digest. Never use `latest` or a tag alone.

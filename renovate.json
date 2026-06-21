@@ -9,14 +9,24 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "\\.devcontainer/devcontainer\\.json",
-        "^debian/base-images$"
+        "\\.devcontainer/devcontainer\\.json"
       ],
       "matchStrings": [
-        "// renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\"[^\"@]+@(?<currentValue>[^\"]+)\"",
-        "// renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\\S+ = (?<currentValue>\\S+)"
+        "// renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\"[^\"@]+@(?<currentValue>[^\"]+)\""
       ],
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "^debian/build\\.json$"
+      ],
+      "matchStrings": [
+        "\"DEBIAN_TAG\":\\s*\"(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]+)\""
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "debian",
+      "versioningTemplate": "docker"
     },
     {
       "customType": "regex",
@@ -25,6 +35,7 @@
       ],
       "matchStrings": [
         "\"(?<currentValue>\\d+\\.\\d+\\.\\d+-\\w+)\"",
+        "\"(?<currentValue>\\d+\\.\\d+\\.\\d+)\"",
         "\"GOLANG_TAG\":\\s*\"(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]+)\""
       ],
       "datasourceTemplate": "docker",
