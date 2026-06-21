@@ -6,7 +6,7 @@ on:
     paths:
       - .github/workflows/publish.yml
       - '*/Dockerfile'
-      - '*/build.json'
+      - '*/build.yaml'
   workflow_dispatch:
 
 permissions: {}
@@ -33,10 +33,10 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
-      - name: Read build args from build.json
+      - name: Read build args from build.yaml
         id: read
         run: |
-          BUILD_ARGS=$(bash scripts/build-json.sh debian/build.json build-args "${{ matrix.variant }}")
+          BUILD_ARGS=$(bash build-config.sh build-args debian "${{ matrix.variant }}")
           DEBIAN_TAG=$(echo "$BUILD_ARGS" | grep '^DEBIAN_TAG=' | cut -d= -f2-)
           {
             echo "build_args<<EOF"
@@ -50,7 +50,7 @@ jobs:
           BUILD_DATE=$(date +%Y%m%d)
           DATED_TAG="${{ matrix.variant }}-$BUILD_DATE"
           BASE_TAG="${{ steps.read.outputs.debian_tag }}"
-          STATIC_TAGS=$(bash scripts/build-json.sh debian/build.json tags "${{ matrix.variant }}" "${{ env.BASE_IMAGE_REF }}")
+          STATIC_TAGS=$(bash build-config.sh tags debian "${{ matrix.variant }}" "${{ env.BASE_IMAGE_REF }}")
           {
             echo "dated_tag=$DATED_TAG"
             echo "tags<<EOF"
@@ -128,7 +128,7 @@ jobs:
         run: |
           MATRIX=$(
             for IMAGE in $IMAGES; do
-              bash scripts/build-json.sh "${IMAGE}/build.json" image-matrix "$IMAGE"
+              bash build-config.sh image-matrix "$IMAGE"
             done | jq -c -s 'add // []'
           )
           echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
@@ -171,8 +171,8 @@ jobs:
         if: steps.check.outputs.exists != 'true'
         id: debian
         run: |
-          DEBIAN_VARIANT=$(bash scripts/build-json.sh "${{ matrix.image }}/build.json" \
-            get-field "${{ matrix.variant }}" debian_variant)
+          DEBIAN_VARIANT=$(bash build-config.sh get-field "${{ matrix.image }}" \
+            "${{ matrix.variant }}" debian_variant)
           DEBIAN_REF="ghcr.io/${{ github.repository_owner }}/debian:${DEBIAN_VARIANT}"
           DIGEST=$(docker buildx imagetools inspect "${DEBIAN_REF}" \
             --format '{{json .Manifest}}' | jq -r '.digest')
@@ -182,10 +182,10 @@ jobs:
         id: assemble
         run: |
           IMAGE_REF="ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}"
-          BUILD_ARGS=$(bash scripts/build-json.sh "${{ matrix.image }}/build.json" \
-            build-args "${{ matrix.variant }}")
-          TAGS=$(bash scripts/build-json.sh "${{ matrix.image }}/build.json" \
-            tags "${{ matrix.variant }}" "$IMAGE_REF")
+          BUILD_ARGS=$(bash build-config.sh build-args "${{ matrix.image }}" \
+            "${{ matrix.variant }}")
+          TAGS=$(bash build-config.sh tags "${{ matrix.image }}" \
+            "${{ matrix.variant }}" "$IMAGE_REF")
           {
             echo "build_args<<EOF"
             echo "$BUILD_ARGS"

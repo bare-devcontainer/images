@@ -2,9 +2,13 @@ FROM ghcr.io/bare-devcontainer/debian:trixie@sha256:22c67997e90d119b37cdf6fce4f1
 
 USER root
 
+# Enable debian backports for `yq-go`.
+COPY ./debian-backports.sources /etc/apt/sources.list.d/
+
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     export DEBIAN_FRONTEND=noninteractive \
-      && apt-get --no-install-recommends install -y skopeo
+      && apt-get update \
+      && apt-get --no-install-recommends install -y skopeo yq-go
 
 USER dev

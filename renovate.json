@@ -19,36 +19,27 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "^debian/build\\.json$"
+        "build\\.yaml$"
       ],
       "matchStrings": [
-        "\"DEBIAN_TAG\":\\s*\"(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]+)\""
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\s+\\S+: (?<currentValue>[^@\\s]+)@(?<currentDigest>sha256:[a-f0-9]+)",
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\s+- \"(?<currentValue>[^\"]+)\""
       ],
-      "datasourceTemplate": "docker",
-      "depNameTemplate": "debian",
-      "versioningTemplate": "docker"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "^golang/build\\.json$"
-      ],
-      "matchStrings": [
-        "\"(?<currentValue>\\d+\\.\\d+\\.\\d+-\\w+)\"",
-        "\"(?<currentValue>\\d+\\.\\d+\\.\\d+)\"",
-        "\"GOLANG_TAG\":\\s*\"(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]+)\""
-      ],
-      "datasourceTemplate": "docker",
-      "depNameTemplate": "golang",
-      "versioningTemplate": "docker"
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}"
     }
   ],
   "packageRules": [
     {
-      "matchFileNames": ["golang/build.json"],
+      "matchFileNames": ["golang/build.yaml"],
       "matchPackageNames": ["golang"],
       "matchUpdateTypes": ["major", "minor"],
       "enabled": false
+    },
+    {
+      "matchFileNames": ["golang/build.yaml"],
+      "matchPackageNames": ["golang"],
+      "matchUpdateTypes": ["patch"],
+      "groupName": "golang patch updates"
     }
   ]
 }
