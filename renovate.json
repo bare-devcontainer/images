@@ -9,20 +9,21 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "\\.devcontainer/[^/]+/devcontainer\\.json"
+        "**/devcontainer.json"
       ],
       "matchStrings": [
-        "// renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\"[^\"@]+@(?<currentValue>[^\"]+)\""
+        "// renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\"(?<currentValue>[^\"@]+)@(?<currentDigest>sha256:[a-f0-9]+)\"",
+        "// renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\"[^\"@]+@(?<currentValue>[^\":]+)\""
       ],
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
     },
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "build\\.yaml$"
+        "**/build.yaml"
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\s+\\S+: (?<currentValue>[^@\\s]+)@(?<currentDigest>sha256:[a-f0-9]+)",
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\s+\\S+: \"?(?<currentValue>[^@\\s\"]+)@(?<currentDigest>sha256:[a-f0-9]+)",
         "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\s+- \"(?<currentValue>[^\"]+)\""
       ],
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}"
@@ -30,15 +31,30 @@
   ],
   "packageRules": [
     {
-      "matchFileNames": ["golang/build.yaml"],
-      "matchPackageNames": ["golang"],
-      "matchUpdateTypes": ["major", "minor"],
+      "matchFileNames": [
+        "golang/build.yaml"
+      ],
+      "matchPackageNames": [
+        "golang"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor",
+        "pin",
+        "pinDigest"
+      ],
       "enabled": false
     },
     {
-      "matchFileNames": ["golang/build.yaml"],
-      "matchPackageNames": ["golang"],
-      "matchUpdateTypes": ["patch"],
+      "matchFileNames": [
+        "golang/build.yaml"
+      ],
+      "matchPackageNames": [
+        "golang"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
       "groupName": "golang patch updates"
     }
   ]
