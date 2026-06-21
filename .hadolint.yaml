@@ -1,0 +1,3 @@
+failure-threshold: warning
+ignored:
+  - DL3008  # apt package pinning handled at image digest level, not package level
