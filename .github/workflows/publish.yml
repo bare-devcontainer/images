@@ -6,12 +6,14 @@ on:
     paths:
       - .github/workflows/publish.yml
       - '*/Dockerfile'
+      - '*/build.json'
   workflow_dispatch:
 
 permissions: {}
 
 env:
   BASE_IMAGE_REF: ghcr.io/${{ github.repository_owner }}/debian
+  PLATFORMS: linux/amd64,linux/arm64
 
 jobs:
   build-base:
@@ -89,7 +91,7 @@ jobs:
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
           context: ./debian
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ env.PLATFORMS }}
           push: ${{ github.event_name != 'pull_request' }}
           build-args: |
             DEBIAN_TAG=${{ steps.read.outputs.debian_tag }}
@@ -105,38 +107,47 @@ jobs:
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
-  build-derived:
+  setup-matrix:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.build.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Build image matrix
+        id: build
+        run: |
+          IMAGES=(golang)  # rust zig など追加時はここに列挙する
+          MATRIX=$(
+            for IMAGE in "${IMAGES[@]}"; do
+              bash scripts/build-json.sh "${IMAGE}/build.json" image-matrix "$IMAGE"
+            done | jq -c -s 'add // []'
+          )
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+
+  build-image:
     permissions:
       artifact-metadata: write
       attestations: write
       contents: read
       id-token: write
       packages: write
-    needs: build-base
+    needs: [build-base, setup-matrix]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
       matrix:
-        include:
-          - name: golang
-            context: ./golang
-            image_suffix: golang
-            version_extract: "sed -n 's/FROM golang:\\([0-9][0-9.]*\\)-.*/\\1/p' golang/Dockerfile | head -1"
-            debian_variant: trixie
+        include: ${{ fromJson(needs.setup-matrix.outputs.matrix) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
-      - name: Extract version from Dockerfile
-        id: version
-        run: |
-          VERSION=$(${{ matrix.version_extract }})
-          if [ -z "$VERSION" ]; then
-            echo "Error: could not extract version for '${{ matrix.name }}'" >&2
-            exit 1
-          fi
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Log in to the Container registry
         uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
@@ -146,10 +157,10 @@ jobs:
       - name: Check if tag already exists
         id: check
         run: |
-          IMAGE_REF="ghcr.io/${{ github.repository_owner }}/${{ matrix.image_suffix }}"
-          if docker manifest inspect "${IMAGE_REF}:${{ steps.version.outputs.version }}" > /dev/null 2>&1; then
+          IMAGE_REF="ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}"
+          if docker manifest inspect "${IMAGE_REF}:${{ matrix.primary_tag }}" > /dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "Tag ${{ steps.version.outputs.version }} already exists, skipping build."
+            echo "Tag ${{ matrix.primary_tag }} already exists, skipping build."
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
@@ -157,35 +168,52 @@ jobs:
         if: steps.check.outputs.exists != 'true'
         id: debian
         run: |
-          DEBIAN_REF="ghcr.io/${{ github.repository_owner }}/debian:${{ matrix.debian_variant }}"
+          DEBIAN_VARIANT=$(bash scripts/build-json.sh "${{ matrix.image }}/build.json" \
+            get-field "${{ matrix.variant }}" debian_variant)
+          DEBIAN_REF="ghcr.io/${{ github.repository_owner }}/debian:${DEBIAN_VARIANT}"
           DIGEST=$(docker buildx imagetools inspect "${DEBIAN_REF}" \
             --format '{{json .Manifest}}' | jq -r '.digest')
-          echo "debian_tag=${{ matrix.debian_variant }}@${DIGEST}" >> "$GITHUB_OUTPUT"
+          echo "debian_tag=${DEBIAN_VARIANT}@${DIGEST}" >> "$GITHUB_OUTPUT"
+      - name: Assemble build args and tags
+        if: steps.check.outputs.exists != 'true'
+        id: assemble
+        run: |
+          IMAGE_REF="ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}"
+          BUILD_ARGS=$(bash scripts/build-json.sh "${{ matrix.image }}/build.json" \
+            build-args "${{ matrix.variant }}")
+          TAGS=$(bash scripts/build-json.sh "${{ matrix.image }}/build.json" \
+            tags "${{ matrix.variant }}" "$IMAGE_REF")
+          {
+            echo "build_args<<EOF"
+            echo "$BUILD_ARGS"
+            echo "DEBIAN_TAG=${{ steps.debian.outputs.debian_tag }}"
+            echo "EOF"
+            echo "tags<<EOF"
+            echo "$TAGS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
       - name: Set up QEMU
         if: steps.check.outputs.exists != 'true'
         uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4.1.0
       - name: Set up Docker Buildx
         if: steps.check.outputs.exists != 'true'
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
-      - name: Extract metadata (tags, labels) for Docker
+      - name: Extract metadata (labels) for Docker
         if: steps.check.outputs.exists != 'true'
         id: meta
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
         with:
-          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image_suffix }}
-          tags: |
-            type=raw,value=${{ steps.version.outputs.version }}
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
       - name: Build and push Docker image
         if: steps.check.outputs.exists != 'true'
         id: push
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
-          context: ${{ matrix.context }}
-          platforms: linux/amd64,linux/arm64
+          context: ./${{ matrix.image }}
+          platforms: ${{ env.PLATFORMS }}
           push: ${{ github.event_name != 'pull_request' }}
-          build-args: |
-            DEBIAN_TAG=${{ steps.debian.outputs.debian_tag }}
-          tags: ${{ steps.meta.outputs.tags }}
+          build-args: ${{ steps.assemble.outputs.build_args }}
+          tags: ${{ steps.assemble.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           annotations: ${{ steps.meta.outputs.annotations }}
           sbom: true
@@ -193,6 +221,6 @@ jobs:
         if: steps.check.outputs.exists != 'true' && github.event_name != 'pull_request'
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
-          subject-name: ghcr.io/${{ github.repository_owner }}/${{ matrix.image_suffix }}
+          subject-name: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
