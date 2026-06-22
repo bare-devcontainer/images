@@ -157,18 +157,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check if tag already exists
-        id: check
-        run: |
-          IMAGE_REF="ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}"
-          if docker manifest inspect "${IMAGE_REF}:${{ matrix.primary_tag }}" > /dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "Tag ${{ matrix.primary_tag }} already exists, skipping build."
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
       - name: Get debian variant digest
-        if: steps.check.outputs.exists != 'true'
         id: debian
         run: |
           DEBIAN_VARIANT=$(bash build-config.sh get-field "${{ matrix.image }}" \
@@ -178,23 +167,36 @@ jobs:
             --format '{{json .Manifest}}' | jq -r '.digest')
           echo "debian_tag=${DEBIAN_VARIANT}@${DIGEST}" >> "$GITHUB_OUTPUT"
       - name: Assemble build args and tags
-        if: steps.check.outputs.exists != 'true'
         id: assemble
         run: |
           IMAGE_REF="ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}"
+          BUILD_DATE=$(date +%Y%m%d)
+          DATED_TAG="${{ matrix.primary_tag }}-${BUILD_DATE}"
           BUILD_ARGS=$(bash build-config.sh build-args "${{ matrix.image }}" \
             "${{ matrix.variant }}")
-          TAGS=$(bash build-config.sh tags "${{ matrix.image }}" \
+          STATIC_TAGS=$(bash build-config.sh tags "${{ matrix.image }}" \
             "${{ matrix.variant }}" "$IMAGE_REF")
           {
+            echo "dated_tag=${DATED_TAG}"
             echo "build_args<<EOF"
             echo "$BUILD_ARGS"
             echo "DEBIAN_TAG=${{ steps.debian.outputs.debian_tag }}"
             echo "EOF"
             echo "tags<<EOF"
-            echo "$TAGS"
+            echo "${IMAGE_REF}:${DATED_TAG}"
+            echo "$STATIC_TAGS"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
+      - name: Check if tag already exists
+        id: check
+        run: |
+          IMAGE_REF="ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}"
+          if docker manifest inspect "${IMAGE_REF}:${{ steps.assemble.outputs.dated_tag }}" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Tag ${{ steps.assemble.outputs.dated_tag }} already exists, skipping build."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Set up QEMU
         if: steps.check.outputs.exists != 'true'
         uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4.1.0
