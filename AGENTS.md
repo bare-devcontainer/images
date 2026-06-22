@@ -27,7 +27,7 @@ RUN groupadd --gid 1000 nonroot \
     && useradd -m -s /bin/bash -u 1000 -g 1000 nonroot
 
 USER nonroot
-WORKDIR /workspace
+WORKDIR /workspaces
 ```
 
 ## GitHub Actions Guidelines

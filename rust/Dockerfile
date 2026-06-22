@@ -14,4 +14,4 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 ENV PATH=/home/dev/.cargo/bin:${PATH}
 
 USER dev
-WORKDIR /workspace
+WORKDIR /workspaces
