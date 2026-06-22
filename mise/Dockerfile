@@ -1,0 +1,37 @@
+ARG DEBIAN_TAG
+
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
+
+ARG MISE_VERSION
+ARG TARGETARCH
+
+USER root
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# hadolint ignore=DL3003 # cd only used in subshell
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    --mount=type=bind,source=mise-minisign.pub,target=/tmp/mise-minisign.pub \
+    export DEBIAN_FRONTEND=noninteractive \
+        && apt-get update \
+        && apt-get --no-install-recommends install -y minisign \
+    && case "${TARGETARCH}" in \
+        amd64) MISE_ARCH="x64" ;; \
+        arm64) MISE_ARCH="arm64" ;; \
+    esac \
+    && MISE_BINARY="mise-v${MISE_VERSION}-linux-${MISE_ARCH}" \
+    && MISE_TMPDIR="$(mktemp -d)" \
+    && wget -q -P "${MISE_TMPDIR}" "https://github.com/jdx/mise/releases/download/v${MISE_VERSION}/${MISE_BINARY}" \
+    && wget -q -P "${MISE_TMPDIR}" "https://github.com/jdx/mise/releases/download/v${MISE_VERSION}/SHASUMS256.txt" \
+    && wget -q -P "${MISE_TMPDIR}" "https://github.com/jdx/mise/releases/download/v${MISE_VERSION}/SHASUMS256.txt.minisig" \
+    && minisign -Vm "${MISE_TMPDIR}/SHASUMS256.txt" -p /tmp/mise-minisign.pub \
+    && (cd "${MISE_TMPDIR}" && grep "  \\./${MISE_BINARY}$" SHASUMS256.txt | sha256sum -c -) \
+    && install -m 755 "${MISE_TMPDIR}/${MISE_BINARY}" /usr/local/bin/mise \
+    && rm -rf "${MISE_TMPDIR}"
+
+USER dev
+WORKDIR /workspaces
+
+# hadolint ignore=SC2016 # intentional single quotes
+RUN echo 'eval "$(mise activate bash)"' >> ~/.bashrc \
+    && mise use -g usage
