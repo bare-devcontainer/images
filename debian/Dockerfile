@@ -37,5 +37,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
                 && chmod 0440 "/etc/sudoers.d/${USERNAME}"; \
                 fi
 
+LABEL devcontainer.metadata='[{"remoteUser":"dev"}]'
+
 USER dev
-WORKDIR /workspace
+WORKDIR /workspaces

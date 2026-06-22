@@ -3,7 +3,6 @@
   "build": {
     "dockerfile": "./Dockerfile"
   },
-  "remoteUser": "dev",
   "remoteEnv": {
     "EDITOR": "code --wait",
     "VISUAL": "code --wait"
