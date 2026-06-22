@@ -9,7 +9,7 @@
   },
   "permissions": {
     "allow": [
-      "Read(//workspace)"
+      "Read(//workspaces)"
     ],
     "deny": [
       "Edit(//**/.env)",

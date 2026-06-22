@@ -15,4 +15,4 @@ ENV PATH=/usr/local/go/bin:${GOPATH}/bin:${PATH}
 RUN install -d -o dev -g dev "${GOPATH}"
 
 USER dev
-WORKDIR /workspace
+WORKDIR /workspaces
