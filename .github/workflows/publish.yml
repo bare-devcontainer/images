@@ -115,7 +115,7 @@ jobs:
     timeout-minutes: 5
     env:
       # space-separated list of images to build
-      IMAGES: golang rust
+      IMAGES: golang rust zig
     outputs:
       matrix: ${{ steps.build.outputs.matrix }}
     steps:
