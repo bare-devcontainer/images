@@ -1,10 +1,10 @@
 - variant: "1.26-trixie"
   tags:
-    # renovate: datasource=docker depName=golang
+    # renovate: datasource=docker depName=golang versioning=semver
     - "1.26.4-trixie"
     - "1.26-trixie"
     - "1-trixie"
-    # renovate: datasource=docker depName=golang
+    # renovate: datasource=docker depName=golang versioning=semver
     - "1.26.4"
     - "1.26"
     - "1"
@@ -15,7 +15,7 @@
 
 - variant: "1.26-bookworm"
   tags:
-    # renovate: datasource=docker depName=golang
+    # renovate: datasource=docker depName=golang versioning=semver
     - "1.26.4-bookworm"
     - "1.26-bookworm"
     - "1-bookworm"
@@ -26,10 +26,10 @@
 
 - variant: "1.25-trixie"
   tags:
-    # renovate: datasource=docker depName=golang
+    # renovate: datasource=docker depName=golang versioning=semver
     - "1.25.11-trixie"
     - "1.25-trixie"
-    # renovate: datasource=docker depName=golang
+    # renovate: datasource=docker depName=golang versioning=semver
     - "1.25.11"
     - "1.25"
   debian_variant: "trixie"
@@ -39,7 +39,7 @@
 
 - variant: "1.25-bookworm"
   tags:
-    # renovate: datasource=docker depName=golang
+    # renovate: datasource=docker depName=golang versioning=semver
     - "1.25.11-bookworm"
     - "1.25-bookworm"
   debian_variant: "bookworm"
