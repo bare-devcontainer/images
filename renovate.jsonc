@@ -72,6 +72,33 @@
         "patch"
       ],
       "groupName": "golang patch updates"
+    },
+    {
+      "matchFileNames": [
+        "zig/build.yaml"
+      ],
+      "matchPackageNames": [
+        "ziglang/zig"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor",
+        "pin",
+        "pinDigest"
+      ],
+      "enabled": false
+    },
+    {
+      "matchFileNames": [
+        "zig/build.yaml"
+      ],
+      "matchPackageNames": [
+        "ziglang/zig"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "groupName": "zig patch updates"
     }
   ]
 }
