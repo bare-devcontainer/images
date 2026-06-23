@@ -48,6 +48,21 @@
   "packageRules": [
     {
       "matchFileNames": [
+        "debian/build.yaml"
+      ],
+      "matchPackageNames": [
+        "debian"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor",
+        "pin",
+        "pinDigest"
+      ],
+      "enabled": false
+    },
+    {
+      "matchFileNames": [
         "golang/build.yaml"
       ],
       "matchPackageNames": [
