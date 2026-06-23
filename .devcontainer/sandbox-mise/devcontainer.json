@@ -3,7 +3,7 @@
   "build": {
     "dockerfile": "../../mise/Dockerfile",
     "args": {
-      // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=docker
+      // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
       "DEBIAN_TAG": "trixie-20260621@sha256:85184c802b3127cf437c3b71243f0aad742c318679de28c7b313940bed4ec7ce",
       // renovate: datasource=github-releases depName=jdx/mise versioning=semver
       "MISE_VERSION": "2026.6.12"

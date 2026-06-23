@@ -1,0 +1,77 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    "schedule:weekly"
+  ],
+  "minimumReleaseAge": "14 days",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "**/devcontainer.json"
+      ],
+      "matchStrings": [
+        // JSON string following a `// renovate:` comment in the form `"tag@sha256:digest"`
+        // e.g. "ubuntu:22.04@sha256:abc123..."
+        "// renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\"(?<currentValue>[^\"@]+)@(?<currentDigest>sha256:[a-f0-9]+)\"",
+        // JSON string following a `// renovate:` comment in the form `"name@version"` (no sha256 digest)
+        // e.g. "anthropic.claude-code@2.1.168"
+        "// renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\"[^\"@]+@(?<currentValue>[^\":]+)\""
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "**/build.yaml"
+      ],
+      "matchStrings": [
+        // YAML key-value line following a `# renovate:` comment where the value is in the form `tag@sha256:digest`
+        // e.g. GOLANG_TAG: "1.26.4-trixie@sha256:abc123..."
+        "# renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?( extractVersion=(?<extractVersion>\\S+))?\\s+\\S+: \"?(?<currentValue>[^@\\s\"]+)@(?<currentDigest>sha256:[a-f0-9]+)",
+        // YAML list item following a `# renovate:` comment with `versioning=semver` where the value has a non-semver suffix; captures only the semver part
+        // e.g. - "0.16.0-trixie" → currentValue: "0.16.0"
+        "# renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+) versioning=(?<versioning>semver)( extractVersion=(?<extractVersion>\\S+))?\\s+- \"(?<currentValue>[^\"\\-]+)(?:-[^\"]*)?\"",
+        // YAML list item following a `# renovate:` comment with no versioning= annotation; captures the version as currentValue and the optional compatibility suffix (e.g. `-trixie`, `-bookworm`) as currentCompatibility
+        // e.g. - "1.26.4-trixie" → currentValue: "1.26.4", currentCompatibility: "trixie"
+        // e.g. - "1.26.4"        → currentValue: "1.26.4"
+        // The \s+ between depName and the list item implicitly blocks this pattern from matching when versioning= (or any other token) appears before the newline, making a lookahead unnecessary.
+        "# renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( extractVersion=(?<extractVersion>\\S+))?\\s+- \"(?<currentValue>[^\"\\-]+)(-(?<currentCompatibility>[^\"]+))?\"",
+        // YAML key-value line following a `# renovate:` comment where the value is a plain version string (no digest)
+        // e.g. ZIG_VERSION: "0.16.0" / MISE_VERSION: "2026.6.12"
+        "# renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?( extractVersion=(?<extractVersion>\\S+))?\\s+\\S+: \"(?<currentValue>[^@\"\\s]+)\""
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchFileNames": [
+        "golang/build.yaml"
+      ],
+      "matchPackageNames": [
+        "golang"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor",
+        "pin",
+        "pinDigest"
+      ],
+      "enabled": false
+    },
+    {
+      "matchFileNames": [
+        "golang/build.yaml"
+      ],
+      "matchPackageNames": [
+        "golang"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "groupName": "golang patch updates"
+    }
+  ]
+}
