@@ -1,55 +1,55 @@
 - variant: "0.16-trixie"
   tags:
-    # renovate: datasource=github-releases depName=ziglang/zig versioning=semver extractVersion=^(?<version>[\d.]+)
+    # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
     - "0.16.0-trixie"
     - "0.16-trixie"
     - "0-trixie"
-    # renovate: datasource=github-releases depName=ziglang/zig versioning=semver
+    # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
     - "0.16.0"
     - "0.16"
     - "0"
   debian_variant: "trixie"
   build_args:
-    # renovate: datasource=github-releases depName=ziglang/zig versioning=semver
+    # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
     ZIG_VERSION: "0.16.0"
     # renovate: datasource=gitea-commits registryUrl=https://codeberg.org depName=ziglang/shell-completions
     SHELL_COMPLETIONS_COMMIT: "c2983a75dcbcaf3a1df74ab563a9bd3c8e7f448e"
 
 - variant: "0.16-bookworm"
   tags:
-    # renovate: datasource=github-releases depName=ziglang/zig versioning=semver extractVersion=^(?<version>[\d.]+)
+    # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
     - "0.16.0-bookworm"
     - "0.16-bookworm"
   debian_variant: "bookworm"
   build_args:
-    # renovate: datasource=github-releases depName=ziglang/zig versioning=semver
+    # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
     ZIG_VERSION: "0.16.0"
     # renovate: datasource=gitea-commits registryUrl=https://codeberg.org depName=ziglang/shell-completions
     SHELL_COMPLETIONS_COMMIT: "c2983a75dcbcaf3a1df74ab563a9bd3c8e7f448e"
 
 - variant: "0.15-trixie"
   tags:
-    # renovate: datasource=github-releases depName=ziglang/zig versioning=semver extractVersion=^(?<version>[\d.]+)
+    # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
     - "0.15.2-trixie"
     - "0.15-trixie"
-    # renovate: datasource=github-releases depName=ziglang/zig versioning=semver
+    # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
     - "0.15.2"
     - "0.15"
   debian_variant: "trixie"
   build_args:
-    # renovate: datasource=github-releases depName=ziglang/zig versioning=semver
+    # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
     ZIG_VERSION: "0.15.2"
     # renovate: datasource=gitea-commits registryUrl=https://codeberg.org depName=ziglang/shell-completions
     SHELL_COMPLETIONS_COMMIT: "c2983a75dcbcaf3a1df74ab563a9bd3c8e7f448e"
 
 - variant: "0.15-bookworm"
   tags:
-    # renovate: datasource=github-releases depName=ziglang/zig versioning=semver extractVersion=^(?<version>[\d.]+)
+    # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
     - "0.15.2-bookworm"
     - "0.15-bookworm"
   debian_variant: "bookworm"
   build_args:
-    # renovate: datasource=github-releases depName=ziglang/zig versioning=semver
+    # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
     ZIG_VERSION: "0.15.2"
     # renovate: datasource=gitea-commits registryUrl=https://codeberg.org depName=ziglang/shell-completions
     SHELL_COMPLETIONS_COMMIT: "c2983a75dcbcaf3a1df74ab563a9bd3c8e7f448e"

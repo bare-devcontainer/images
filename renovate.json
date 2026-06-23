@@ -23,9 +23,10 @@
         "**/build.yaml"
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\s+\\S+: \"?(?<currentValue>[^@\\s\"]+)@(?<currentDigest>sha256:[a-f0-9]+)",
-        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?( extractVersion=(?<extractVersion>\\S+))?\\s+- \"(?<currentValue>[^\"]+)\"",
-        "# renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\s+\\S+: \"(?<currentValue>[^@\"\\s]+)\""
+        "# renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?( extractVersion=(?<extractVersion>\\S+))?\\s+\\S+: \"?(?<currentValue>[^@\\s\"]+)@(?<currentDigest>sha256:[a-f0-9]+)",
+        "# renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+) versioning=(?<versioning>semver)( extractVersion=(?<extractVersion>\\S+))?\\s+- \"(?<currentValue>[^\"\\-]+)(?:-[^\"]*)?\"",
+        "# renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)(?! versioning=semver)( versioning=(?<versioning>\\S+))?( extractVersion=(?<extractVersion>\\S+))?\\s+- \"(?<currentValue>[^\"]+)\"",
+        "# renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?( extractVersion=(?<extractVersion>\\S+))?\\s+\\S+: \"(?<currentValue>[^@\"\\s]+)\""
       ],
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}"
     }
