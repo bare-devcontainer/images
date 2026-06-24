@@ -47,19 +47,14 @@
   ],
   "packageRules": [
     {
+      "description": "Pin the Debian release to stay within the same major version (e.g., bookworm, trixie).",
       "matchFileNames": [
         "debian/build.yaml"
       ],
       "matchPackageNames": [
         "debian"
       ],
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "pin",
-        "pinDigest"
-      ],
-      "enabled": false
+      "allowedVersions": "/^{{ lookup (split currentVersion '-') 0 }}-\\d{8}(?:\\.\\d+)?$/"
     },
     {
       "matchFileNames": [
@@ -78,18 +73,6 @@
     },
     {
       "matchFileNames": [
-        "golang/build.yaml"
-      ],
-      "matchPackageNames": [
-        "golang"
-      ],
-      "matchUpdateTypes": [
-        "patch"
-      ],
-      "groupName": "golang patch updates"
-    },
-    {
-      "matchFileNames": [
         "zig/build.yaml"
       ],
       "matchPackageNames": [
@@ -104,16 +87,13 @@
       "enabled": false
     },
     {
+      "groupName": "Image patch updates",
       "matchFileNames": [
-        "zig/build.yaml"
-      ],
-      "matchPackageNames": [
-        "ziglang/zig"
+        "**/build.yaml"
       ],
       "matchUpdateTypes": [
-        "patch"
-      ],
-      "groupName": "zig patch updates"
+        "patch", "digest"
+      ]
     }
   ]
 }
