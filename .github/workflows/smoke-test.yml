@@ -1,0 +1,139 @@
+#
+name: Smoke Test
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/smoke-test.yml
+      - '*/Dockerfile'
+      - '*/build.yaml'
+      - build-config.sh
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/smoke-test.yml
+      - '*/Dockerfile'
+      - '*/build.yaml'
+      - build-config.sh
+
+permissions: {}
+
+env:
+  BASE_IMAGE_REF: ghcr.io/${{ github.repository_owner }}/debian
+
+jobs:
+  test-base:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [trixie, bookworm]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Read build args
+        id: read
+        run: |
+          {
+            echo "build_args<<EOF"
+            bash build-config.sh build-args debian "${{ matrix.variant }}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+      - name: Build debian image
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+        with:
+          context: ./debian
+          push: false
+          load: true
+          tags: ${{ env.BASE_IMAGE_REF }}:${{ matrix.variant }}
+          build-args: ${{ steps.read.outputs.build_args }}
+          cache-from: type=gha,scope=debian-${{ matrix.variant }}
+          cache-to: type=gha,scope=debian-${{ matrix.variant }},mode=max
+      - name: Run smoke test
+        run: |
+          docker run --rm \
+            --mount "type=bind,source=${{ github.workspace }}/debian/smoke-test.sh,target=/smoke-test.sh,readonly" \
+            "${{ env.BASE_IMAGE_REF }}:${{ matrix.variant }}" \
+            bash /smoke-test.sh
+
+  setup-matrix:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      IMAGES: golang mise rust zig
+    outputs:
+      matrix: ${{ steps.build.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Build image matrix
+        id: build
+        run: |
+          MATRIX=$(
+            for IMAGE in $IMAGES; do
+              bash build-config.sh image-matrix "$IMAGE"
+            done | jq -c -s 'add // []'
+          )
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+
+  test-image:
+    needs: setup-matrix
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.setup-matrix.outputs.matrix) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Get debian variant
+        id: debian
+        run: |
+          DEBIAN_VARIANT=$(bash build-config.sh get-field "${{ matrix.image }}" \
+            "${{ matrix.variant }}" debian_variant)
+          echo "variant=$DEBIAN_VARIANT" >> "$GITHUB_OUTPUT"
+      - name: Read build args
+        id: read
+        run: |
+          {
+            echo "image_args<<EOF"
+            bash build-config.sh build-args "${{ matrix.image }}" "${{ matrix.variant }}"
+            echo "DEBIAN_TAG=${{ steps.debian.outputs.variant }}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+      - name: Build language image
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+        with:
+          context: ./${{ matrix.image }}
+          push: false
+          load: true
+          tags: smoke-test/${{ matrix.image }}:${{ matrix.variant }}
+          build-args: ${{ steps.read.outputs.image_args }}
+          cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.variant }}
+          cache-to: type=gha,scope=${{ matrix.image }}-${{ matrix.variant }},mode=max
+      - name: Run smoke test
+        run: |
+          docker run --rm \
+            --mount "type=bind,source=${{ github.workspace }}/debian/smoke-test.sh,target=/smoke-test-debian.sh,readonly" \
+            --mount "type=bind,source=${{ github.workspace }}/${{ matrix.image }}/smoke-test.sh,target=/smoke-test.sh,readonly" \
+            "smoke-test/${{ matrix.image }}:${{ matrix.variant }}" \
+            bash -c "bash /smoke-test-debian.sh && bash /smoke-test.sh"
