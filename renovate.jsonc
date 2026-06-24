@@ -53,13 +53,7 @@
       "matchPackageNames": [
         "debian"
       ],
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "pin",
-        "pinDigest"
-      ],
-      "enabled": false
+      "allowedVersions": "/^{{ lookup (split currentVersion '-') 0 }}-\\d{8}(?:\\.\\d+)?$/"
     },
     {
       "matchFileNames": [
