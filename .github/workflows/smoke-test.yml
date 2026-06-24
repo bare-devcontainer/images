@@ -40,10 +40,11 @@ jobs:
       - name: Read build args
         id: read
         run: |
+          DELIM="EOF_$(openssl rand -hex 8)"
           {
-            echo "build_args<<EOF"
+            echo "build_args<<${DELIM}"
             bash build-config.sh build-args debian "${{ matrix.variant }}"
-            echo "EOF"
+            echo "${DELIM}"
           } >> "$GITHUB_OUTPUT"
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
@@ -69,8 +70,6 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    env:
-      IMAGES: golang mise rust zig
     outputs:
       matrix: ${{ steps.build.outputs.matrix }}
     steps:
@@ -81,12 +80,7 @@ jobs:
       - name: Build image matrix
         id: build
         run: |
-          MATRIX=$(
-            for IMAGE in $IMAGES; do
-              bash build-config.sh image-matrix "$IMAGE"
-            done | jq -c -s 'add // []'
-          )
-          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+          echo "matrix=$(bash build-config.sh all-matrix)" >> "$GITHUB_OUTPUT"
 
   test-image:
     needs: setup-matrix
@@ -103,20 +97,17 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
-      - name: Get debian variant
-        id: debian
-        run: |
-          DEBIAN_VARIANT=$(bash build-config.sh get-field "${{ matrix.image }}" \
-            "${{ matrix.variant }}" debian_variant)
-          echo "variant=$DEBIAN_VARIANT" >> "$GITHUB_OUTPUT"
       - name: Read build args
         id: read
         run: |
+          DEBIAN_VARIANT=$(bash build-config.sh get-field "${{ matrix.image }}" \
+            "${{ matrix.variant }}" debian_variant)
+          DELIM="EOF_$(openssl rand -hex 8)"
           {
-            echo "image_args<<EOF"
+            echo "image_args<<${DELIM}"
             bash build-config.sh build-args "${{ matrix.image }}" "${{ matrix.variant }}"
-            echo "DEBIAN_TAG=${{ steps.debian.outputs.variant }}"
-            echo "EOF"
+            echo "DEBIAN_TAG=${DEBIAN_VARIANT}"
+            echo "${DELIM}"
           } >> "$GITHUB_OUTPUT"
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
