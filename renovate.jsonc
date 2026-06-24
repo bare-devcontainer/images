@@ -87,13 +87,13 @@
       "enabled": false
     },
     {
-      "groupName": "Image patch updates"
+      "groupName": "Image patch updates",
       "matchFileNames": [
         "**/build.yaml"
       ],
       "matchUpdateTypes": [
         "patch", "digest"
-      ],
+      ]
     }
   ]
 }
