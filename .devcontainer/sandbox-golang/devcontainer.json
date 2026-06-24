@@ -4,7 +4,7 @@
     "dockerfile": "../../golang/Dockerfile",
     "args": {
       // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
-      "DEBIAN_TAG": "trixie-20260622@sha256:06086f7fef2b18505e936d0b47bece0513cf790a16d6e5aa03c7fecd109a34e1",
+      "DEBIAN_TAG": "trixie-20260624@sha256:3127c0d46c375eda6fac9dce68f2a5051b83f2d772e0e9e663ead5c6353fbc11",
       // renovate: datasource=docker depName=golang versioning=docker
       "GOLANG_TAG": "1.26.4-trixie@sha256:a425cb16126d04e54977fca468d65d3f5af8722f8476cf2fe48906d47a626ec0"
     }
