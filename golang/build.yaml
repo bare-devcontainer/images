@@ -11,7 +11,7 @@
   debian_variant: "trixie"
   build_args:
     # renovate: datasource=docker depName=golang
-    GOLANG_TAG: "1.26.4-trixie@sha256:a425cb16126d04e54977fca468d65d3f5af8722f8476cf2fe48906d47a626ec0"
+    GOLANG_TAG: "1.26.4-trixie@sha256:76a29248dedcd75870e95cbd90cc8cb356db082404ac7d3a5803f276c3ba79c9"
 
 - variant: "1.26-bookworm"
   tags:
@@ -22,7 +22,7 @@
   debian_variant: "bookworm"
   build_args:
     # renovate: datasource=docker depName=golang
-    GOLANG_TAG: "1.26.4-bookworm@sha256:d1af0fd434fced72b3b4335440df9d0fd43a4c737ea14aed18b6b3f4e9aab58d"
+    GOLANG_TAG: "1.26.4-bookworm@sha256:5ae05f331ade3e10c2647be439a4f42dae789002f7d2e2112dcbf3d26bec25e9"
 
 - variant: "1.25-trixie"
   tags:
@@ -35,7 +35,7 @@
   debian_variant: "trixie"
   build_args:
     # renovate: datasource=docker depName=golang
-    GOLANG_TAG: "1.25.11-trixie@sha256:7d00f62673a7344623d19253f1ab6e5e91e683eaf7197f14d66a529685c0c3ce"
+    GOLANG_TAG: "1.25.11-trixie@sha256:08d16bd2719d18db2f97cae2192ee3f911f57546dd3b2db373c328015f256109"
 
 - variant: "1.25-bookworm"
   tags:
@@ -45,4 +45,4 @@
   debian_variant: "bookworm"
   build_args:
     # renovate: datasource=docker depName=golang
-    GOLANG_TAG: "1.25.11-bookworm@sha256:c1af748fea50034e6e859caedffad78f7b40f1ffb26e331c3f9f2b27c225d9c8"
+    GOLANG_TAG: "1.25.11-bookworm@sha256:828bff90208ae14ac7d52cf969c5c900e918c954bce2c01871c94030862400e4"
