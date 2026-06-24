@@ -4,7 +4,6 @@
     "config:best-practices"
   ],
   "minimumReleaseAge": "14 days",
-  "minimumReleaseAgeBehaviour": "timestamp-optional",
   "customManagers": [
     {
       "customType": "regex",
@@ -46,6 +45,13 @@
     }
   ],
   "packageRules": [
+    {
+      "description": "Disable minimumReleaseAge for Docker images since Docker registries do not provide release timestamps.",
+      "matchDatasources": [
+        "docker"
+      ],
+      "minimumReleaseAge": null
+    },
     {
       "description": "Pin the Debian release to stay within the same major version (e.g., bookworm, trixie).",
       "matchFileNames": [
