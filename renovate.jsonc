@@ -87,6 +87,12 @@
       "enabled": false
     },
     {
+      "groupName": "Dev Container updates",
+      "matchFileNames": [
+        "./devcontainer/**"
+      ]
+    },
+    {
       "groupName": "Image patch updates",
       "matchFileNames": [
         "**/build.yaml"
