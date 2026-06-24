@@ -1,10 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:best-practices",
-    "schedule:weekly"
+    "config:best-practices"
   ],
   "minimumReleaseAge": "14 days",
+  "minimumReleaseAgeBehaviour": "timestamp-optional",
   "customManagers": [
     {
       "customType": "regex",
@@ -92,7 +92,8 @@
         "**/build.yaml"
       ],
       "matchUpdateTypes": [
-        "patch", "digest"
+        "patch",
+        "digest"
       ]
     }
   ]
