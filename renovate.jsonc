@@ -107,7 +107,7 @@
     {
       "groupName": "Dev Container updates",
       "matchFileNames": [
-        "./devcontainer/**/*"
+        ".devcontainer/**/*"
       ],
       "matchUpdateTypes": [
         "major",
