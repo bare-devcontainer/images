@@ -1,0 +1,111 @@
+name: Trivy Scan (Published)
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  push:
+    tags:
+      - 'v[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'
+  pull_request:
+    paths:
+      - .github/workflows/trivy-published.yml
+  workflow_dispatch:
+
+permissions: {}
+
+env:
+  BASE_IMAGE_REF: ghcr.io/${{ github.repository_owner }}/debian
+  # renovate: datasource=github-releases depName=aquasecurity/trivy
+  TRIVY_VERSION: "v0.71.2"
+  TRIVY_SEVERITY: CRITICAL,HIGH
+
+jobs:
+  setup:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      base_variants: ${{ steps.build.outputs.base_variants }}
+      matrix: ${{ steps.build.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Build image matrix
+        id: build
+        run: |
+          echo "base_variants=$(bash build-config.sh variants debian | jq -c .)" >> "$GITHUB_OUTPUT"
+          echo "matrix=$(bash build-config.sh all-matrix | jq -c '[.[] | . + {"platform": "linux/amd64"}, . + {"platform": "linux/arm64"}]')" >> "$GITHUB_OUTPUT"
+
+  scan-base:
+    needs: setup
+    permissions:
+      security-events: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: ${{ fromJson(needs.setup.outputs.base_variants) }}
+        platform: [linux/amd64, linux/arm64]
+    steps:
+      - name: Prepare
+        id: prep
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: echo "platform_safe=${PLATFORM//\//-}" >> "$GITHUB_OUTPUT"
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        env:
+          TRIVY_PLATFORM: ${{ matrix.platform }}
+        with:
+          version: ${{ env.TRIVY_VERSION }}
+          image-ref: ${{ env.BASE_IMAGE_REF }}:${{ matrix.variant }}
+          format: sarif
+          output: trivy-debian-${{ matrix.variant }}-${{ steps.prep.outputs.platform_safe }}.sarif
+          severity: ${{ env.TRIVY_SEVERITY }}
+          ignore-unfixed: true
+          exit-code: '0'
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+        if: always() && github.event_name != 'pull_request'
+        with:
+          sarif_file: trivy-debian-${{ matrix.variant }}-${{ steps.prep.outputs.platform_safe }}.sarif
+          category: trivy-debian-${{ matrix.variant }}-${{ steps.prep.outputs.platform_safe }}
+
+  scan-image:
+    needs: setup
+    permissions:
+      security-events: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.setup.outputs.matrix) }}
+    steps:
+      - name: Prepare
+        id: prep
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: echo "platform_safe=${PLATFORM//\//-}" >> "$GITHUB_OUTPUT"
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        env:
+          TRIVY_PLATFORM: ${{ matrix.platform }}
+        with:
+          version: ${{ env.TRIVY_VERSION }}
+          image-ref: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:${{ matrix.primary_tag }}
+          format: sarif
+          output: trivy-${{ matrix.image }}-${{ matrix.variant }}-${{ steps.prep.outputs.platform_safe }}.sarif
+          severity: ${{ env.TRIVY_SEVERITY }}
+          ignore-unfixed: true
+          exit-code: '0'
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+        if: always() && github.event_name != 'pull_request'
+        with:
+          sarif_file: trivy-${{ matrix.image }}-${{ matrix.variant }}-${{ steps.prep.outputs.platform_safe }}.sarif
+          category: trivy-${{ matrix.image }}-${{ matrix.variant }}-${{ steps.prep.outputs.platform_safe }}
