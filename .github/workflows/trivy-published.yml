@@ -37,7 +37,7 @@ jobs:
         id: build
         run: |
           echo "base_variants=$(bash build-config.sh variants debian | jq -c .)" >> "$GITHUB_OUTPUT"
-          echo "matrix=$(bash build-config.sh all-matrix)" >> "$GITHUB_OUTPUT"
+          echo "matrix=$(bash build-config.sh all-matrix | jq -c '[.[] | . + {"platform": "linux/amd64"}, . + {"platform": "linux/arm64"}]')" >> "$GITHUB_OUTPUT"
 
   scan-base:
     needs: setup
@@ -49,14 +49,22 @@ jobs:
       fail-fast: false
       matrix:
         variant: ${{ fromJson(needs.setup.outputs.base_variants) }}
+        platform: [linux/amd64, linux/arm64]
     steps:
+      - name: Prepare
+        id: prep
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: echo "platform_safe=${PLATFORM//\//-}" >> "$GITHUB_OUTPUT"
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        env:
+          TRIVY_PLATFORM: ${{ matrix.platform }}
         with:
           version: ${{ env.TRIVY_VERSION }}
           image-ref: ${{ env.BASE_IMAGE_REF }}:${{ matrix.variant }}
           format: sarif
-          output: trivy-debian-${{ matrix.variant }}.sarif
+          output: trivy-debian-${{ matrix.variant }}-${{ steps.prep.outputs.platform_safe }}.sarif
           severity: ${{ env.TRIVY_SEVERITY }}
           ignore-unfixed: true
           exit-code: '0'
@@ -64,8 +72,8 @@ jobs:
         uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
         if: always() && github.event_name != 'pull_request'
         with:
-          sarif_file: trivy-debian-${{ matrix.variant }}.sarif
-          category: trivy-debian-${{ matrix.variant }}
+          sarif_file: trivy-debian-${{ matrix.variant }}-${{ steps.prep.outputs.platform_safe }}.sarif
+          category: trivy-debian-${{ matrix.variant }}-${{ steps.prep.outputs.platform_safe }}
 
   scan-image:
     needs: setup
@@ -78,13 +86,20 @@ jobs:
       matrix:
         include: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
+      - name: Prepare
+        id: prep
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: echo "platform_safe=${PLATFORM//\//-}" >> "$GITHUB_OUTPUT"
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        env:
+          TRIVY_PLATFORM: ${{ matrix.platform }}
         with:
           version: ${{ env.TRIVY_VERSION }}
           image-ref: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:${{ matrix.primary_tag }}
           format: sarif
-          output: trivy-${{ matrix.image }}-${{ matrix.variant }}.sarif
+          output: trivy-${{ matrix.image }}-${{ matrix.variant }}-${{ steps.prep.outputs.platform_safe }}.sarif
           severity: ${{ env.TRIVY_SEVERITY }}
           ignore-unfixed: true
           exit-code: '0'
@@ -92,5 +107,5 @@ jobs:
         uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
         if: always() && github.event_name != 'pull_request'
         with:
-          sarif_file: trivy-${{ matrix.image }}-${{ matrix.variant }}.sarif
-          category: trivy-${{ matrix.image }}-${{ matrix.variant }}
+          sarif_file: trivy-${{ matrix.image }}-${{ matrix.variant }}-${{ steps.prep.outputs.platform_safe }}.sarif
+          category: trivy-${{ matrix.image }}-${{ matrix.variant }}-${{ steps.prep.outputs.platform_safe }}
