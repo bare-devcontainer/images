@@ -18,6 +18,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && case "${TARGETARCH}" in \
         amd64) MISE_ARCH="x64" ;; \
         arm64) MISE_ARCH="arm64" ;; \
+        *) echo "Unsupported TARGETARCH: ${TARGETARCH}" >&2; exit 1 ;; \
     esac \
     && MISE_BINARY="mise-v${MISE_VERSION}-linux-${MISE_ARCH}" \
     && MISE_TMPDIR="$(mktemp -d)" \
