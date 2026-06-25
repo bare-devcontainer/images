@@ -42,6 +42,18 @@
         "# renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?( extractVersion=(?<extractVersion>\\S+))?\\s+\\S+: \"(?<currentValue>[^@\"\\s]+)\""
       ],
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "**/.github/workflows/*.yml"
+      ],
+      "matchStrings": [
+        // YAML key-value line following a `# renovate:` comment where the value is a plain version string (no digest)
+        // e.g. TRIVY_VERSION: "v0.71.2"
+        "# renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?( extractVersion=(?<extractVersion>\\S+))?\\s+\\S+: \"(?<currentValue>[^@\"\\s]+)\""
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
     }
   ],
   "packageRules": [

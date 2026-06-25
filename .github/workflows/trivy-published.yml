@@ -15,6 +15,8 @@ permissions: {}
 
 env:
   BASE_IMAGE_REF: ghcr.io/${{ github.repository_owner }}/debian
+  # renovate: datasource=github-releases depName=aquasecurity/trivy
+  TRIVY_VERSION: "v0.71.2"
   TRIVY_SEVERITY: CRITICAL,HIGH
 
 jobs:
@@ -51,6 +53,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
+          version: ${{ env.TRIVY_VERSION }}
           image-ref: ${{ env.BASE_IMAGE_REF }}:${{ matrix.variant }}
           format: sarif
           output: trivy-debian-${{ matrix.variant }}.sarif
@@ -78,6 +81,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
+          version: ${{ env.TRIVY_VERSION }}
           image-ref: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:${{ matrix.primary_tag }}
           format: sarif
           output: trivy-${{ matrix.image }}-${{ matrix.variant }}.sarif
