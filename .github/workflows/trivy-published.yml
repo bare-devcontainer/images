@@ -3,9 +3,6 @@ name: Trivy Scan (Published)
 on:
   schedule:
     - cron: '0 6 * * 1'
-  push:
-    tags:
-      - 'v[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'
   pull_request:
     paths:
       - .github/workflows/trivy-published.yml
