@@ -272,6 +272,7 @@ jobs:
 
   create-tag:
     permissions:
+      actions: write
       contents: write
     needs: [setup, build-base, build-image]
     if: needs.setup.outputs.should_run == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
@@ -290,4 +291,7 @@ jobs:
               --method POST \
               -f ref="refs/tags/v${BUILD_DATE}" \
               -f sha="${SHA}"
+            gh workflow run trivy-published.yml \
+              --repo "${REPO}" \
+              --ref main
           fi
