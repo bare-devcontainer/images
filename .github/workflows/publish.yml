@@ -54,10 +54,11 @@ jobs:
             --jq '.[] | select(.ref | test("refs/tags/v[0-9]{8}")) | .ref | ltrimstr("refs/tags/")' \
             2>/dev/null | sort | tail -1 || echo "")
           if [ -n "$LATEST_TAG" ]; then
-            AHEAD=$(gh api "repos/${REPO}/compare/${LATEST_TAG}...${SHA}" \
-              --jq '.ahead_by' 2>/dev/null || echo "1")
-            if [ "$AHEAD" = "0" ]; then
-              echo "No new commits since ${LATEST_TAG}, skipping."
+            IMAGE_COMMITS=$(gh api "repos/${REPO}/compare/${LATEST_TAG}...${SHA}" \
+              --jq '[.commits[].commit.message | split("\n")[0]] | map(select(test("^image(\\([^)]*\\))?!?:"))) | length' \
+              2>/dev/null || echo "1")
+            if [ "$IMAGE_COMMITS" = "0" ]; then
+              echo "No image commits since ${LATEST_TAG}, skipping."
               echo "should_run=false" >> "$GITHUB_OUTPUT"
               exit 0
             fi

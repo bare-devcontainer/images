@@ -21,3 +21,9 @@ renovate.json                # Renovate config
   - language-specific images built on the debian base
 - All images are built on Debian base images, and target multi-arch (linux/amd64 + linux/arm64) builds.
 - Use English for all documentation and comments.
+- PR titles must follow Conventional Commits format:
+  - Allowed types: `image`, `ci`, `chore`, `test`
+  - The scope is optional. Examples:
+    - `image(python): add Python 3.13 variant`
+    - `ci: pin action SHAs`
+    - `chore: update renovate config`
