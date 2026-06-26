@@ -18,10 +18,10 @@ jobs:
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          if [[ ! "$PR_TITLE" =~ ^(image|ci|chore|test)(\([[:alnum:]_.-]+\))?:\ .+ ]]; then
+          if [[ ! "$PR_TITLE" =~ ^(image|ci|chore|test|docs)(\([[:alnum:]_.-]+\))?:\ .+ ]]; then
             echo "PR title does not follow Conventional Commits format."
             echo "Expected: type(scope): description"
-            echo "Allowed types: image, ci, chore, test"
+            echo "Allowed types: image, ci, chore, test, docs"
             echo "Got: $PR_TITLE"
             exit 1
           fi
