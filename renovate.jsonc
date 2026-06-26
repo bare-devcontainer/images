@@ -1,9 +1,21 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:best-practices"
+    "config:best-practices",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)"
   ],
   "minimumReleaseAge": "14 days",
+  "labels": [
+    "deps"
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": [
+      "security"
+    ],
+    "minimumReleaseAge": null
+  },
   "customManagers": [
     {
       "customType": "regex",
@@ -105,26 +117,29 @@
       "enabled": false
     },
     {
-      "groupName": "Dev Container updates",
+      "groupName": "Dev Container",
       "matchFileNames": [
         ".devcontainer/**/*"
       ],
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "patch",
-        "digest"
-      ]
+      "semanticCommitType": "chore"
     },
     {
-      "groupName": "Image patch updates",
+      "groupName": "GitHub Actions",
+      "matchFileNames": [
+        ".github/workflows/*.yml"
+      ],
+      "semanticCommitType": "ci"
+    },
+    {
+      "groupName": "Image Builds",
       "matchFileNames": [
         "**/build.yaml"
       ],
       "matchUpdateTypes": [
         "patch",
         "digest"
-      ]
+      ],
+      "semanticCommitType": "image"
     }
   ]
 }

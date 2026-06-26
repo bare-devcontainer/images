@@ -1,0 +1,27 @@
+name: PR Title Check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+permissions: {}
+
+jobs:
+  check-title:
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
+      - name: Check PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if [[ ! "$PR_TITLE" =~ ^(image|ci|chore|test)(\([[:alnum:]_.-]+\))?:\ .+ ]]; then
+            echo "PR title does not follow Conventional Commits format."
+            echo "Expected: type(scope): description"
+            echo "Allowed types: image, ci, chore, test"
+            echo "Got: $PR_TITLE"
+            exit 1
+          fi
