@@ -25,7 +25,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
                 # Archive utilities
                 unzip bzip2 xz-utils zip zlib1g \
                 # File utilities
-                less jq \
+                less jq vim-tiny \
                 # Misc
                 bash-completion lsb-release locales man-db manpages \
         && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen \
