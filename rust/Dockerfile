@@ -13,5 +13,10 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 ENV PATH=/home/dev/.cargo/bin:${PATH}
 
+RUN install -d -o dev -g dev \
+    /home/dev/.cargo \
+    /home/dev/.cargo/registry \
+    /home/dev/.cargo/git
+
 USER dev
 WORKDIR /workspaces
