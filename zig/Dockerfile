@@ -32,5 +32,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 ENV PATH=/usr/local/zig:${PATH}
 
+RUN install -d -o dev -g dev /home/dev/.cache/zig
+
 USER dev
 WORKDIR /workspaces
