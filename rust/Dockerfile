@@ -20,6 +20,3 @@ RUN install -d -o dev -g dev \
 
 USER dev
 WORKDIR /workspaces
-
-RUN rustup default stable \
-    && rustup component add rust-analyzer
