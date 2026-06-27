@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-zig version
+echo "zig version $(zig version)"
+echo "zls version $(zls --version)"
