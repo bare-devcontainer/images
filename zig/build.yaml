@@ -12,6 +12,8 @@
   build_args:
     # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
     ZIG_VERSION: "0.16.0"
+    # renovate: datasource=github-tags depName=zigtools/zls versioning=semver
+    ZLS_VERSION: "0.16.0"
     # renovate: datasource=gitea-commits registryUrl=https://codeberg.org depName=ziglang/shell-completions
     SHELL_COMPLETIONS_COMMIT: "c2983a75dcbcaf3a1df74ab563a9bd3c8e7f448e"
 
@@ -24,6 +26,8 @@
   build_args:
     # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
     ZIG_VERSION: "0.16.0"
+    # renovate: datasource=github-tags depName=zigtools/zls versioning=semver
+    ZLS_VERSION: "0.16.0"
     # renovate: datasource=gitea-commits registryUrl=https://codeberg.org depName=ziglang/shell-completions
     SHELL_COMPLETIONS_COMMIT: "c2983a75dcbcaf3a1df74ab563a9bd3c8e7f448e"
 
@@ -39,6 +43,8 @@
   build_args:
     # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
     ZIG_VERSION: "0.15.2"
+    # renovate: datasource=github-tags depName=zigtools/zls versioning=semver
+    ZLS_VERSION: "0.15.1"
     # renovate: datasource=gitea-commits registryUrl=https://codeberg.org depName=ziglang/shell-completions
     SHELL_COMPLETIONS_COMMIT: "c2983a75dcbcaf3a1df74ab563a9bd3c8e7f448e"
 
@@ -51,5 +57,7 @@
   build_args:
     # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
     ZIG_VERSION: "0.15.2"
+    # renovate: datasource=github-tags depName=zigtools/zls versioning=semver
+    ZLS_VERSION: "0.15.1"
     # renovate: datasource=gitea-commits registryUrl=https://codeberg.org depName=ziglang/shell-completions
     SHELL_COMPLETIONS_COMMIT: "c2983a75dcbcaf3a1df74ab563a9bd3c8e7f448e"

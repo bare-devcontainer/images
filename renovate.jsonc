@@ -106,7 +106,8 @@
         "zig/build.yaml"
       ],
       "matchPackageNames": [
-        "ziglang/zig"
+        "ziglang/zig",
+        "zigtools/zls"
       ],
       "matchUpdateTypes": [
         "major",
