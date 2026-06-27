@@ -7,6 +7,7 @@ on:
       - .github/workflows/smoke-test.yml
       - '*/Dockerfile'
       - '*/build.yaml'
+      - '*/smoke-test.sh'
       - build-config.sh
   push:
     branches:
@@ -15,6 +16,7 @@ on:
       - .github/workflows/smoke-test.yml
       - '*/Dockerfile'
       - '*/build.yaml'
+      - '*/smoke-test.sh'
       - build-config.sh
 
 permissions: {}
