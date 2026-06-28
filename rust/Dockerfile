@@ -12,7 +12,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     rm -f /etc/apt/apt.conf.d/docker-clean \
         && export DEBIAN_FRONTEND=noninteractive \
         && apt-get update \
-        && apt-get --no-install-recommends install -y rustup
+        && apt-get --no-install-recommends install -y build-essential rustup
 
 ENV PATH=/home/dev/.cargo/bin:${PATH}
 
