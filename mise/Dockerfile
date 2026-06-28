@@ -33,16 +33,15 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && install -m 755 "${MISE_TMPDIR}/${MISE_BINARY}" /usr/local/bin/mise \
     && rm -rf "${MISE_TMPDIR}"
 
-RUN install -d -o dev -g dev \
-    /home/dev/.cache/mise \
-    /home/dev/.config/mise \
-    /home/dev/.local/share/mise \
-    /home/dev/.local/state/mise
-
 USER dev
 WORKDIR /workspaces
 
 # hadolint ignore=SC2016 # intentional single quotes
-RUN echo 'eval "$(mise activate bash)"' >> ~/.bashrc \
+RUN mkdir -p \
+      /home/dev/.cache/mise \
+      /home/dev/.config/mise \
+      /home/dev/.local/share/mise \
+      /home/dev/.local/state/mise \
+    && echo 'eval "$(mise activate bash)"' >> ~/.bashrc \
     && eval "$(mise activate bash)" \
     && mise use -g usage

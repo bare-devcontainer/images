@@ -20,11 +20,9 @@ RUN --mount=type=cache,target=/root/go/pkg/mod \
 ENV GOPATH=/home/dev/go
 ENV PATH=/usr/local/go/bin:${GOPATH}/bin:${PATH}
 
-RUN install -d -o dev -g dev \
-    "${GOPATH}" \
-    "${GOPATH}/pkg" \
-    "${GOPATH}/pkg/mod" \
-    /home/dev/.cache/go-build
-
 USER dev
 WORKDIR /workspaces
+
+RUN mkdir -p \
+    "${GOPATH}/pkg/mod" \
+    /home/dev/.cache/go-build
