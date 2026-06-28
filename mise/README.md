@@ -25,5 +25,5 @@ Tags are also published with a date suffix (e.g., `trixie-20260623`) on each bui
 
 Everything from the [debian](../debian) base image, plus:
 
-- **mise**
-- **usage** (global mise tool; for CLI completion support)
+- [mise](https://mise.jdx.dev/)
+- [usage](https://usage.jdx.dev/) (global mise tool; for CLI completion support)

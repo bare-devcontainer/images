@@ -23,5 +23,5 @@ Tags are also published with a date suffix (e.g., `trixie-20260623`) on each bui
 - **Network**: `ca-certificates`, `iproute2`, `curl`, `wget`
 - **System utilities**: `procps`, `lsof`, `psmisc`
 - **Archive utilities**: `unzip`, `bzip2`, `xz-utils`, `zip`, `zlib1g`
-- **File utilities**: `less`, `jq`
+- **File utilities**: `less`, `jq`, `vim.tiny`
 - **Misc**: `bash-completion`, `lsb-release`, `locales` (en_US.UTF-8), `man-db`, `manpages`

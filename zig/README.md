@@ -2,7 +2,7 @@
 
 Dev container image with the Zig compiler installed, built on the [debian](../debian) base image.
 
-The Zig binary is downloaded from ziglang.org and verified with a minisign signature before installation. Bash completions are also installed from the [ziglang/shell-completions](https://codeberg.org/ziglang/shell-completions) repository.
+The Zig binary is downloaded from ziglang.org and verified with a minisign signature before installation. Bash completions are also installed from the [ziglang/shell-completions] repository.
 
 ## Image
 
@@ -25,5 +25,8 @@ Tags are also published with a date suffix (e.g., `0.16-trixie-20260623`) on eac
 
 Everything from the [debian](../debian) base image, plus:
 
-- **Zig compiler**
-- **Bash completions** for the `zig` command
+- [Zig bundle](https://ziglang.org/)
+- [ZLS](https://zigtools.org/zls/)
+- [ziglang/shell-completions]
+
+[ziglang/shell-completions]: https://codeberg.org/ziglang/shell-completions
