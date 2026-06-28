@@ -7,7 +7,7 @@
       "DEBIAN_TAG": "trixie-20260628@sha256:c12950c0c9ebfe3f7217d9b867a28586cc306438f8b2c48dafd8732249131fa8",
       // renovate: datasource=docker depName=golang versioning=docker
       "GOLANG_TAG": "1.26.4-trixie@sha256:76a29248dedcd75870e95cbd90cc8cb356db082404ac7d3a5803f276c3ba79c9",
-      // renovate: datasource=github-tags depName=golang/tools extractVersion=^gopls/v(?<version>.*)$
+      // renovate: datasource=go depName=golang.org/x/tools/gopls
       "GOPLS_VERSION": "v0.22.0"
     }
   }
