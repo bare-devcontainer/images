@@ -12,6 +12,7 @@ on:
       - '*/Dockerfile'
       - '*/build.yaml'
       - .github/workflows/trivy-build.yml
+      - .trivyignore.yaml
 
 permissions: {}
 
@@ -85,6 +86,7 @@ jobs:
           format: table
           severity: ${{ env.TRIVY_SEVERITY }}
           ignore-unfixed: true
+          trivyignores: .trivyignore.yaml
           exit-code: '1'
 
   scan-image:
@@ -142,4 +144,5 @@ jobs:
           format: table
           severity: ${{ env.TRIVY_SEVERITY }}
           ignore-unfixed: true
+          trivyignores: .trivyignore.yaml
           exit-code: '1'

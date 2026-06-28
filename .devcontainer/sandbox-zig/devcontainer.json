@@ -5,8 +5,12 @@
     "args": {
       // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
       "DEBIAN_TAG": "trixie-20260628@sha256:c12950c0c9ebfe3f7217d9b867a28586cc306438f8b2c48dafd8732249131fa8",
-      // renovate: datasource=github-releases depName=ziglang/zig versioning=semver
-      "ZIG_VERSION": "0.16.0"
+      // renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
+      "ZIG_VERSION": "0.16.0",
+      // renovate: datasource=github-tags depName=zigtools/zls versioning=semver
+      "ZLS_VERSION": "0.16.0",
+      // renovate: datasource=gitea-commits registryUrl=https://codeberg.org depName=ziglang/shell-completions
+      "SHELL_COMPLETIONS_COMMIT": "c2983a75dcbcaf3a1df74ab563a9bd3c8e7f448e"
     }
   }
 }

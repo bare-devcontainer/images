@@ -1,4 +1,31 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-go version
+echo "Go version $(go version)"
+echo "gopls version $(gopls version)"
+
+TMPDIR=$(mktemp -d)
+trap 'rm -rf "$TMPDIR"' EXIT
+
+cat > "$TMPDIR/main.go" <<'EOF'
+package main
+
+import (
+	"fmt"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+)
+
+func main() {
+	c := cases.Title(language.English)
+	fmt.Println(c.String("hello, world"))
+}
+EOF
+
+cd "$TMPDIR"
+go mod init smoketest
+go mod tidy
+go mod download
+go build ./...
+go run .
+
