@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Go version $(go version)"
-echo "gopls version $(gopls version)"
+echo "=== Verifying tool installations ==="
+echo "go: $(go version)"
+echo "gopls: $(gopls version)"
 
+echo "=== Verifying program execution ==="
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
 
