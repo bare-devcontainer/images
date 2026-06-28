@@ -8,7 +8,6 @@ FROM debian:${DEBIAN_TAG}
 ARG USERNAME=dev
 ARG USER_UID=1000
 ARG USER_GID=1000
-ARG INSTALL_SUDO=false
 
 ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
@@ -34,14 +33,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
                 bash-completion lsb-release locales man-db manpages \
         && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen \
         && groupadd --gid "${USER_GID}" "${USERNAME}" \
-        && useradd -l -m -s /bin/bash -u "${USER_UID}" -g "${USER_GID}" "${USERNAME}" \
-        && if [ "${INSTALL_SUDO}" = "true" ]; then \
-                apt-get install -y --no-install-recommends sudo \
-                && echo "${USERNAME} ALL=(root) NOPASSWD:ALL" > "/etc/sudoers.d/${USERNAME}" \
-                && chmod 0440 "/etc/sudoers.d/${USERNAME}"; \
-                fi
+        && useradd -l -m -s /bin/bash -u "${USER_UID}" -g "${USER_GID}" "${USERNAME}"
 
-LABEL devcontainer.metadata='[{"remoteUser":"dev"}]'
+COPY --chown=${USERNAME}:${USERNAME} assets/.bashrc /home/${USERNAME}/.bashrc
 
-USER dev
+USER ${USERNAME}
 WORKDIR /workspaces
