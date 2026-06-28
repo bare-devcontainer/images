@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
-# check=skip=InvalidDefaultArgInFrom
+# check=skip=InvalidDefaultArgInFrom;error=true
 # ARGs are intentionally required to prevent accidental builds with the wrong base image.
 
 ARG DEBIAN_TAG
@@ -25,9 +25,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     esac \
     && MISE_BINARY="mise-v${MISE_VERSION}-linux-${MISE_ARCH}" \
     && MISE_TMPDIR="$(mktemp -d)" \
-    && wget -q -P "${MISE_TMPDIR}" "https://github.com/jdx/mise/releases/download/v${MISE_VERSION}/${MISE_BINARY}" \
-    && wget -q -P "${MISE_TMPDIR}" "https://github.com/jdx/mise/releases/download/v${MISE_VERSION}/SHASUMS256.txt" \
-    && wget -q -P "${MISE_TMPDIR}" "https://github.com/jdx/mise/releases/download/v${MISE_VERSION}/SHASUMS256.txt.minisig" \
+    && wget -q -T 30 -t 3 -P "${MISE_TMPDIR}" "https://github.com/jdx/mise/releases/download/v${MISE_VERSION}/${MISE_BINARY}" \
+    && wget -q -T 30 -t 3 -P "${MISE_TMPDIR}" "https://github.com/jdx/mise/releases/download/v${MISE_VERSION}/SHASUMS256.txt" \
+    && wget -q -T 30 -t 3 -P "${MISE_TMPDIR}" "https://github.com/jdx/mise/releases/download/v${MISE_VERSION}/SHASUMS256.txt.minisig" \
     && minisign -Vm "${MISE_TMPDIR}/SHASUMS256.txt" -p /tmp/mise-minisign.pub \
     && (cd "${MISE_TMPDIR}" && grep "  \\./${MISE_BINARY}$" SHASUMS256.txt | sha256sum -c -) \
     && install -m 755 "${MISE_TMPDIR}/${MISE_BINARY}" /usr/local/bin/mise \

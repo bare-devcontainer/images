@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
-# check=skip=InvalidDefaultArgInFrom
+# check=skip=InvalidDefaultArgInFrom;error=true
 # ARGs are intentionally required to prevent accidental builds with the wrong base image.
 
 ARG DEBIAN_TAG
@@ -27,20 +27,20 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && ZIG_TMPDIR="$(mktemp -d)" \
     # Install Zig
     && ZIG_TARBALL="zig-${ZIG_ARCH}-linux-${ZIG_VERSION}.tar.xz" \
-    && wget -q -P "${ZIG_TMPDIR}" "https://ziglang.org/download/${ZIG_VERSION}/${ZIG_TARBALL}" \
-    && wget -q -P "${ZIG_TMPDIR}" "https://ziglang.org/download/${ZIG_VERSION}/${ZIG_TARBALL}.minisig" \
+    && wget -q -T 30 -t 3 -P "${ZIG_TMPDIR}" "https://ziglang.org/download/${ZIG_VERSION}/${ZIG_TARBALL}" \
+    && wget -q -T 30 -t 3 -P "${ZIG_TMPDIR}" "https://ziglang.org/download/${ZIG_VERSION}/${ZIG_TARBALL}.minisig" \
     && minisign -Vm "${ZIG_TMPDIR}/${ZIG_TARBALL}" -p /tmp/zig-minisign.pub \
     && tar xJf "${ZIG_TMPDIR}/${ZIG_TARBALL}" -C "${ZIG_TMPDIR}" \
     && mv "${ZIG_TMPDIR}/zig-${ZIG_ARCH}-linux-${ZIG_VERSION}" /usr/local/zig \
     # Install ZLS
     && ZLS_TARBALL="zls-${ZIG_ARCH}-linux-${ZLS_VERSION}.tar.xz" \
-    && wget -q -P "${ZIG_TMPDIR}" "https://builds.zigtools.org/${ZLS_TARBALL}" \
-    && wget -q -P "${ZIG_TMPDIR}" "https://builds.zigtools.org/${ZLS_TARBALL}.minisig" \
+    && wget -q -T 30 -t 3 -P "${ZIG_TMPDIR}" "https://builds.zigtools.org/${ZLS_TARBALL}" \
+    && wget -q -T 30 -t 3 -P "${ZIG_TMPDIR}" "https://builds.zigtools.org/${ZLS_TARBALL}.minisig" \
     && minisign -Vm "${ZIG_TMPDIR}/${ZLS_TARBALL}" -p /tmp/zls-minisign.pub \
     && tar xJf "${ZIG_TMPDIR}/${ZLS_TARBALL}" -C "${ZIG_TMPDIR}" \
     && mv "${ZIG_TMPDIR}/zls" /usr/local/bin/zls \
     # Install shell completions for Zig
-    && wget -q -O /usr/share/bash-completion/completions/zig \
+    && wget -q -T 30 -t 3 -O /usr/share/bash-completion/completions/zig \
         "https://codeberg.org/ziglang/shell-completions/raw/commit/${SHELL_COMPLETIONS_COMMIT}/_zig.bash" \
     && rm -rf "${ZIG_TMPDIR}"
 
