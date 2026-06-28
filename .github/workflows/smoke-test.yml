@@ -124,8 +124,11 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.variant }}
           cache-to: type=gha,scope=${{ matrix.image }}-${{ matrix.variant }},mode=max
       - name: Run smoke test
+        env:
+          MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}
         run: |
           docker run --rm \
+            ${{ matrix.image == 'mise' && '--env MISE_GITHUB_TOKEN' || '' }} \
             --mount "type=bind,source=${{ github.workspace }}/debian/smoke-test.sh,target=/smoke-test-debian.sh,readonly" \
             --mount "type=bind,source=${{ github.workspace }}/${{ matrix.image }}/smoke-test.sh,target=/smoke-test.sh,readonly" \
             "smoke-test/${{ matrix.image }}:${{ matrix.variant }}" \

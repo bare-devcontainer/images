@@ -12,3 +12,13 @@ cargo --version
 rust-analyzer --version
 cargo clippy --version
 cargo fmt --version
+
+echo "=== Verifying program execution ==="
+TMPDIR=$(mktemp -d)
+trap 'rm -rf "$TMPDIR"' EXIT
+
+cd "$TMPDIR"
+cargo new smoketest
+cd smoketest
+cargo build
+cargo run
