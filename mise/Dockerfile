@@ -33,6 +33,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && install -m 755 "${MISE_TMPDIR}/${MISE_BINARY}" /usr/local/bin/mise \
     && rm -rf "${MISE_TMPDIR}"
 
+ENV PATH=/home/dev/.local/share/mise/shims:${PATH}
+
 USER dev
 WORKDIR /workspaces
 
@@ -42,6 +44,4 @@ RUN mkdir -p \
       /home/dev/.config/mise \
       /home/dev/.local/share/mise \
       /home/dev/.local/state/mise \
-    && echo 'eval "$(mise activate bash)"' >> ~/.bashrc \
-    && eval "$(mise activate bash)" \
     && mise use -g usage
