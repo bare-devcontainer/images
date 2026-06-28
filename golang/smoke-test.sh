@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-go version
+echo "Go version $(go version)"
+echo "gopls version $(gopls version)"
