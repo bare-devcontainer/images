@@ -22,6 +22,7 @@ ENV PATH=/usr/local/go/bin:${GOPATH}/bin:${PATH}
 
 RUN install -d -o dev -g dev \
     "${GOPATH}" \
+    "${GOPATH}/pkg" \
     "${GOPATH}/pkg/mod" \
     /home/dev/.cache/go-build
 
