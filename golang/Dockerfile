@@ -13,10 +13,6 @@ USER root
 
 COPY --from=golang /usr/local/go /usr/local/go
 
-RUN --mount=type=cache,target=/root/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build \
-    GOBIN=/usr/local/bin /usr/local/go/bin/go install -v -x "golang.org/x/tools/gopls@${GOPLS_VERSION}"
-
 ENV GOPATH=/home/dev/go
 ENV PATH=/usr/local/go/bin:${GOPATH}/bin:${PATH}
 
