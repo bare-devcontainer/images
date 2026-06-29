@@ -26,4 +26,3 @@ Tags are also published with a date suffix (e.g., `1.26-trixie-20260623`) on eac
 Everything from the [debian](../debian) base image, plus:
 
 - [Go toolchain](https://go.dev/)
-- [gopls](https://go.dev/gopls/)

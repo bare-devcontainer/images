@@ -3,7 +3,6 @@ set -euo pipefail
 
 echo "=== Verifying tool installations ==="
 echo "go: $(go version)"
-echo "gopls: $(gopls version)"
 
 echo "=== Verifying program execution ==="
 TMPDIR=$(mktemp -d)
