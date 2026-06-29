@@ -1,19 +1,18 @@
-#
-name: Smoke Test
+name: Build Checks
 
 on:
   pull_request:
     paths:
-      - .github/workflows/smoke-test.yml
+      - .github/workflows/build-checks.yml
       - '*/Dockerfile'
       - '*/build.yaml'
       - '*/smoke-test.sh'
       - build-config.sh
+      - .trivyignore.yaml
   push:
     branches:
       - main
     paths:
-      - .github/workflows/smoke-test.yml
       - '*/Dockerfile'
       - '*/build.yaml'
       - '*/smoke-test.sh'
@@ -22,18 +21,40 @@ on:
 permissions: {}
 
 env:
-  BASE_IMAGE_REF: ghcr.io/${{ github.repository_owner }}/debian
+  # renovate: datasource=github-releases depName=aquasecurity/trivy
+  TRIVY_VERSION: "v0.71.2"
+  TRIVY_SEVERITY: CRITICAL,HIGH
 
 jobs:
-  test-base:
+  setup:
     permissions:
       contents: read
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
+    outputs:
+      base_variants: ${{ steps.build.outputs.base_variants }}
+      matrix: ${{ steps.build.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Build matrix
+        id: build
+        run: |
+          echo "base_variants=$(bash build-config.sh variants debian | jq -c .)" >> "$GITHUB_OUTPUT"
+          echo "matrix=$(bash build-config.sh all-matrix)" >> "$GITHUB_OUTPUT"
+
+  check-base:
+    needs: setup
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        variant: [trixie, bookworm]
+        variant: ${{ fromJson(needs.setup.outputs.base_variants) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -56,44 +77,37 @@ jobs:
           context: ./debian
           push: false
           load: true
-          tags: ${{ env.BASE_IMAGE_REF }}:${{ matrix.variant }}
+          tags: debian:${{ matrix.variant }}
           build-args: ${{ steps.read.outputs.build_args }}
           cache-from: type=gha,scope=debian-${{ matrix.variant }}
-          cache-to: type=gha,scope=debian-${{ matrix.variant }},mode=max
+          cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,scope=debian-{0},mode=max', matrix.variant) || '' }}
       - name: Run smoke test
         run: |
           docker run --rm \
             --mount "type=bind,source=${{ github.workspace }}/debian/smoke-test.sh,target=/smoke-test.sh,readonly" \
-            "${{ env.BASE_IMAGE_REF }}:${{ matrix.variant }}" \
+            "debian:${{ matrix.variant }}" \
             bash /smoke-test.sh
-
-  setup-matrix:
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      matrix: ${{ steps.build.outputs.matrix }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          persist-credentials: false
-      - name: Build image matrix
-        id: build
-        run: |
-          echo "matrix=$(bash build-config.sh all-matrix)" >> "$GITHUB_OUTPUT"
+          version: ${{ env.TRIVY_VERSION }}
+          image-ref: debian:${{ matrix.variant }}
+          format: table
+          severity: ${{ env.TRIVY_SEVERITY }}
+          ignore-unfixed: true
+          trivyignores: .trivyignore.yaml
+          exit-code: '1'
 
-  test-image:
-    needs: setup-matrix
+  check-image:
+    needs: setup
     permissions:
       contents: read
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJson(needs.setup-matrix.outputs.matrix) }}
+        include: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -119,10 +133,10 @@ jobs:
           context: ./${{ matrix.image }}
           push: false
           load: true
-          tags: smoke-test/${{ matrix.image }}:${{ matrix.variant }}
+          tags: ${{ matrix.image }}:${{ matrix.variant }}
           build-args: ${{ steps.read.outputs.image_args }}
           cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.variant }}
-          cache-to: type=gha,scope=${{ matrix.image }}-${{ matrix.variant }},mode=max
+          cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,scope={0}-{1},mode=max', matrix.image, matrix.variant) || '' }}
       - name: Run smoke test
         env:
           MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}
@@ -131,5 +145,15 @@ jobs:
             ${{ matrix.image == 'mise' && '--env MISE_GITHUB_TOKEN' || '' }} \
             --mount "type=bind,source=${{ github.workspace }}/debian/smoke-test.sh,target=/smoke-test-debian.sh,readonly" \
             --mount "type=bind,source=${{ github.workspace }}/${{ matrix.image }}/smoke-test.sh,target=/smoke-test.sh,readonly" \
-            "smoke-test/${{ matrix.image }}:${{ matrix.variant }}" \
+            "${{ matrix.image }}:${{ matrix.variant }}" \
             bash -c "bash /smoke-test-debian.sh && bash /smoke-test.sh"
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: ${{ env.TRIVY_VERSION }}
+          image-ref: ${{ matrix.image }}:${{ matrix.variant }}
+          format: table
+          severity: ${{ env.TRIVY_SEVERITY }}
+          ignore-unfixed: true
+          trivyignores: .trivyignore.yaml
+          exit-code: '1'
