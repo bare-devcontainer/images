@@ -29,14 +29,22 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && ZIG_TARBALL="zig-${ZIG_ARCH}-linux-${ZIG_VERSION}.tar.xz" \
     && wget -q -T 30 -t 3 -P "${ZIG_TMPDIR}" "https://ziglang.org/download/${ZIG_VERSION}/${ZIG_TARBALL}" \
     && wget -q -T 30 -t 3 -P "${ZIG_TMPDIR}" "https://ziglang.org/download/${ZIG_VERSION}/${ZIG_TARBALL}.minisig" \
-    && minisign -Vm "${ZIG_TMPDIR}/${ZIG_TARBALL}" -p /tmp/zig-minisign.pub \
+    && ZIG_TRUSTED_COMMENT="$(minisign -Vm "${ZIG_TMPDIR}/${ZIG_TARBALL}" -p /tmp/zig-minisign.pub -Q)" \
+    && case "${ZIG_TRUSTED_COMMENT}" in \
+        *"file:${ZIG_TARBALL}"*) ;; \
+        *) echo "Trusted comment does not match requested file" >&2; exit 1 ;; \
+       esac \
     && tar xJf "${ZIG_TMPDIR}/${ZIG_TARBALL}" -C "${ZIG_TMPDIR}" \
     && mv "${ZIG_TMPDIR}/zig-${ZIG_ARCH}-linux-${ZIG_VERSION}" /usr/local/zig \
     # Install ZLS
     && ZLS_TARBALL="zls-${ZIG_ARCH}-linux-${ZLS_VERSION}.tar.xz" \
     && wget -q -T 30 -t 3 -P "${ZIG_TMPDIR}" "https://builds.zigtools.org/${ZLS_TARBALL}" \
     && wget -q -T 30 -t 3 -P "${ZIG_TMPDIR}" "https://builds.zigtools.org/${ZLS_TARBALL}.minisig" \
-    && minisign -Vm "${ZIG_TMPDIR}/${ZLS_TARBALL}" -p /tmp/zls-minisign.pub \
+    && ZLS_TRUSTED_COMMENT="$(minisign -Vm "${ZIG_TMPDIR}/${ZLS_TARBALL}" -p /tmp/zls-minisign.pub -Q)" \
+    && case "${ZLS_TRUSTED_COMMENT}" in \
+        *"file:${ZLS_TARBALL}"*) ;; \
+        *) echo "Trusted comment does not match requested file" >&2; exit 1 ;; \
+       esac \
     && tar xJf "${ZIG_TMPDIR}/${ZLS_TARBALL}" -C "${ZIG_TMPDIR}" \
     && mv "${ZIG_TMPDIR}/zls" /usr/local/bin/zls \
     # Install shell completions for Zig
