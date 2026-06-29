@@ -215,7 +215,9 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           annotations: ${{ steps.meta.outputs.annotations }}
           sbom: true
-          no-cache: true
+          no-cache: ${{ github.event_name != 'pull_request' }}
+          cache-from: ${{ github.event_name == 'pull_request' && format('type=gha,scope={0}', matrix.variant) || '' }}
+          cache-to: ${{ github.event_name != 'pull_request' && format('type=gha,mode=max,scope={0}', matrix.variant) || '' }}
       - name: Generate artifact attestation
         if: steps.check.outputs.exists != 'true' && github.event_name != 'pull_request'
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
@@ -328,7 +330,9 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           annotations: ${{ steps.meta.outputs.annotations }}
           sbom: true
-          no-cache: true
+          no-cache: ${{ github.event_name != 'pull_request' }}
+          cache-from: ${{ github.event_name == 'pull_request' && format('type=gha,scope={0}-{1}', matrix.image, matrix.variant) || '' }}
+          cache-to: ${{ github.event_name != 'pull_request' && format('type=gha,mode=max,scope={0}-{1}', matrix.image, matrix.variant) || '' }}
       - name: Generate artifact attestation
         if: steps.check.outputs.exists != 'true' && github.event_name != 'pull_request'
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
