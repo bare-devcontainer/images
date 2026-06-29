@@ -80,7 +80,7 @@ jobs:
           tags: debian:${{ matrix.variant }}
           build-args: ${{ steps.read.outputs.build_args }}
           cache-from: type=gha,scope=debian-${{ matrix.variant }}
-          cache-to: type=gha,scope=debian-${{ matrix.variant }},mode=max
+          cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,scope=debian-{0},mode=max', matrix.variant) || '' }}
       - name: Run smoke test
         run: |
           docker run --rm \
@@ -136,7 +136,7 @@ jobs:
           tags: ${{ matrix.image }}:${{ matrix.variant }}
           build-args: ${{ steps.read.outputs.image_args }}
           cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.variant }}
-          cache-to: type=gha,scope=${{ matrix.image }}-${{ matrix.variant }},mode=max
+          cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,scope={0}-{1},mode=max', matrix.image, matrix.variant) || '' }}
       - name: Run smoke test
         env:
           MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}
