@@ -1,7 +1,8 @@
 # Bare Dev Container Images
 
 [![Lint](https://github.com/bare-devcontainer/images/actions/workflows/lint.yml/badge.svg)](https://github.com/bare-devcontainer/images/actions/workflows/lint.yml)
-[![Trivy Scan (Build)](https://github.com/bare-devcontainer/images/actions/workflows/trivy-build.yml/badge.svg)](https://github.com/bare-devcontainer/images/actions/workflows/trivy-build.yml)
+[![Build Checks](https://github.com/bare-devcontainer/images/actions/workflows/build-checks.yml/badge.svg)](https://github.com/bare-devcontainer/images/actions/workflows/build-checks.yml)
+[![Trivy Scan](https://github.com/bare-devcontainer/images/actions/workflows/trivy-published.yml/badge.svg)](https://github.com/bare-devcontainer/images/actions/workflows/trivy-published.yml)
 
 Minimal, secure, and bloat-free Dev Container base images for various technology stacks, published to GitHub Container Registry.
 
