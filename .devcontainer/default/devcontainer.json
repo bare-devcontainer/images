@@ -11,7 +11,7 @@
     "vscode": {
       "extensions": [
         // renovate: datasource=github-tags depName=anthropics/claude-code
-        "anthropic.claude-code@2.1.178",
+        "anthropic.claude-code@2.1.179",
         // renovate: datasource=github-tags depName=editorconfig/editorconfig-vscode
         "EditorConfig.EditorConfig@0.18.2"
       ],
