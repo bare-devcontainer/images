@@ -124,6 +124,17 @@ jobs:
               '.[] | "- `ghcr.io/" + env.REPO_OWNER + "/" + .image + ":" + .primary_tag + "-" + env.BUILD_DATE + "`"'
           } >> "$GITHUB_STEP_SUMMARY"
 
+  gate:
+    permissions: {}
+    needs: [setup]
+    if: needs.setup.outputs.should_run == 'true'
+    environment: ${{ github.event_name != 'pull_request' && 'release' || 'ci' }}
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
+      - name: Gate
+        run: echo "Release gate passed"
+
   build-base:
     permissions:
       artifact-metadata: write
@@ -131,7 +142,7 @@ jobs:
       contents: read
       id-token: write
       packages: write
-    needs: [setup]
+    needs: [setup, gate]
     if: needs.setup.outputs.should_run == 'true'
     strategy:
       matrix:
@@ -142,7 +153,6 @@ jobs:
       variant: ${{ matrix.variant }}
       image_ref: ghcr.io/${{ github.repository_owner }}/debian
       build_date: ${{ needs.setup.outputs.build_date }}
-      environment: ${{ github.event_name != 'pull_request' && 'release' || 'ci' }}
       dryrun: ${{ github.event_name == 'pull_request' }}
 
   build-image:
@@ -152,7 +162,7 @@ jobs:
       contents: read
       id-token: write
       packages: write
-    needs: [setup, build-base]
+    needs: [setup, build-base, gate]
     if: needs.setup.outputs.should_run == 'true'
     strategy:
       matrix:
@@ -163,7 +173,6 @@ jobs:
       variant: ${{ matrix.variant }}
       image_ref: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
       build_date: ${{ needs.setup.outputs.build_date }}
-      environment: ${{ github.event_name != 'pull_request' && 'release' || 'ci' }}
       dryrun: ${{ github.event_name == 'pull_request' }}
 
   create-tag:

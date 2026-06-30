@@ -19,10 +19,6 @@ on:
         description: 'Date appended to the primary tag to create a dated, immutable tag (YYYYMMDD)'
         type: string
         required: true
-      environment:
-        description: 'GitHub environment name that gates secrets and protection rules (release or ci)'
-        type: string
-        required: true
       dryrun:
         description: 'Skip registry push and use GHA cache; true on pull_request events'
         type: boolean
@@ -38,7 +34,6 @@ jobs:
       contents: read
       id-token: write
       packages: write
-    environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
