@@ -1,4 +1,4 @@
-name: Trivy Scan (Published)
+name: Trivy Scan
 
 on:
   schedule:
