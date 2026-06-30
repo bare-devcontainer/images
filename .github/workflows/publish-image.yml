@@ -1,0 +1,145 @@
+name: Publish Docker Image
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: 'Image name matching the subdirectory that contains the Dockerfile (e.g. debian, golang)'
+        type: string
+        required: true
+      variant:
+        description: 'Variant name as defined in build.yaml (e.g. bookworm, 1.26-trixie)'
+        type: string
+        required: true
+      image_ref:
+        description: 'Tag-less registry path used as the base for all published tags (e.g. ghcr.io/owner/debian)'
+        type: string
+        required: true
+      build_date:
+        description: 'Date appended to the primary tag to create a dated, immutable tag (YYYYMMDD)'
+        type: string
+        required: true
+      environment:
+        description: 'GitHub environment name that gates secrets and protection rules (release or ci)'
+        type: string
+        required: true
+      dryrun:
+        description: 'Skip registry push and use GHA cache; true on pull_request events'
+        type: boolean
+        required: true
+
+permissions: {}
+
+jobs:
+  build:
+    permissions:
+      artifact-metadata: write
+      attestations: write
+      contents: read
+      id-token: write
+      packages: write
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Log in to the Container registry
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4.1.0
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+      - name: Prepare build
+        id: prep
+        env:
+          IMAGE: ${{ inputs.image }}
+          VARIANT: ${{ inputs.variant }}
+          IMAGE_REF: ${{ inputs.image_ref }}
+          BUILD_DATE: ${{ inputs.build_date }}
+        run: |
+          PRIMARY_TAG=$(bash build-config.sh primary-tag "$IMAGE" "$VARIANT")
+          DATED_TAG="${PRIMARY_TAG}-${BUILD_DATE}"
+          BUILD_ARGS=$(bash build-config.sh build-args "$IMAGE" "$VARIANT")
+          STATIC_TAGS=$(bash build-config.sh tags "$IMAGE" "$VARIANT" "$IMAGE_REF")
+
+          DEBIAN_VARIANT=$(bash build-config.sh get-field "$IMAGE" "$VARIANT" debian_variant)
+          if [ -n "$DEBIAN_VARIANT" ] && [ "$DEBIAN_VARIANT" != "null" ]; then
+            DIGEST=$(docker buildx imagetools inspect \
+              "$(dirname "$IMAGE_REF")/debian:${DEBIAN_VARIANT}" \
+              --format '{{json .Manifest}}' | jq -r '.digest')
+            if [ -z "$DIGEST" ] || [ "$DIGEST" = "null" ]; then
+              echo "Failed to get digest for debian:${DEBIAN_VARIANT}" >&2
+              exit 1
+            fi
+            echo "=== Base image ==="
+            echo "debian:${DEBIAN_VARIANT}@${DIGEST}"
+            BUILD_ARGS="${BUILD_ARGS}"$'\n'"DEBIAN_TAG=${DEBIAN_VARIANT}@${DIGEST}"
+          fi
+
+          DELIM="EOF_$(openssl rand -hex 8)"
+          {
+            echo "dated_tag=${DATED_TAG}"
+            echo "build_args<<${DELIM}"
+            echo "$BUILD_ARGS"
+            echo "${DELIM}"
+            echo "tags<<${DELIM}"
+            echo "${IMAGE_REF}:${DATED_TAG}"
+            echo "$STATIC_TAGS"
+            echo "${DELIM}"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "=== Tags to push ==="
+          printf '%s\n' "${IMAGE_REF}:${DATED_TAG}" $STATIC_TAGS
+          echo "=== Build args ==="
+          echo "$BUILD_ARGS"
+      - name: Check if tag already exists
+        id: check
+        env:
+          IMAGE_REF: ${{ inputs.image_ref }}
+          DATED_TAG: ${{ steps.prep.outputs.dated_tag }}
+        run: |
+          if docker manifest inspect "${IMAGE_REF}:${DATED_TAG}" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Tag ${DATED_TAG} already exists, skipping build."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Tag ${DATED_TAG} not found, will build."
+          fi
+      - name: Extract metadata (labels) for Docker
+        if: steps.check.outputs.exists != 'true'
+        id: meta
+        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
+        env:
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
+        with:
+          images: ${{ inputs.image_ref }}
+      - name: Build and push Docker image
+        if: steps.check.outputs.exists != 'true'
+        id: push
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+        with:
+          context: ./${{ inputs.image }}
+          platforms: linux/amd64,linux/arm64
+          push: ${{ !inputs.dryrun }}
+          build-args: ${{ steps.prep.outputs.build_args }}
+          tags: ${{ steps.prep.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+          sbom: true
+          no-cache: ${{ !inputs.dryrun }}
+          cache-from: ${{ inputs.dryrun && format('type=gha,scope={0}-{1}', inputs.image, inputs.variant) || '' }}
+          cache-to: ${{ !inputs.dryrun && format('type=gha,mode=max,scope={0}-{1}', inputs.image, inputs.variant) || '' }}
+      - name: Generate artifact attestation
+        if: steps.check.outputs.exists != 'true' && !inputs.dryrun
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-name: ${{ inputs.image_ref }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true

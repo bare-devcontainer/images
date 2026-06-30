@@ -8,8 +8,7 @@ This repository builds and publishes minimal Debian-based Docker images for use 
   build.yaml    # variant definitions: tags, build args, debian_variant
 build-config.sh              # CLI for querying build.yaml; used by CI to generate matrices and build args
 .github/workflows/
-  publish.yml                # builds and pushes images to GHCR
-  lint.yml                   # runs various linters
+  release.yml                # builds and pushes images to GHCR
 .devcontainer/
   default/                   # dev container for working in this repo
   sandbox-<image>/           # one per image; for manually testing each published image

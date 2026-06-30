@@ -1,0 +1,196 @@
+name: Release
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  pull_request:
+    paths:
+      - .github/workflows/release.yml
+      - .github/workflows/publish-image.yml
+      - '*/Dockerfile'
+      - '*/build.yaml'
+  workflow_dispatch:
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+permissions: {}
+
+env:
+  BASE_IMAGE_REF: ghcr.io/${{ github.repository_owner }}/debian
+
+jobs:
+  setup:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      build_date: ${{ steps.init.outputs.build_date }}
+      should_run: ${{ steps.init.outputs.should_run }}
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      base_variants: ${{ steps.matrix.outputs.base_variants }}
+    steps:
+      - name: Check run conditions
+        id: init
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          BUILD_DATE=$(date -u +%Y%m%d)
+          echo "build_date=${BUILD_DATE}" >> "$GITHUB_OUTPUT"
+
+          LATEST_TAG=$(gh api "repos/${REPO}/git/refs/tags/v" \
+            --paginate \
+            --jq '.[] | select(.ref | test("refs/tags/v[0-9]{8}")) | .ref | ltrimstr("refs/tags/")' \
+            2>/dev/null | sort | tail -1 || echo "")
+          echo "latest_tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
+
+          if [ "${EVENT_NAME}" = "pull_request" ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ -n "$LATEST_TAG" ]; then
+            IMAGE_COMMITS=$(gh api "repos/${REPO}/compare/${LATEST_TAG}...${SHA}" \
+              --jq '[.commits[].commit.message | split("\n")[0]] | map(select(test("^image(\\([^)]*\\))?!?:"))) | length' \
+              2>/dev/null || echo "1")
+            if [ "$IMAGE_COMMITS" = "0" ]; then
+              echo "No image commits since ${LATEST_TAG}, skipping."
+              echo "should_run=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Build image matrix
+        id: matrix
+        run: |
+          MATRIX=$(bash build-config.sh all-matrix)
+          BASE_VARIANTS=$(bash build-config.sh variants debian | jq -c .)
+          echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
+          echo "base_variants=${BASE_VARIANTS}" >> "$GITHUB_OUTPUT"
+
+          echo "=== Build targets ==="
+          echo "Base variants:"
+          echo "$BASE_VARIANTS" | jq -r '.[] | "  " + .'
+          echo "Other images:"
+          echo "$MATRIX" | jq -r '.[] | "  " + .image + ":" + .primary_tag'
+      - name: Write release summary
+        if: steps.init.outputs.should_run == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          BUILD_DATE: ${{ steps.init.outputs.build_date }}
+          LATEST_TAG: ${{ steps.init.outputs.latest_tag }}
+          MATRIX: ${{ steps.matrix.outputs.matrix }}
+          BASE_VARIANTS: ${{ steps.matrix.outputs.base_variants }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          BASE_IMAGE_REF: ${{ env.BASE_IMAGE_REF }}
+        run: |
+          {
+            echo "## Release: v${BUILD_DATE}"
+            echo ""
+            if [ -n "$LATEST_TAG" ]; then
+              echo "### Image updates since ${LATEST_TAG}"
+              UPDATES=$(gh api "repos/${REPO}/compare/${LATEST_TAG}...${SHA}" \
+                --jq '.commits[] | select(.commit.message | split("\n")[0] | test("^image(\\([^)]*\\))?!?:")) | "- `" + .sha[:7] + "` " + (.commit.message | split("\n")[0])')
+              if [ -n "$UPDATES" ]; then
+                echo "$UPDATES"
+              else
+                echo "_No image updates since ${LATEST_TAG}._"
+              fi
+            else
+              echo "_No previous release tag found._"
+            fi
+            echo ""
+            echo "### Images to be pushed"
+            echo ""
+            echo "**Debian base:**"
+            echo "$BASE_VARIANTS" | jq -r '.[]' | while read -r variant; do
+              echo "- \`${BASE_IMAGE_REF}:${variant}-${BUILD_DATE}\`"
+            done
+            echo ""
+            echo "**Other images:**"
+            echo "$MATRIX" | jq -r \
+              '.[] | "- `ghcr.io/" + env.REPO_OWNER + "/" + .image + ":" + .primary_tag + "-" + env.BUILD_DATE + "`"'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  build-base:
+    permissions:
+      artifact-metadata: write
+      attestations: write
+      contents: read
+      id-token: write
+      packages: write
+    needs: [setup]
+    if: needs.setup.outputs.should_run == 'true'
+    strategy:
+      matrix:
+        variant: ${{ fromJson(needs.setup.outputs.base_variants) }}
+    uses: ./.github/workflows/publish-image.yml
+    with:
+      image: debian
+      variant: ${{ matrix.variant }}
+      image_ref: ghcr.io/${{ github.repository_owner }}/debian
+      build_date: ${{ needs.setup.outputs.build_date }}
+      environment: ${{ github.event_name != 'pull_request' && 'release' || 'ci' }}
+      dryrun: ${{ github.event_name == 'pull_request' }}
+
+  build-image:
+    permissions:
+      artifact-metadata: write
+      attestations: write
+      contents: read
+      id-token: write
+      packages: write
+    needs: [setup, build-base]
+    if: needs.setup.outputs.should_run == 'true'
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.setup.outputs.matrix) }}
+    uses: ./.github/workflows/publish-image.yml
+    with:
+      image: ${{ matrix.image }}
+      variant: ${{ matrix.variant }}
+      image_ref: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+      build_date: ${{ needs.setup.outputs.build_date }}
+      environment: ${{ github.event_name != 'pull_request' && 'release' || 'ci' }}
+      dryrun: ${{ github.event_name == 'pull_request' }}
+
+  create-tag:
+    permissions:
+      actions: write
+      contents: write
+    needs: [setup, build-base, build-image]
+    if: needs.setup.outputs.should_run == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Create release tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          BUILD_DATE: ${{ needs.setup.outputs.build_date }}
+        run: |
+          if gh api "repos/${REPO}/git/ref/tags/v${BUILD_DATE}" > /dev/null 2>&1; then
+            echo "Tag v${BUILD_DATE} already exists, skipping."
+          else
+            gh api "repos/${REPO}/git/refs" \
+              --method POST \
+              -f ref="refs/tags/v${BUILD_DATE}" \
+              -f sha="${SHA}"
+            echo "Created release tag v${BUILD_DATE}."
+            gh workflow run trivy-published.yml \
+              --repo "${REPO}" \
+              --ref main
+          fi

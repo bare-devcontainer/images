@@ -41,6 +41,10 @@ case "$COMMAND" in
       '.[] | select(.variant == strenv(VARIANT)) | .build_args | to_entries[] | .key + "=" + .value' \
       "$FILE"
     ;;
+  primary-tag)
+    VARIANT="${3:?Missing variant}" yq \
+      '.[] | select(.variant == strenv(VARIANT)) | .tags[0]' "$FILE"
+    ;;
   tags)
     VARIANT="${3:?Missing variant}" REF="${4:?Missing image_ref}" yq \
       '.[] | select(.variant == strenv(VARIANT)) | .tags[] | strenv(REF) + ":" + .' \
@@ -59,7 +63,7 @@ case "$COMMAND" in
     ;;
   *)
     echo "Unknown command: $COMMAND" >&2
-    echo "Available commands: all-matrix, variants, get-field, build-args, tags" >&2
+    echo "Available commands: all-matrix, variants, get-field, primary-tag, build-args, tags" >&2
     exit 1
     ;;
 esac
