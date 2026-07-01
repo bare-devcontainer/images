@@ -199,7 +199,7 @@ jobs:
               -f ref="refs/tags/v${BUILD_DATE}" \
               -f sha="${SHA}"
             echo "Created release tag v${BUILD_DATE}."
-            gh workflow run trivy-published.yml \
+            gh workflow run trivy.yml \
               --repo "${REPO}" \
               --ref main
           fi
