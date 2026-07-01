@@ -10,21 +10,85 @@ Minimal, secure, and bloat-free Dev Container base images for various technology
 
 - **Dev Container ready** — Each image comes with standard Dev Container configuration pre-applied, so it works out of the box.
 - **Minimal attack surface** — Each image includes only the packages and configuration required for its target stack. Keeping installed software to a minimum helps reduce the potential vulnerability surface of each development environment.
-- **Minimal trusted upstreams** — Software is sourced only from the official Debian package archive, Docker Official Images, and the official distribution channels for each language runtime or package manager. Keeping the set of trusted suppliers small helps reduce supply-chain exposure.
+- **Minimal trusted upstreams** — Software is sourced only from the official Debian package archive, Docker Official Images, and the official distribution channels for each language runtime or package manager. Packages are verified using the officially recommended methods for each upstream, such as GPG or minisign.
 - **Secure build pipeline** — All dependencies are pinned to specific versions and content digests. Published images include SLSA provenance attestations, making the build process verifiable.
 - **Regular base updates** — Debian base images are updated regularly with Renovate so upstream security patches can be incorporated promptly.
 
 Dev Container base images are available from Microsoft ([link](https://github.com/devcontainers/images)), but they are often larger than necessary and include many packages that may not be needed for a given development environment. These images are intended to provide a more minimal alternative.
 
-## Images
+## Available Images
 
 | Image | Registry | Description |
 |-------|----------|-------------|
-| [debian](debian/README.md) | `ghcr.io/bare-devcontainer/debian` | Debian base image (trixie / bookworm) |
+| [debian](debian/README.md) | `ghcr.io/bare-devcontainer/debian` | Debian base image |
 | [golang](golang/README.md) | `ghcr.io/bare-devcontainer/golang` | Go toolchain on Debian |
 | [rust](rust/README.md) | `ghcr.io/bare-devcontainer/rust` | Rust (via rustup) on Debian |
-| [zig](zig/README.md) | `ghcr.io/bare-devcontainer/zig` | Zig compiler on Debian |
+| [zig](zig/README.md) | `ghcr.io/bare-devcontainer/zig` | Zig toolchain on Debian |
 | [mise](mise/README.md) | `ghcr.io/bare-devcontainer/mise` | mise runtime manager on Debian |
+
+See the individual image directories for more details on each image, including available tags and usage instructions.
+
+## Getting Started
+
+> [!TIP]
+> Pinning images to a specific digest (e.g. `image:tag@sha256:...`) is strongly recommended. You can find the digest for a published image on the [GitHub Container Registry](https://github.com/orgs/bare-devcontainer/packages) page, or by running:
+> ```sh
+> docker buildx imagetools inspect ghcr.io/bare-devcontainer/<image>:<tag>
+> ```
+
+### Using a Dev Container Template (Recommended)
+
+The quickest way to get started is to use one of the pre-built templates from the [bare-devcontainer/templates](https://github.com/bare-devcontainer/templates) repository. These templates provide ready-to-use Dev Container configurations for available images.
+
+### Using Directly in devcontainer.json
+
+Reference an image directly in `.devcontainer/devcontainer.json`:
+
+```json
+{
+  "image": "ghcr.io/bare-devcontainer/debian:trixie@sha256:<digest>"
+}
+```
+
+### Using with a Dockerfile
+
+Create a `Dockerfile` that extends one of the images, then reference it from `.devcontainer/devcontainer.json`:
+
+```dockerfile
+FROM ghcr.io/bare-devcontainer/rust:1@sha256:<digest>
+
+# Add your project-specific setup here
+RUN cargo install cargo-watch
+```
+
+```json
+{
+  "build": {
+    "dockerfile": "Dockerfile"
+  }
+}
+```
+
+### Using with Docker Compose
+
+Create a `compose.yml` that references the image, then reference it from `.devcontainer/devcontainer.json`:
+
+```yaml
+services:
+  app:
+    image: ghcr.io/bare-devcontainer/golang:1.26@sha256:<digest>
+    volumes:
+      - ..:/workspaces
+    command: sleep infinity
+```
+
+```json
+{
+  "dockerComposeFile": "compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
+}
+```
 
 ## License
 
