@@ -4,7 +4,7 @@
     "dockerfile": "../../rust/Dockerfile",
     "args": {
       // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
-      "DEBIAN_TAG": "trixie-20260629@sha256:8e6158b58da587db09cbefc5d9779c5cead15b58e83dc6013e157b7459124448"
+      "DEBIAN_TAG": "trixie-20260701@sha256:bb7e664848ffe6e7396793b8c719190ece20104afbbe8089d67d731e0123a4f0"
     }
   }
 }
