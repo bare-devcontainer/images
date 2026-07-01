@@ -27,15 +27,19 @@ on:
 permissions: {}
 
 jobs:
-  build:
+  prepare:
     permissions:
-      artifact-metadata: write
-      attestations: write
       contents: read
-      id-token: write
-      packages: write
+      packages: read
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
+    outputs:
+      dated_tag: ${{ steps.prep.outputs.dated_tag }}
+      skip: ${{ steps.check.outputs.exists }}
+      build_args: ${{ steps.prep.outputs.build_args }}
+      tags: ${{ steps.prep.outputs.tags }}
+      labels: ${{ steps.meta.outputs.labels }}
+      annotations: ${{ steps.meta.outputs.annotations }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -47,10 +51,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4.1.0
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
       - name: Prepare build
         id: prep
         env:
@@ -108,33 +108,132 @@ jobs:
             echo "Tag ${DATED_TAG} not found, will build."
           fi
       - name: Extract metadata (labels) for Docker
-        if: steps.check.outputs.exists != 'true'
+        if: steps.check.outputs.exists != 'true' || inputs.dryrun
         id: meta
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
         env:
-          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest
         with:
           images: ${{ inputs.image_ref }}
-      - name: Build and push Docker image
-        if: steps.check.outputs.exists != 'true'
-        id: push
+
+  build:
+    needs: [prepare]
+    if: needs.prepare.outputs.skip != 'true' || inputs.dryrun
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      packages: read
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Log in to the Container registry
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+      - name: Build linux/${{ matrix.arch }}
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
           context: ./${{ inputs.image }}
-          platforms: linux/amd64,linux/arm64
-          push: ${{ !inputs.dryrun }}
-          build-args: ${{ steps.prep.outputs.build_args }}
-          tags: ${{ steps.prep.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          annotations: ${{ steps.meta.outputs.annotations }}
+          platforms: linux/${{ matrix.arch }}
+          push: false
+          outputs: type=oci,dest=/tmp/image,tar=false
+          build-args: ${{ needs.prepare.outputs.build_args }}
+          labels: ${{ needs.prepare.outputs.labels }}
+          annotations: ${{ needs.prepare.outputs.annotations }}
           sbom: true
           no-cache: ${{ !inputs.dryrun }}
-          cache-from: ${{ inputs.dryrun && format('type=gha,scope={0}-{1}', inputs.image, inputs.variant) || '' }}
-          cache-to: ${{ !inputs.dryrun && format('type=gha,mode=max,scope={0}-{1}', inputs.image, inputs.variant) || '' }}
+          cache-from: ${{ inputs.dryrun && format('type=gha,scope={0}-{1}-{2}', inputs.image, inputs.variant, matrix.arch) || '' }}
+          cache-to: ${{ !inputs.dryrun && format('type=gha,mode=max,scope={0}-{1}-{2}', inputs.image, inputs.variant, matrix.arch) || '' }}
+      - name: Upload OCI layout
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: image-linux-${{ matrix.arch }}
+          path: /tmp/image
+          retention-days: 1
+
+  merge:
+    needs: [prepare, build]
+    permissions:
+      artifact-metadata: write
+      attestations: write
+      id-token: write
+      packages: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download OCI layouts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: image-linux-*
+          path: /tmp/oci
+      - name: Log in to the Container registry
+        if: "!inputs.dryrun"
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+      - name: Extract metadata (annotations) for Docker
+        id: meta
+        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
+        env:
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: index
+        with:
+          images: ${{ inputs.image_ref }}
+      - name: Create multi-arch manifest
+        id: merge
+        env:
+          IMAGE_REF: ${{ inputs.image_ref }}
+          DATED_TAG: ${{ needs.prepare.outputs.dated_tag }}
+          TAGS: ${{ needs.prepare.outputs.tags }}
+          ANNOTATIONS: ${{ steps.meta.outputs.annotations }}
+          DRYRUN: ${{ inputs.dryrun }}
+        run: |
+          TAG_ARGS=()
+          while IFS= read -r tag; do
+            [ -n "$tag" ] && TAG_ARGS+=(-t "$tag")
+          done <<< "$TAGS"
+
+          ANNOTATION_ARGS=()
+          while IFS= read -r ann; do
+            [ -n "$ann" ] && ANNOTATION_ARGS+=(--annotation "$ann")
+          done <<< "$ANNOTATIONS"
+
+          DRYRUN_FLAG=()
+          [ "$DRYRUN" = "true" ] && DRYRUN_FLAG=(--dry-run)
+
+          docker buildx imagetools create \
+            "${DRYRUN_FLAG[@]}" \
+            "${TAG_ARGS[@]}" \
+            "${ANNOTATION_ARGS[@]}" \
+            oci-layout:///tmp/oci/image-linux-amd64 \
+            oci-layout:///tmp/oci/image-linux-arm64
+
+          if [ "$DRYRUN" != "true" ]; then
+            DIGEST=$(docker buildx imagetools inspect "${IMAGE_REF}:${DATED_TAG}" \
+              --format '{{json .Manifest}}' | jq -r '.digest')
+            echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
+          fi
       - name: Generate artifact attestation
-        if: steps.check.outputs.exists != 'true' && !inputs.dryrun
+        if: "!inputs.dryrun"
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-name: ${{ inputs.image_ref }}
-          subject-digest: ${{ steps.push.outputs.digest }}
+          subject-digest: ${{ steps.merge.outputs.digest }}
           push-to-registry: true
