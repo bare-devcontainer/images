@@ -161,7 +161,7 @@ jobs:
       - name: Upload OCI layout
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: image-linux-${{ matrix.arch }}
+          name: image-${{ inputs.image }}-${{ inputs.variant }}-${{ matrix.arch }}
           path: /tmp/image
           retention-days: 1
 
@@ -169,15 +169,16 @@ jobs:
     needs: [prepare, build]
     permissions:
       packages: write
+      artifact-metadata: write
+      attestations: write
+      id-token: write      
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    outputs:
-      digest: ${{ steps.merge.outputs.digest }}
     steps:
       - name: Download OCI layouts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
-          pattern: image-linux-*
+          pattern: image-${{ inputs.image }}-${{ inputs.variant }}-*
           path: /tmp/oci
       - name: Log in to the Container registry
         if: "!inputs.dryrun"
@@ -203,6 +204,7 @@ jobs:
           TAGS: ${{ needs.prepare.outputs.tags }}
           ANNOTATIONS: ${{ steps.meta.outputs.annotations }}
           DRYRUN: ${{ inputs.dryrun }}
+          OCI_LAYOUT_PREFIX: image-${{ inputs.image }}-${{ inputs.variant }}
         run: |
           TAG_ARGS=()
           while IFS= read -r tag; do
@@ -221,28 +223,18 @@ jobs:
             "${DRYRUN_FLAG[@]}" \
             "${TAG_ARGS[@]}" \
             "${ANNOTATION_ARGS[@]}" \
-            oci-layout:///tmp/oci/image-linux-amd64 \
-            oci-layout:///tmp/oci/image-linux-arm64
+            "oci-layout:///tmp/oci/${OCI_LAYOUT_PREFIX}-amd64" \
+            "oci-layout:///tmp/oci/${OCI_LAYOUT_PREFIX}-arm64"
 
           if [ "$DRYRUN" != "true" ]; then
             DIGEST=$(docker buildx imagetools inspect "${IMAGE_REF}:${DATED_TAG}" \
               --format '{{json .Manifest}}' | jq -r '.digest')
             echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
           fi
-
-  attest:
-    permissions:
-      artifact-metadata: write
-      attestations: write
-      id-token: write
-    needs: [merge]
-    if: "!inputs.dryrun"
-    runs-on: ubuntu-slim
-    timeout-minutes: 5
-    steps:
       - name: Generate artifact attestation
+        if: "!inputs.dryrun"
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-name: ${{ inputs.image_ref }}
-          subject-digest: ${{ needs.merge.outputs.digest }}
+          subject-digest: ${{ steps.merge.outputs.digest }}
           push-to-registry: true
