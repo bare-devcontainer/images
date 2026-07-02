@@ -169,10 +169,11 @@ jobs:
     needs: [prepare, build]
     permissions:
       packages: write
+      artifact-metadata: write
+      attestations: write
+      id-token: write      
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    outputs:
-      digest: ${{ steps.merge.outputs.digest }}
     steps:
       - name: Download OCI layouts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
@@ -229,20 +230,10 @@ jobs:
               --format '{{json .Manifest}}' | jq -r '.digest')
             echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
           fi
-
-  attest:
-    permissions:
-      artifact-metadata: write
-      attestations: write
-      id-token: write
-    needs: [merge]
-    if: "!inputs.dryrun"
-    runs-on: ubuntu-slim
-    timeout-minutes: 5
-    steps:
       - name: Generate artifact attestation
+        if: "!inputs.dryrun"
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-name: ${{ inputs.image_ref }}
-          subject-digest: ${{ needs.merge.outputs.digest }}
+          subject-digest: ${{ steps.merge.outputs.digest }}
           push-to-registry: true
