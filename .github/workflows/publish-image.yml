@@ -108,7 +108,7 @@ jobs:
           DATED_TAG: ${{ steps.prep.outputs.dated_tag }}
         run: |
           if docker manifest inspect "${IMAGE_REF}:${DATED_TAG}" > /dev/null 2>&1; then
-            if [ "$OVERWRITE" = "true" ] then 
+            if [ "$OVERWRITE" = "true" ]; then 
               echo "exists=false" >> "$GITHUB_OUTPUT"
               echo "Tag ${DATED_TAG} already exists, will overwrite."
             else
