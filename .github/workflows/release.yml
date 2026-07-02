@@ -159,7 +159,7 @@ jobs:
       variant: ${{ matrix.variant }}
       image_ref: ghcr.io/${{ github.repository_owner }}/debian
       build_date: ${{ needs.setup.outputs.build_date }}
-      overwrite: ${{ inputs.overwrite }}
+      overwrite: ${{ inputs.overwrite || false }}
       dryrun: ${{ github.event_name == 'pull_request' }}
 
   build-image:
@@ -180,7 +180,7 @@ jobs:
       variant: ${{ matrix.variant }}
       image_ref: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
       build_date: ${{ needs.setup.outputs.build_date }}
-      overwrite: ${{ inputs.overwrite }}
+      overwrite: ${{ inputs.overwrite || false }}
       dryrun: ${{ github.event_name == 'pull_request' }}
 
   create-tag:
