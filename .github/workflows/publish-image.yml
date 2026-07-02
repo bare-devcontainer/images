@@ -117,6 +117,9 @@ jobs:
           images: ${{ inputs.image_ref }}
 
   build:
+    permissions:
+      contents: read
+      packages: read
     needs: [prepare]
     if: needs.prepare.outputs.skip != 'true' || inputs.dryrun
     strategy:
@@ -126,9 +129,6 @@ jobs:
             runner: ubuntu-latest
           - arch: arm64
             runner: ubuntu-24.04-arm
-    permissions:
-      contents: read
-      packages: read
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     steps:
@@ -168,12 +168,11 @@ jobs:
   merge:
     needs: [prepare, build]
     permissions:
-      artifact-metadata: write
-      attestations: write
-      id-token: write
       packages: write
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      digest: ${{ steps.merge.outputs.digest }}
     steps:
       - name: Download OCI layouts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
@@ -230,10 +229,20 @@ jobs:
               --format '{{json .Manifest}}' | jq -r '.digest')
             echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
           fi
+
+  attest:
+    permissions:
+      artifact-metadata: write
+      attestations: write
+      id-token: write
+    needs: [merge]
+    if: "!inputs.dryrun"
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
       - name: Generate artifact attestation
-        if: "!inputs.dryrun"
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-name: ${{ inputs.image_ref }}
-          subject-digest: ${{ steps.merge.outputs.digest }}
+          subject-digest: ${{ needs.merge.outputs.digest }}
           push-to-registry: true
