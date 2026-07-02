@@ -10,6 +10,12 @@ on:
       - '*/Dockerfile'
       - '*/build.yaml'
   workflow_dispatch:
+    inputs:
+      overwrite:
+        description: 'Overwrite the existing tags even if exist'
+        required: true
+        type: boolean
+        default: false
 
 concurrency:
   group: publish
@@ -153,6 +159,7 @@ jobs:
       variant: ${{ matrix.variant }}
       image_ref: ghcr.io/${{ github.repository_owner }}/debian
       build_date: ${{ needs.setup.outputs.build_date }}
+      overwrite: ${{ inputs.overwrite }}
       dryrun: ${{ github.event_name == 'pull_request' }}
 
   build-image:
@@ -173,6 +180,7 @@ jobs:
       variant: ${{ matrix.variant }}
       image_ref: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
       build_date: ${{ needs.setup.outputs.build_date }}
+      overwrite: ${{ inputs.overwrite }}
       dryrun: ${{ github.event_name == 'pull_request' }}
 
   create-tag:
