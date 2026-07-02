@@ -204,7 +204,7 @@ jobs:
           TAGS: ${{ needs.prepare.outputs.tags }}
           ANNOTATIONS: ${{ steps.meta.outputs.annotations }}
           DRYRUN: ${{ inputs.dryrun }}
-          OCI_LAYOUT_PREFIX: image-${{ inputs.image }}-${{ inputs.variant }}-
+          OCI_LAYOUT_PREFIX: image-${{ inputs.image }}-${{ inputs.variant }}
         run: |
           TAG_ARGS=()
           while IFS= read -r tag; do
