@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       overwrite:
-        description: 'Overwrite the existing tags even if exist'
+        description: 'Overwrite existing tags'
         required: true
         type: boolean
         default: false
