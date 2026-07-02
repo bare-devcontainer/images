@@ -19,10 +19,16 @@ on:
         description: 'Date appended to the primary tag to create a dated, immutable tag (YYYYMMDD)'
         type: string
         required: true
+      overwrite:
+        description: 'Overwrite the existing tags even if exist'
+        type: boolean
+        required: true
+        default: false
       dryrun:
         description: 'Skip registry push and use GHA cache; true on pull_request events'
         type: boolean
         required: true
+        default: true
 
 permissions: {}
 
@@ -58,6 +64,7 @@ jobs:
           VARIANT: ${{ inputs.variant }}
           IMAGE_REF: ${{ inputs.image_ref }}
           BUILD_DATE: ${{ inputs.build_date }}
+          OVERWRITE: ${{ inputs.overwrite }}
         run: |
           PRIMARY_TAG=$(bash build-config.sh primary-tag "$IMAGE" "$VARIANT")
           DATED_TAG="${PRIMARY_TAG}-${BUILD_DATE}"
@@ -101,8 +108,13 @@ jobs:
           DATED_TAG: ${{ steps.prep.outputs.dated_tag }}
         run: |
           if docker manifest inspect "${IMAGE_REF}:${DATED_TAG}" > /dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "Tag ${DATED_TAG} already exists, skipping build."
+            if [ "$OVERWRITE" = "true" ] then 
+              echo "exists=false" >> "$GITHUB_OUTPUT"
+              echo "Tag ${DATED_TAG} already exists, will overwrite."
+            else
+              echo "exists=true" >> "$GITHUB_OUTPUT"
+              echo "Tag ${DATED_TAG} already exists, skipping build."
+            fi
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
             echo "Tag ${DATED_TAG} not found, will build."
