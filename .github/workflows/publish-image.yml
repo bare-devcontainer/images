@@ -64,7 +64,6 @@ jobs:
           VARIANT: ${{ inputs.variant }}
           IMAGE_REF: ${{ inputs.image_ref }}
           BUILD_DATE: ${{ inputs.build_date }}
-          OVERWRITE: ${{ inputs.overwrite }}
         run: |
           PRIMARY_TAG=$(bash build-config.sh primary-tag "$IMAGE" "$VARIANT")
           DATED_TAG="${PRIMARY_TAG}-${BUILD_DATE}"
@@ -106,6 +105,7 @@ jobs:
         env:
           IMAGE_REF: ${{ inputs.image_ref }}
           DATED_TAG: ${{ steps.prep.outputs.dated_tag }}
+          OVERWRITE: ${{ inputs.overwrite }}
         run: |
           if docker manifest inspect "${IMAGE_REF}:${DATED_TAG}" > /dev/null 2>&1; then
             if [ "$OVERWRITE" = "true" ]; then 
