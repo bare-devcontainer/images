@@ -27,8 +27,15 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && ZIG_TMPDIR="$(mktemp -d)" \
     # Install Zig
     && ZIG_TARBALL="zig-${ZIG_ARCH}-linux-${ZIG_VERSION}.tar.xz" \
-    && wget -q -T 30 -t 3 -P "${ZIG_TMPDIR}" "https://ziglang.org/download/${ZIG_VERSION}/${ZIG_TARBALL}" \
-    && wget -q -T 30 -t 3 -P "${ZIG_TMPDIR}" "https://ziglang.org/download/${ZIG_VERSION}/${ZIG_TARBALL}.minisig" \
+    && ZIG_MIRRORS="$(wget -q -T 30 -O - https://ziglang.org/download/community-mirrors.txt | shuf)" \
+    && for mirror in ${ZIG_MIRRORS} "https://ziglang.org/download/${ZIG_VERSION}"; do \
+           if wget -q -T 30 -t 1 -P "${ZIG_TMPDIR}" "${mirror}/${ZIG_TARBALL}" \
+               && wget -q -T 30 -t 1 -P "${ZIG_TMPDIR}" "${mirror}/${ZIG_TARBALL}.minisig"; then \
+               break; \
+           fi; \
+           rm -f "${ZIG_TMPDIR}/${ZIG_TARBALL}" "${ZIG_TMPDIR}/${ZIG_TARBALL}.minisig"; \
+       done \
+    && test -f "${ZIG_TMPDIR}/${ZIG_TARBALL}" \
     && ZIG_TRUSTED_COMMENT="$(minisign -Vm "${ZIG_TMPDIR}/${ZIG_TARBALL}" -p /tmp/zig-minisign.pub -Q)" \
     && case "${ZIG_TRUSTED_COMMENT}" in \
         *"file:${ZIG_TARBALL}"*) ;; \
