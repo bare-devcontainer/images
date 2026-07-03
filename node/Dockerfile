@@ -14,7 +14,7 @@ USER root
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    --mount=type=bind,source=node-keyring.kbx,target=/tmp/node-keyring.kbx \
+    --mount=type=bind,source=node-keyring.kbx,target=/tmp/node-keyring.kbx,ro \
     export DEBIAN_FRONTEND=noninteractive \
         && apt-get update \
         && apt-get --no-install-recommends install -y \
