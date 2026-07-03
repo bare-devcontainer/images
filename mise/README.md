@@ -19,7 +19,7 @@ ghcr.io/bare-devcontainer/mise:<tag>
 | `2026.6.12-trixie`, `2026.6.12`, `trixie` | 2026.6.12 | trixie |
 | `2026.6.12-bookworm`, `bookworm` | 2026.6.12 | bookworm |
 
-Tags are also published with a date suffix (e.g., `trixie-20260623`) on each build.
+Tags are also published with a date suffix (e.g., `2026.6.12-trixie-20260623`) on each build.
 
 ## Installed software
 

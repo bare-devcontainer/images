@@ -1,0 +1,110 @@
+name: Update Trusted Keys
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/update-keys.yml
+  schedule:
+    - cron: '0 6 * * 3'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  update:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: node-keyring
+            path: node/node-keyring.kbx
+            url: https://github.com/nodejs/release-keys/raw/HEAD/gpg/pubring.kbx
+            title: "chore(node): update Node.js release keyring"
+            body: >-
+              Automated sync of `node/node-keyring.kbx` from
+              [nodejs/release-keys](https://github.com/nodejs/release-keys), which tracks
+              the current set of Node.js release-signing keys.
+          - id: mise-minisign
+            path: mise/mise-minisign.pub
+            url: https://raw.githubusercontent.com/jdx/mise/main/minisign.pub
+            title: "chore(mise): update mise minisign public key"
+            body: >-
+              Automated sync of `mise/mise-minisign.pub` from
+              [jdx/mise](https://github.com/jdx/mise), which publishes the current mise
+              release-signing minisign key.
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Download remote file
+        env:
+          URL: ${{ matrix.url }}
+        run: wget -q -T 30 -t 3 -O /tmp/downloaded "${URL}"
+
+      - name: Check for changes
+        id: diff
+        env:
+          TARGET_PATH: ${{ matrix.path }}
+        run: |
+          if cmp -s /tmp/downloaded "${TARGET_PATH}"; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate GitHub App Token
+        id: app-token
+        if: steps.diff.outputs.changed == 'true'
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.HOUSEKEEPER_CLIENT_ID }}
+          private-key: ${{ secrets.HOUSEKEEPER_PRIVATE_KEY }}
+
+      - name: Open pull request
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TARGET_PATH: ${{ matrix.path }}
+          TARGET_ID: ${{ matrix.id }}
+          PR_TITLE: ${{ matrix.title }}
+          PR_BODY: ${{ matrix.body }}
+        run: |
+          set -e
+          cp /tmp/downloaded "${TARGET_PATH}"
+
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+          REPO="${GITHUB_REPOSITORY#*/}"
+          BRANCH="housekeeper/update-${TARGET_ID}"
+
+          if ! gh api "repos/${OWNER}/${REPO}/git/ref/heads/${BRANCH}" > /dev/null 2>&1; then
+            gh api "repos/${OWNER}/${REPO}/git/refs" \
+              --method POST \
+              -F ref="refs/heads/${BRANCH}" \
+              -F sha="${GITHUB_SHA}"
+          fi
+
+          existing_sha=$(gh api "repos/${OWNER}/${REPO}/contents/${TARGET_PATH}?ref=${BRANCH}" \
+            --jq '.sha' 2>/dev/null || true)
+
+          args=(
+            --method PUT
+            -F message="${PR_TITLE}"
+            -F content="$(base64 -w0 "${TARGET_PATH}")"
+            -F branch="${BRANCH}"
+          )
+          [ -n "$existing_sha" ] && args+=(-F sha="$existing_sha")
+          gh api "repos/${OWNER}/${REPO}/contents/${TARGET_PATH}" "${args[@]}"
+
+          if [ -z "$(gh pr list --state open --head "${BRANCH}" --json number --jq '.[0]')" ]; then
+            gh pr create \
+              --title "${PR_TITLE}" \
+              --body "${PR_BODY}" \
+              --head "${BRANCH}" \
+              --base main
+          fi

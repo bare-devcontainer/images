@@ -7,6 +7,7 @@ on:
       - '*/Dockerfile'
       - '*/build.yaml'
       - '*/smoke-test.sh'
+      - '*/node-keyring.kbx'
       - build-config.sh
       - .trivyignore.yaml
   push:
@@ -16,6 +17,7 @@ on:
       - '*/Dockerfile'
       - '*/build.yaml'
       - '*/smoke-test.sh'
+      - '*/node-keyring.kbx'
       - build-config.sh
 
 permissions: {}

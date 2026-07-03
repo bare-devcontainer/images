@@ -1,0 +1,14 @@
+{
+  "name": "sandbox-node",
+  "build": {
+    "dockerfile": "../../node/Dockerfile",
+    "args": {
+      // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
+      "DEBIAN_TAG": "trixie-20260703@sha256:267384f230f9b46315e4b87e66813ed77866f31516833e788e81b96f70279bfa",
+      // renovate: datasource=node-version depName=node versioning=node
+      "NODE_VERSION": "26.4.0",
+      // renovate: datasource=npm depName=corepack versioning=semver
+      "COREPACK_VERSION": "0.35.0"
+    }
+  }
+}
