@@ -14,7 +14,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3003 # cd only used in subshell
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    --mount=type=bind,source=mise-minisign.pub,target=/tmp/mise-minisign.pub \
+    --mount=type=bind,source=mise-minisign.pub,target=/tmp/mise-minisign.pub,ro \
     export DEBIAN_FRONTEND=noninteractive \
         && apt-get update \
         && apt-get --no-install-recommends install -y build-essential minisign \

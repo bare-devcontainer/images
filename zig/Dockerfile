@@ -15,8 +15,8 @@ USER root
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    --mount=type=bind,source=zig-minisign.pub,target=/tmp/zig-minisign.pub \
-    --mount=type=bind,source=zls-minisign.pub,target=/tmp/zls-minisign.pub \
+    --mount=type=bind,source=zig-minisign.pub,target=/tmp/zig-minisign.pub,ro \
+    --mount=type=bind,source=zls-minisign.pub,target=/tmp/zls-minisign.pub,ro \
     export DEBIAN_FRONTEND=noninteractive \
         && apt-get update \
         && apt-get --no-install-recommends install -y minisign \
