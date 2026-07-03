@@ -95,9 +95,7 @@
       ],
       "matchUpdateTypes": [
         "major",
-        "minor",
-        "pin",
-        "pinDigest"
+        "minor"
       ],
       "enabled": false
     },

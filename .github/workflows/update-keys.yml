@@ -36,6 +36,14 @@ jobs:
               Automated sync of `mise/mise-minisign.pub` from
               [jdx/mise](https://github.com/jdx/mise), which publishes the current mise
               release-signing minisign key.
+          - id: golang-google-signing-key
+            path: golang/google-linux-signing-key.asc
+            url: https://dl.google.com/linux/linux_signing_key.pub
+            title: "chore(golang): update Google Linux signing key"
+            body: >-
+              Automated sync of `golang/google-linux-signing-key.asc` from
+              [dl.google.com](https://dl.google.com/linux/linux_signing_key.pub), which
+              publishes Google's Linux Packages signing key used to verify the Go toolchain.
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7

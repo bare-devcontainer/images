@@ -2,7 +2,7 @@
 
 Dev container image with Go installed, built on the [debian](../debian) base image.
 
-The Go toolchain is copied from the official `golang` Docker image via a multi-stage build, so the final image stays lean.
+The Go toolchain is downloaded directly from [go.dev](https://go.dev/dl/) and verified against Google's GPG signature before installation.
 
 ## Image
 
