@@ -12,6 +12,7 @@ ARG SHELL_COMPLETIONS_COMMIT
 
 USER root
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     --mount=type=bind,source=zig-minisign.pub,target=/tmp/zig-minisign.pub \
