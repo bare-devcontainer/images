@@ -1,0 +1,46 @@
+name: Delete Caches
+
+on:
+  workflow_dispatch:
+    inputs:
+      key:
+        description: 'Cache key prefix to delete'
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  delete-caches:
+    permissions:
+      actions: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Delete caches by key prefix
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          KEY_PREFIX: ${{ inputs.key }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${KEY_PREFIX}" ]; then
+            echo "::error::key input must not be empty"
+            exit 1
+          fi
+
+          MATCHES=$(gh cache list --key "$KEY_PREFIX" --limit 1000 --json id,key --jq '.[] | "\(.id) \(.key)"')
+
+          if [ -z "$MATCHES" ]; then
+            echo "No caches found matching prefix '${KEY_PREFIX}'."
+            exit 0
+          fi
+
+          echo "Caches to delete:"
+          echo "$MATCHES"
+
+          echo "$MATCHES" | while read -r id key; do
+            gh cache delete "$id"
+            echo "Deleted cache id=${id} key=${key}"
+          done
