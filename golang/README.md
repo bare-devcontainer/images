@@ -19,7 +19,7 @@ ghcr.io/bare-devcontainer/golang:<tag>
 | `1.25.11-trixie`, `1.25-trixie`, `1.25.11`, `1.25` | 1.25.x | trixie |
 | `1.25.11-bookworm`, `1.25-bookworm` | 1.25.x | bookworm |
 
-Tags are also published with a date suffix (e.g., `1.26-trixie-20260623`) on each build.
+Tags are also published with a date suffix (e.g., `1.26.4-trixie-20260623`) on each build.
 
 ## Installed software
 

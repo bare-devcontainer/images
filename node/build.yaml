@@ -1,0 +1,53 @@
+- variant: "26-trixie"
+  tags:
+    # renovate: datasource=node-version depName=node versioning=node
+    - "26.4.0-trixie"
+    - "26-trixie"
+    # renovate: datasource=node-version depName=node versioning=node
+    - "26.4.0"
+    - "26"
+  debian_variant: "trixie"
+  build_args:
+    # renovate: datasource=node-version depName=node versioning=node
+    NODE_VERSION: "26.4.0"
+    # renovate: datasource=npm depName=corepack versioning=semver
+    COREPACK_VERSION: "0.35.0"
+
+- variant: "26-bookworm"
+  tags:
+    # renovate: datasource=node-version depName=node versioning=node
+    - "26.4.0-bookworm"
+    - "26-bookworm"
+  debian_variant: "bookworm"
+  build_args:
+    # renovate: datasource=node-version depName=node versioning=node
+    NODE_VERSION: "26.4.0"
+    # renovate: datasource=npm depName=corepack versioning=semver
+    COREPACK_VERSION: "0.35.0"
+
+- variant: "24-trixie"
+  tags:
+    # renovate: datasource=node-version depName=node versioning=node
+    - "24.18.0-trixie"
+    - "24-trixie"
+    # renovate: datasource=node-version depName=node versioning=node
+    - "24.18.0"
+    - "24"
+  debian_variant: "trixie"
+  build_args:
+    # renovate: datasource=node-version depName=node versioning=node
+    NODE_VERSION: "24.18.0"
+    # renovate: datasource=npm depName=corepack versioning=semver
+    COREPACK_VERSION: "0.35.0"
+
+- variant: "24-bookworm"
+  tags:
+    # renovate: datasource=node-version depName=node versioning=node
+    - "24.18.0-bookworm"
+    - "24-bookworm"
+  debian_variant: "bookworm"
+  build_args:
+    # renovate: datasource=node-version depName=node versioning=node
+    NODE_VERSION: "24.18.0"
+    # renovate: datasource=npm depName=corepack versioning=semver
+    COREPACK_VERSION: "0.35.0"

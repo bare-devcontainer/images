@@ -22,6 +22,7 @@ Dev Container base images are available from Microsoft ([link](https://github.co
 |-------|----------|-------------|
 | [debian](debian/README.md) | `ghcr.io/bare-devcontainer/debian` | Debian base image |
 | [golang](golang/README.md) | `ghcr.io/bare-devcontainer/golang` | Go toolchain on Debian |
+| [node](node/README.md) | `ghcr.io/bare-devcontainer/node` | Node.js on Debian |
 | [rust](rust/README.md) | `ghcr.io/bare-devcontainer/rust` | Rust (via rustup) on Debian |
 | [zig](zig/README.md) | `ghcr.io/bare-devcontainer/zig` | Zig toolchain on Debian |
 | [mise](mise/README.md) | `ghcr.io/bare-devcontainer/mise` | mise runtime manager on Debian |

@@ -19,7 +19,7 @@ ghcr.io/bare-devcontainer/zig:<tag>
 | `0.15.2-trixie`, `0.15-trixie`, `0.15.2`, `0.15` | 0.15.x | trixie |
 | `0.15.2-bookworm`, `0.15-bookworm` | 0.15.x | bookworm |
 
-Tags are also published with a date suffix (e.g., `0.16-trixie-20260623`) on each build.
+Tags are also published with a date suffix (e.g., `0.16.0-trixie-20260623`) on each build.
 
 ## Installed software
 
