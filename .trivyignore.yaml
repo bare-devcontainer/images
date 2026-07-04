@@ -16,3 +16,20 @@ vulnerabilities:
       Limited impact; only affects the experimental MCP feature in gopls.
       Skipping until gopls v0.23.0, which includes the fix (expected late June 2026).
       Release tracking: https://github.com/golang/go/issues/79966
+  # terraform
+  - id: CVE-2026-27145
+    paths:
+      - "usr/local/bin/terraform"
+    expired_at: 2026-10-31
+    statement: |
+      Terraform 1.15.7 was built with Go 1.25.10, which is affected by this CVE.
+      The upstream development branch already uses Go 1.26.4, so the fix is
+      expected in the next Terraform release.
+  - id: CVE-2026-42504
+    paths:
+      - "usr/local/bin/terraform"
+    expired_at: 2026-10-31
+    statement: |
+      Terraform 1.15.7 was built with Go 1.25.10, which is affected by this CVE.
+      The upstream development branch already uses Go 1.26.4, so the fix is
+      expected in the next Terraform release.
