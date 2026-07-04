@@ -1,0 +1,14 @@
+{
+  "name": "sandbox-uv",
+  "build": {
+    "dockerfile": "../../uv/Dockerfile",
+    "args": {
+      // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
+      "DEBIAN_TAG": "trixie-20260703@sha256:267384f230f9b46315e4b87e66813ed77866f31516833e788e81b96f70279bfa",
+      // renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
+      "UV_VERSION": "0.11.26",
+      // renovate: datasource=github-releases depName=cli/cli versioning=semver extractVersion=^v?(?<version>.+)
+      "GH_VERSION": "2.96.0"
+    }
+  }
+}
