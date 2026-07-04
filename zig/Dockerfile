@@ -4,7 +4,6 @@
 
 ARG DEBIAN_TAG
 
-# ---- Builder stage: download and verify Zig, ZLS, and completions in isolation ----
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 
 ARG ZIG_VERSION
@@ -12,6 +11,7 @@ ARG ZLS_VERSION
 ARG TARGETARCH
 ARG SHELL_COMPLETIONS_COMMIT
 
+# hadolint ignore=DL3002 # builder stage is a throwaway; never shipped or run
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -62,7 +62,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         "https://codeberg.org/ziglang/shell-completions/raw/commit/${SHELL_COMPLETIONS_COMMIT}/_zig.bash" \
     && rm -rf "${ZIG_TMPDIR}"
 
-# ---- Final stage: only the verified binaries (no verification tooling) ----
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 USER root

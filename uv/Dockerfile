@@ -4,7 +4,6 @@
 
 ARG DEBIAN_TAG
 
-# ---- Builder stage: download and verify uv in isolation ----
 # gh is downloaded here only to verify uv's attestation and never reaches the
 # final image.
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
@@ -13,6 +12,7 @@ ARG UV_VERSION
 ARG GH_VERSION
 ARG TARGETARCH
 
+# hadolint ignore=DL3002 # builder stage is a throwaway; never shipped or run
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -52,7 +52,6 @@ RUN case "${TARGETARCH}" in \
     && mv "${TMPDIR}/uv-${UV_ARCH}-unknown-linux-gnu/uv" "${TMPDIR}/uv-${UV_ARCH}-unknown-linux-gnu/uvx" /usr/local/bin/ \
     && rm -rf "${TMPDIR}"
 
-# ---- Final stage: only the verified binaries (no gh, no download artifacts) ----
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 COPY --from=builder /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/

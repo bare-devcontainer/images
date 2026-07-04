@@ -4,13 +4,13 @@
 
 ARG DEBIAN_TAG
 
-# ---- Builder stage: download, verify, and build the toolchain in isolation ----
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 
 ARG GOLANG_VERSION
 ARG GOPLS_VERSION
 ARG TARGETARCH
 
+# hadolint ignore=DL3002 # builder stage is a throwaway; never shipped or run
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -33,7 +33,6 @@ RUN --mount=type=cache,target=/root/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     GOBIN=/usr/local/bin /usr/local/go/bin/go install "golang.org/x/tools/gopls@${GOPLS_VERSION}"
 
-# ---- Final stage: only the verified binaries plus runtime dependencies ----
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 ARG TARGETARCH

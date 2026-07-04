@@ -4,13 +4,13 @@
 
 ARG DEBIAN_TAG
 
-# ---- Builder stage: download and verify Node.js in isolation ----
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 
 ARG NODE_VERSION
 ARG COREPACK_VERSION
 ARG TARGETARCH
 
+# hadolint ignore=DL3002 # builder stage is a throwaway; never shipped or run
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -36,7 +36,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && npm install -g "corepack@${COREPACK_VERSION}" \
     && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
-# ---- Final stage: only the verified binaries plus runtime dependencies ----
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 USER root

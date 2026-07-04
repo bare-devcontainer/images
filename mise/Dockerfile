@@ -4,12 +4,12 @@
 
 ARG DEBIAN_TAG
 
-# ---- Builder stage: download and verify the mise binary in isolation ----
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 
 ARG MISE_VERSION
 ARG TARGETARCH
 
+# hadolint ignore=DL3002 # builder stage is a throwaway; never shipped or run
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -35,7 +35,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && install -m 755 "${MISE_TMPDIR}/${MISE_BINARY}" /usr/local/bin/mise \
     && rm -rf "${MISE_TMPDIR}"
 
-# ---- Final stage: only the verified binary plus runtime dependencies ----
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 USER root
