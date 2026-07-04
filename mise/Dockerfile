@@ -3,11 +3,13 @@
 # ARGs are intentionally required to prevent accidental builds with the wrong base image.
 
 ARG DEBIAN_TAG
-FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
+
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 
 ARG MISE_VERSION
 ARG TARGETARCH
 
+# hadolint ignore=DL3002 # builder stage is a throwaway; never shipped or run
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -17,7 +19,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=bind,source=mise-minisign.pub,target=/tmp/mise-minisign.pub,ro \
     export DEBIAN_FRONTEND=noninteractive \
         && apt-get update \
-        && apt-get --no-install-recommends install -y build-essential minisign \
+        && apt-get --no-install-recommends install -y minisign \
     && case "${TARGETARCH}" in \
         amd64) MISE_ARCH="x64" ;; \
         arm64) MISE_ARCH="arm64" ;; \
@@ -33,10 +35,10 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && install -m 755 "${MISE_TMPDIR}/${MISE_BINARY}" /usr/local/bin/mise \
     && rm -rf "${MISE_TMPDIR}"
 
-ENV PATH=/home/dev/.local/share/mise/shims:${PATH}
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
-USER dev
-WORKDIR /workspaces
+COPY --from=builder /usr/local/bin/mise /usr/local/bin/mise
+ENV PATH=/home/dev/.local/share/mise/shims:${PATH}
 
 # hadolint ignore=SC2016 # intentional single quotes
 RUN mkdir -p \

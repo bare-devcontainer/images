@@ -3,12 +3,14 @@
 # ARGs are intentionally required to prevent accidental builds with the wrong base image.
 
 ARG DEBIAN_TAG
-FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
+
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 
 ARG UV_VERSION
 ARG GH_VERSION
 ARG TARGETARCH
 
+# hadolint ignore=DL3002 # builder stage is a throwaway; never shipped or run
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -24,7 +26,7 @@ RUN case "${TARGETARCH}" in \
     && wget -q -T 30 -t 3 -P "${TMPDIR}" "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/${UV_TARBALL}" \
     && wget -q -T 30 -t 3 -P "${TMPDIR}" "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/${UV_TARBALL}.sha256" \
     && (cd "${TMPDIR}" && sha256sum -c "${UV_TARBALL}.sha256") \
-    # Download gh, used only to verify uv's GitHub Artifact Attestation below; not shipped in the final image
+    # Download gh to verify uv's GitHub Artifact Attestation below.
     && GH_TARBALL="gh_${GH_VERSION}_linux_${GH_ARCH}.tar.gz" \
     && wget -q -T 30 -t 3 -P "${TMPDIR}" "https://github.com/cli/cli/releases/download/v${GH_VERSION}/${GH_TARBALL}" \
     && wget -q -T 30 -t 3 -P "${TMPDIR}" "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_checksums.txt" \
@@ -32,9 +34,6 @@ RUN case "${TARGETARCH}" in \
     && tar xzf "${TMPDIR}/${GH_TARBALL}" -C "${TMPDIR}" \
     && GH_BIN="${TMPDIR}/gh_${GH_VERSION}_linux_${GH_ARCH}/bin/gh" \
     # Verify uv's release artifact against its GitHub Artifact Attestation.
-    # The attestation bundle is fetched from GitHub's public REST API (readable
-    # unauthenticated for public repos) and verified offline, so no GITHUB_TOKEN
-    # is required at build time.
     && UV_DIGEST="$(sha256sum "${TMPDIR}/${UV_TARBALL}" | awk '{print $1}')" \
     && wget -q -T 30 -t 3 -O "${TMPDIR}/attestations.json" \
         --header="Accept: application/vnd.github+json" \
@@ -48,8 +47,9 @@ RUN case "${TARGETARCH}" in \
     && mv "${TMPDIR}/uv-${UV_ARCH}-unknown-linux-gnu/uv" "${TMPDIR}/uv-${UV_ARCH}-unknown-linux-gnu/uvx" /usr/local/bin/ \
     && rm -rf "${TMPDIR}"
 
-USER dev
-WORKDIR /workspaces
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
+
+COPY --from=builder /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
 
 RUN mkdir -p \
       /home/dev/.cache/uv \

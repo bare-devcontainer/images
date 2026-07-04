@@ -3,13 +3,15 @@
 # ARGs are intentionally required to prevent accidental builds with the wrong base image.
 
 ARG DEBIAN_TAG
-FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
+
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 
 ARG ZIG_VERSION
 ARG ZLS_VERSION
 ARG TARGETARCH
 ARG SHELL_COMPLETIONS_COMMIT
 
+# hadolint ignore=DL3002 # builder stage is a throwaway; never shipped or run
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -60,9 +62,12 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         "https://codeberg.org/ziglang/shell-completions/raw/commit/${SHELL_COMPLETIONS_COMMIT}/_zig.bash" \
     && rm -rf "${ZIG_TMPDIR}"
 
-ENV PATH=/usr/local/zig:${PATH}
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
-USER dev
-WORKDIR /workspaces
+COPY --from=builder /usr/local/zig /usr/local/zig
+COPY --from=builder /usr/local/bin/zls /usr/local/bin/zls
+COPY --from=builder /usr/share/bash-completion/completions/zig /usr/share/bash-completion/completions/zig
+
+ENV PATH=/usr/local/zig:${PATH}
 
 RUN mkdir -p /home/dev/.cache/zig
