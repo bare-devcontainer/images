@@ -4,7 +4,7 @@
     "dockerfile": "../../zig/Dockerfile",
     "args": {
       // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
-      "DEBIAN_TAG": "trixie-20260703@sha256:267384f230f9b46315e4b87e66813ed77866f31516833e788e81b96f70279bfa",
+      "DEBIAN_TAG": "trixie-20260704@sha256:7c544210e1fa600d63a258978cdb3ff56b422bfe38f44832a6f99e08906f543a",
       // renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
       "ZIG_VERSION": "0.16.0",
       // renovate: datasource=github-tags depName=zigtools/zls versioning=semver
