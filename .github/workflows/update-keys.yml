@@ -53,6 +53,16 @@ jobs:
               [keys.openpgp.org](https://keys.openpgp.org), which hosts the current Bun
               release-signing key (fingerprint F3DCC08A8572C0749B3E18888EAB4D40A7B22B59), matching
               the same key Bun's own official Docker image verifies against.
+          - id: terraform-hashicorp-signing-key
+            path: terraform/hashicorp-signing-key.asc
+            url: https://www.hashicorp.com/.well-known/pgp-key.txt
+            title: "chore(terraform): update HashiCorp release signing key"
+            body: >-
+              Automated sync of `terraform/hashicorp-signing-key.asc` from
+              [hashicorp.com](https://www.hashicorp.com/.well-known/pgp-key.txt) (fingerprint
+              C874011F0AB405110D02105534365D9472D7468F), which HashiCorp uses to sign the
+              `SHA256SUMS.sig` files published alongside Terraform release archives on
+              releases.hashicorp.com.
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
