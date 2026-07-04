@@ -21,14 +21,14 @@ Dev Container base images are available from Microsoft ([link](https://github.co
 
 | Image | Registry | Description |
 |-------|----------|-------------|
+| [bun](bun/README.md) | `ghcr.io/bare-devcontainer/bun` | Bun runtime on Debian |
 | [debian](debian/README.md) | `ghcr.io/bare-devcontainer/debian` | Debian base image |
 | [golang](golang/README.md) | `ghcr.io/bare-devcontainer/golang` | Go toolchain on Debian |
+| [mise](mise/README.md) | `ghcr.io/bare-devcontainer/mise` | mise runtime manager on Debian |
 | [node](node/README.md) | `ghcr.io/bare-devcontainer/node` | Node.js on Debian |
 | [rust](rust/README.md) | `ghcr.io/bare-devcontainer/rust` | Rust (via rustup) on Debian |
-| [zig](zig/README.md) | `ghcr.io/bare-devcontainer/zig` | Zig toolchain on Debian |
-| [mise](mise/README.md) | `ghcr.io/bare-devcontainer/mise` | mise runtime manager on Debian |
 | [uv](uv/README.md) | `ghcr.io/bare-devcontainer/uv` | Python (via uv) on Debian |
-| [bun](bun/README.md) | `ghcr.io/bare-devcontainer/bun` | Bun runtime on Debian |
+| [zig](zig/README.md) | `ghcr.io/bare-devcontainer/zig` | Zig toolchain on Debian |
 
 See the individual image directories for more details on each image, including available tags and usage instructions.
 
