@@ -3,25 +3,23 @@
 # ARGs are intentionally required to prevent accidental builds with the wrong base image.
 
 ARG DEBIAN_TAG
-# Official Debian for the throwaway builder stage; its variant is matched to the
-# final image and pinned to a digest by .github/workflows/publish-image.yml.
-ARG DEBIAN_BUILDER_TAG
 
 # ---- Builder stage: download and verify Node.js in isolation ----
-FROM debian:${DEBIAN_BUILDER_TAG} AS builder
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 
 ARG NODE_VERSION
 ARG COREPACK_VERSION
 ARG TARGETARCH
 
+USER root
+
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     --mount=type=bind,source=node-keyring.kbx,target=/tmp/node-keyring.kbx,ro \
-    rm -f /etc/apt/apt.conf.d/docker-clean \
-        && export DEBIAN_FRONTEND=noninteractive \
+    export DEBIAN_FRONTEND=noninteractive \
         && apt-get update \
-        && apt-get --no-install-recommends install -y ca-certificates wget xz-utils gpgv build-essential \
+        && apt-get --no-install-recommends install -y gpgv build-essential \
     && case "${TARGETARCH}" in \
         amd64) NODE_ARCH="x64" ;; \
         arm64) NODE_ARCH="arm64" ;; \

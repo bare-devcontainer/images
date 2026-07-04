@@ -3,27 +3,20 @@
 # ARGs are intentionally required to prevent accidental builds with the wrong base image.
 
 ARG DEBIAN_TAG
-# Official Debian for the throwaway builder stage; its variant is matched to the
-# final image and pinned to a digest by .github/workflows/publish-image.yml.
-ARG DEBIAN_BUILDER_TAG
 
 # ---- Builder stage: download, verify, and build the toolchain in isolation ----
-FROM debian:${DEBIAN_BUILDER_TAG} AS builder
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 
 ARG GOLANG_VERSION
 ARG GOPLS_VERSION
 ARG TARGETARCH
 
+USER root
+
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    --mount=type=bind,source=google-linux-signing-key.asc,target=/tmp/google-linux-signing-key.asc,ro \
-    rm -f /etc/apt/apt.conf.d/docker-clean \
-    && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get update \
-    && apt-get --no-install-recommends install -y ca-certificates wget gnupg git \
+RUN --mount=type=bind,source=google-linux-signing-key.asc,target=/tmp/google-linux-signing-key.asc,ro \
     # Import Google's Linux Packages signing key into an ephemeral keyring
-    && GNUPGHOME="$(mktemp -d)" \
+    GNUPGHOME="$(mktemp -d)" \
     && export GNUPGHOME \
     && gpg --batch --import /tmp/google-linux-signing-key.asc \
     # Download and verify the official Go toolchain

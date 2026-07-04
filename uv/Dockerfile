@@ -3,28 +3,21 @@
 # ARGs are intentionally required to prevent accidental builds with the wrong base image.
 
 ARG DEBIAN_TAG
-# Official Debian for the throwaway builder stage; its variant is matched to the
-# final image and pinned to a digest by .github/workflows/publish-image.yml.
-ARG DEBIAN_BUILDER_TAG
 
 # ---- Builder stage: download and verify uv in isolation ----
 # gh is downloaded here only to verify uv's attestation and never reaches the
 # final image.
-FROM debian:${DEBIAN_BUILDER_TAG} AS builder
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 
 ARG UV_VERSION
 ARG GH_VERSION
 ARG TARGETARCH
 
+USER root
+
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3003 # cd only used in subshell
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    rm -f /etc/apt/apt.conf.d/docker-clean \
-    && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get update \
-    && apt-get --no-install-recommends install -y ca-certificates wget jq \
-    && case "${TARGETARCH}" in \
+RUN case "${TARGETARCH}" in \
         amd64) UV_ARCH="x86_64"; GH_ARCH="amd64" ;; \
         arm64) UV_ARCH="aarch64"; GH_ARCH="arm64" ;; \
         *) echo "Unsupported TARGETARCH: ${TARGETARCH}" >&2; exit 1 ;; \

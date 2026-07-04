@@ -3,27 +3,25 @@
 # ARGs are intentionally required to prevent accidental builds with the wrong base image.
 
 ARG DEBIAN_TAG
-# Official Debian for the throwaway builder stage; its variant is matched to the
-# final image and pinned to a digest by .github/workflows/publish-image.yml.
-ARG DEBIAN_BUILDER_TAG
 
 # ---- Builder stage: download and verify Zig, ZLS, and completions in isolation ----
-FROM debian:${DEBIAN_BUILDER_TAG} AS builder
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 
 ARG ZIG_VERSION
 ARG ZLS_VERSION
 ARG TARGETARCH
 ARG SHELL_COMPLETIONS_COMMIT
 
+USER root
+
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     --mount=type=bind,source=zig-minisign.pub,target=/tmp/zig-minisign.pub,ro \
     --mount=type=bind,source=zls-minisign.pub,target=/tmp/zls-minisign.pub,ro \
-    rm -f /etc/apt/apt.conf.d/docker-clean \
-        && export DEBIAN_FRONTEND=noninteractive \
+    export DEBIAN_FRONTEND=noninteractive \
         && apt-get update \
-        && apt-get --no-install-recommends install -y ca-certificates wget xz-utils minisign \
+        && apt-get --no-install-recommends install -y minisign \
     && case "${TARGETARCH}" in \
         amd64) ZIG_ARCH="x86_64" ;; \
         arm64) ZIG_ARCH="aarch64" ;; \
@@ -60,7 +58,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && tar xJf "${ZIG_TMPDIR}/${ZLS_TARBALL}" -C "${ZIG_TMPDIR}" \
     && mv "${ZIG_TMPDIR}/zls" /usr/local/bin/zls \
     # Install shell completions for Zig
-    && mkdir -p /usr/share/bash-completion/completions \
     && wget -q -T 30 -t 3 -O /usr/share/bash-completion/completions/zig \
         "https://codeberg.org/ziglang/shell-completions/raw/commit/${SHELL_COMPLETIONS_COMMIT}/_zig.bash" \
     && rm -rf "${ZIG_TMPDIR}"
