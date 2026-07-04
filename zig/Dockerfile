@@ -5,23 +5,22 @@
 ARG DEBIAN_TAG
 
 # ---- Builder stage: download and verify Zig, ZLS, and completions in isolation ----
-FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
+FROM debian:trixie-slim@sha256:28de0877c2189802884ccd20f15ee41c203573bd87bb6b883f5f46362d24c5c2 AS builder
 
 ARG ZIG_VERSION
 ARG ZLS_VERSION
 ARG TARGETARCH
 ARG SHELL_COMPLETIONS_COMMIT
 
-USER root
-
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     --mount=type=bind,source=zig-minisign.pub,target=/tmp/zig-minisign.pub,ro \
     --mount=type=bind,source=zls-minisign.pub,target=/tmp/zls-minisign.pub,ro \
-    export DEBIAN_FRONTEND=noninteractive \
+    rm -f /etc/apt/apt.conf.d/docker-clean \
+        && export DEBIAN_FRONTEND=noninteractive \
         && apt-get update \
-        && apt-get --no-install-recommends install -y minisign \
+        && apt-get --no-install-recommends install -y ca-certificates wget xz-utils minisign \
     && case "${TARGETARCH}" in \
         amd64) ZIG_ARCH="x86_64" ;; \
         arm64) ZIG_ARCH="aarch64" ;; \
