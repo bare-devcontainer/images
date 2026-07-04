@@ -64,15 +64,10 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
-USER root
-
 COPY --from=builder /usr/local/zig /usr/local/zig
 COPY --from=builder /usr/local/bin/zls /usr/local/bin/zls
 COPY --from=builder /usr/share/bash-completion/completions/zig /usr/share/bash-completion/completions/zig
 
 ENV PATH=/usr/local/zig:${PATH}
-
-USER dev
-WORKDIR /workspaces
 
 RUN mkdir -p /home/dev/.cache/zig

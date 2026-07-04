@@ -37,14 +37,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
-USER root
-
 COPY --from=builder /usr/local/bin/mise /usr/local/bin/mise
-
 ENV PATH=/home/dev/.local/share/mise/shims:${PATH}
-
-USER dev
-WORKDIR /workspaces
 
 # hadolint ignore=SC2016 # intentional single quotes
 RUN mkdir -p \
