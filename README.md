@@ -27,6 +27,7 @@ Dev Container base images are available from Microsoft ([link](https://github.co
 | [zig](zig/README.md) | `ghcr.io/bare-devcontainer/zig` | Zig toolchain on Debian |
 | [mise](mise/README.md) | `ghcr.io/bare-devcontainer/mise` | mise runtime manager on Debian |
 | [uv](uv/README.md) | `ghcr.io/bare-devcontainer/uv` | Python (via uv) on Debian |
+| [bun](bun/README.md) | `ghcr.io/bare-devcontainer/bun` | Bun runtime on Debian |
 
 See the individual image directories for more details on each image, including available tags and usage instructions.
 

@@ -1,0 +1,12 @@
+{
+  "name": "sandbox-bun",
+  "build": {
+    "dockerfile": "../../bun/Dockerfile",
+    "args": {
+      // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
+      "DEBIAN_TAG": "trixie-20260704@sha256:7c544210e1fa600d63a258978cdb3ff56b422bfe38f44832a6f99e08906f543a",
+      // renovate: datasource=github-releases depName=oven-sh/bun versioning=semver extractVersion=^bun-v(?<version>.+)
+      "BUN_VERSION": "1.3.14"
+    }
+  }
+}

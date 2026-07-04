@@ -1,0 +1,21 @@
+- variant: "trixie"
+  tags:
+    # renovate: datasource=github-releases depName=oven-sh/bun versioning=semver extractVersion=^bun-v(?<version>.+)
+    - "1.3.14-trixie"
+    # renovate: datasource=github-releases depName=oven-sh/bun versioning=semver extractVersion=^bun-v(?<version>.+)
+    - "1.3.14"
+    - "trixie"
+  debian_variant: "trixie"
+  build_args:
+    # renovate: datasource=github-releases depName=oven-sh/bun versioning=semver extractVersion=^bun-v(?<version>.+)
+    BUN_VERSION: "1.3.14"
+
+- variant: "bookworm"
+  tags:
+    # renovate: datasource=github-releases depName=oven-sh/bun versioning=semver extractVersion=^bun-v(?<version>.+)
+    - "1.3.14-bookworm"
+    - "bookworm"
+  debian_variant: "bookworm"
+  build_args:
+    # renovate: datasource=github-releases depName=oven-sh/bun versioning=semver extractVersion=^bun-v(?<version>.+)
+    BUN_VERSION: "1.3.14"

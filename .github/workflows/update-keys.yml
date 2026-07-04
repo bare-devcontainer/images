@@ -44,6 +44,15 @@ jobs:
               Automated sync of `golang/google-linux-signing-key.asc` from
               [dl.google.com](https://dl.google.com/linux/linux_signing_key.pub), which
               publishes Google's Linux Packages signing key used to verify the Go toolchain.
+          - id: bun-signing-key
+            path: bun/bun-signing-key.asc
+            url: https://keys.openpgp.org/vks/v1/by-fingerprint/F3DCC08A8572C0749B3E18888EAB4D40A7B22B59
+            title: "chore(bun): update Bun release signing key"
+            body: >-
+              Automated sync of `bun/bun-signing-key.asc` from
+              [keys.openpgp.org](https://keys.openpgp.org), which hosts the current Bun
+              release-signing key (fingerprint F3DCC08A8572C0749B3E18888EAB4D40A7B22B59), matching
+              the same key Bun's own official Docker image verifies against.
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
