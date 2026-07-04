@@ -17,8 +17,8 @@ ghcr.io/bare-devcontainer/bun:<tag>
 
 | Tag | Bun version | Debian version |
 |-----|------------|---------------|
-| `1.3.14-trixie`, `1.3.14`, `trixie` | 1.3.14 | trixie |
-| `1.3.14-bookworm`, `bookworm` | 1.3.14 | bookworm |
+| `1.3.14-trixie`, `1.3-trixie`, `1-trixie`, `1.3.14`, `1.3`, `1`, `trixie` | 1.3.14 | trixie |
+| `1.3.14-bookworm`, `1.3-bookworm`, `1-bookworm`, `bookworm` | 1.3.14 | bookworm |
 
 Tags are also published with a date suffix (e.g., `1.3.14-trixie-20260704`) on each build.
 

@@ -14,8 +14,8 @@ ghcr.io/bare-devcontainer/golang:<tag>
 
 | Tag | Go version | Debian version |
 |-----|-----------|---------------|
-| `1.26.4-trixie`, `1.26-trixie`, `1-trixie`, `1.26.4`, `1.26`, `1` | 1.26.x | trixie |
-| `1.26.4-bookworm`, `1.26-bookworm`, `1-bookworm` | 1.26.x | bookworm |
+| `1.26.4-trixie`, `1.26-trixie`, `1-trixie`, `1.26.4`, `1.26`, `1`, `trixie` | 1.26.x | trixie |
+| `1.26.4-bookworm`, `1.26-bookworm`, `1-bookworm`, `bookworm` | 1.26.x | bookworm |
 | `1.25.11-trixie`, `1.25-trixie`, `1.25.11`, `1.25` | 1.25.x | trixie |
 | `1.25.11-bookworm`, `1.25-bookworm` | 1.25.x | bookworm |
 
