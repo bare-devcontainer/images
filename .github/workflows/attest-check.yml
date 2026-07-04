@@ -5,7 +5,7 @@ on:
     - cron: '0 8 * * 1'
   pull_request:
     paths:
-      - .github/workflows/verify-images.yml
+      - .github/workflows/attest-check.yml
   workflow_dispatch:
 
 permissions: {}
