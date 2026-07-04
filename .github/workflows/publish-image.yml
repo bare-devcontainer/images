@@ -82,19 +82,6 @@ jobs:
             echo "=== Base image ==="
             echo "debian:${DEBIAN_VARIANT}@${DIGEST}"
             BUILD_ARGS="${BUILD_ARGS}"$'\n'"DEBIAN_TAG=${DEBIAN_VARIANT}@${DIGEST}"
-
-            # Resolve the matching official Debian slim image for the throwaway
-            # builder stage, so its variant tracks the final image's variant.
-            BUILDER_DIGEST=$(docker buildx imagetools inspect \
-              "debian:${DEBIAN_VARIANT}-slim" \
-              --format '{{json .Manifest}}' | jq -r '.digest')
-            if [ -z "$BUILDER_DIGEST" ] || [ "$BUILDER_DIGEST" = "null" ]; then
-              echo "Failed to get digest for debian:${DEBIAN_VARIANT}-slim" >&2
-              exit 1
-            fi
-            echo "=== Builder base image ==="
-            echo "debian:${DEBIAN_VARIANT}-slim@${BUILDER_DIGEST}"
-            BUILD_ARGS="${BUILD_ARGS}"$'\n'"DEBIAN_BUILDER_TAG=${DEBIAN_VARIANT}-slim@${BUILDER_DIGEST}"
           fi
 
           DELIM="EOF_$(openssl rand -hex 8)"
