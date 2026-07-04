@@ -4,6 +4,7 @@
     - "1.26.4-trixie"
     - "1.26-trixie"
     - "1-trixie"
+    - "trixie"
     # renovate: datasource=golang-version depName=golang versioning=semver
     - "1.26.4"
     - "1.26"
@@ -21,6 +22,7 @@
     - "1.26.4-bookworm"
     - "1.26-bookworm"
     - "1-bookworm"
+    - "bookworm"
   debian_variant: "bookworm"
   build_args:
     # renovate: datasource=golang-version depName=golang

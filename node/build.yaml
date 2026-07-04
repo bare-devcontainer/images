@@ -3,6 +3,7 @@
     # renovate: datasource=node-version depName=node versioning=node
     - "26.4.0-trixie"
     - "26-trixie"
+    - "trixie"
     # renovate: datasource=node-version depName=node versioning=node
     - "26.4.0"
     - "26"
@@ -18,6 +19,7 @@
     # renovate: datasource=node-version depName=node versioning=node
     - "26.4.0-bookworm"
     - "26-bookworm"
+    - "bookworm"
   debian_variant: "bookworm"
   build_args:
     # renovate: datasource=node-version depName=node versioning=node

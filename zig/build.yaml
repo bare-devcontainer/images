@@ -4,6 +4,7 @@
     - "0.16.0-trixie"
     - "0.16-trixie"
     - "0-trixie"
+    - "trixie"
     # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
     - "0.16.0"
     - "0.16"
@@ -22,6 +23,7 @@
     # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
     - "0.16.0-bookworm"
     - "0.16-bookworm"
+    - "bookworm"
   debian_variant: "bookworm"
   build_args:
     # renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver

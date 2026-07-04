@@ -14,8 +14,8 @@ ghcr.io/bare-devcontainer/zig:<tag>
 
 | Tag | Zig version | Debian version |
 |-----|------------|---------------|
-| `0.16.0-trixie`, `0.16-trixie`, `0-trixie`, `0.16.0`, `0.16`, `0` | 0.16.x | trixie |
-| `0.16.0-bookworm`, `0.16-bookworm` | 0.16.x | bookworm |
+| `0.16.0-trixie`, `0.16-trixie`, `0-trixie`, `0.16.0`, `0.16`, `0`, `trixie` | 0.16.x | trixie |
+| `0.16.0-bookworm`, `0.16-bookworm`, `bookworm` | 0.16.x | bookworm |
 | `0.15.2-trixie`, `0.15-trixie`, `0.15.2`, `0.15` | 0.15.x | trixie |
 | `0.15.2-bookworm`, `0.15-bookworm` | 0.15.x | bookworm |
 
