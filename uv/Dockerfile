@@ -4,8 +4,6 @@
 
 ARG DEBIAN_TAG
 
-# gh is downloaded here only to verify uv's attestation and never reaches the
-# final image.
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 
 ARG UV_VERSION
@@ -28,7 +26,7 @@ RUN case "${TARGETARCH}" in \
     && wget -q -T 30 -t 3 -P "${TMPDIR}" "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/${UV_TARBALL}" \
     && wget -q -T 30 -t 3 -P "${TMPDIR}" "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/${UV_TARBALL}.sha256" \
     && (cd "${TMPDIR}" && sha256sum -c "${UV_TARBALL}.sha256") \
-    # Download gh, used only to verify uv's GitHub Artifact Attestation below; not shipped in the final image
+    # Download gh to verify uv's GitHub Artifact Attestation below.
     && GH_TARBALL="gh_${GH_VERSION}_linux_${GH_ARCH}.tar.gz" \
     && wget -q -T 30 -t 3 -P "${TMPDIR}" "https://github.com/cli/cli/releases/download/v${GH_VERSION}/${GH_TARBALL}" \
     && wget -q -T 30 -t 3 -P "${TMPDIR}" "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_checksums.txt" \
@@ -36,9 +34,6 @@ RUN case "${TARGETARCH}" in \
     && tar xzf "${TMPDIR}/${GH_TARBALL}" -C "${TMPDIR}" \
     && GH_BIN="${TMPDIR}/gh_${GH_VERSION}_linux_${GH_ARCH}/bin/gh" \
     # Verify uv's release artifact against its GitHub Artifact Attestation.
-    # The attestation bundle is fetched from GitHub's public REST API (readable
-    # unauthenticated for public repos) and verified offline, so no GITHUB_TOKEN
-    # is required at build time.
     && UV_DIGEST="$(sha256sum "${TMPDIR}/${UV_TARBALL}" | awk '{print $1}')" \
     && wget -q -T 30 -t 3 -O "${TMPDIR}/attestations.json" \
         --header="Accept: application/vnd.github+json" \

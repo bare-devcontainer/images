@@ -40,7 +40,7 @@ FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 USER root
 
-# Native addon toolchain (node-gyp) kept as a runtime dependency.
+# node-gyp dependencies
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     export DEBIAN_FRONTEND=noninteractive \

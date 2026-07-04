@@ -40,13 +40,13 @@ ARG TARGETARCH
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-# cgo dependencies kept as runtime dependencies.
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     export DEBIAN_FRONTEND=noninteractive \
-        && apt-get update \
-        && apt-get --no-install-recommends install -y \
-            build-essential pkg-config \
+    && apt-get update \
+    # cgo dependencies
+    && apt-get --no-install-recommends install -y \
+        build-essential pkg-config \
     # Go's external linker needs the gold linker on arm64
     # https://github.com/golang/go/issues/22040
     && if [ "${TARGETARCH}" = "arm64" ]; then \

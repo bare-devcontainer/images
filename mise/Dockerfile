@@ -39,13 +39,6 @@ FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 USER root
 
-# build-essential kept as a runtime dependency for tools mise compiles from source.
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    export DEBIAN_FRONTEND=noninteractive \
-        && apt-get update \
-        && apt-get --no-install-recommends install -y build-essential
-
 COPY --from=builder /usr/local/bin/mise /usr/local/bin/mise
 
 ENV PATH=/home/dev/.local/share/mise/shims:${PATH}
