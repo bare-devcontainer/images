@@ -3,9 +3,12 @@
 # ARGs are intentionally required to prevent accidental builds with the wrong base image.
 
 ARG DEBIAN_TAG
+# Official Debian for the throwaway builder stage; its variant is matched to the
+# final image and pinned to a digest by .github/workflows/publish-image.yml.
+ARG DEBIAN_BUILDER_TAG
 
 # ---- Builder stage: download, verify, and build the toolchain in isolation ----
-FROM debian:trixie-slim@sha256:28de0877c2189802884ccd20f15ee41c203573bd87bb6b883f5f46362d24c5c2 AS builder
+FROM debian:${DEBIAN_BUILDER_TAG} AS builder
 
 ARG GOLANG_VERSION
 ARG GOPLS_VERSION
