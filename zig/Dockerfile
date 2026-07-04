@@ -3,7 +3,9 @@
 # ARGs are intentionally required to prevent accidental builds with the wrong base image.
 
 ARG DEBIAN_TAG
-FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
+
+# ---- Builder stage: download and verify Zig, ZLS, and completions in isolation ----
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 
 ARG ZIG_VERSION
 ARG ZLS_VERSION
@@ -56,9 +58,19 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && tar xJf "${ZIG_TMPDIR}/${ZLS_TARBALL}" -C "${ZIG_TMPDIR}" \
     && mv "${ZIG_TMPDIR}/zls" /usr/local/bin/zls \
     # Install shell completions for Zig
+    && mkdir -p /usr/share/bash-completion/completions \
     && wget -q -T 30 -t 3 -O /usr/share/bash-completion/completions/zig \
         "https://codeberg.org/ziglang/shell-completions/raw/commit/${SHELL_COMPLETIONS_COMMIT}/_zig.bash" \
     && rm -rf "${ZIG_TMPDIR}"
+
+# ---- Final stage: only the verified binaries (no verification tooling) ----
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
+
+USER root
+
+COPY --from=builder /usr/local/zig /usr/local/zig
+COPY --from=builder /usr/local/bin/zls /usr/local/bin/zls
+COPY --from=builder /usr/share/bash-completion/completions/zig /usr/share/bash-completion/completions/zig
 
 ENV PATH=/usr/local/zig:${PATH}
 

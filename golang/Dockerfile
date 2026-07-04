@@ -3,7 +3,9 @@
 # ARGs are intentionally required to prevent accidental builds with the wrong base image.
 
 ARG DEBIAN_TAG
-FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
+
+# ---- Builder stage: download, verify, and build the toolchain in isolation ----
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 
 ARG GOLANG_VERSION
 ARG GOPLS_VERSION
@@ -12,21 +14,9 @@ ARG TARGETARCH
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    --mount=type=bind,source=google-linux-signing-key.asc,target=/tmp/google-linux-signing-key.asc,ro \
-    export DEBIAN_FRONTEND=noninteractive \
-        && apt-get update \
-        && apt-get --no-install-recommends install -y \
-            # cgo dependencies
-            build-essential pkg-config \
-    # Go's external linker needs the gold linker on arm64
-    # https://github.com/golang/go/issues/22040
-    && if [ "${TARGETARCH}" = "arm64" ]; then \
-           apt-get --no-install-recommends install -y binutils-gold; \
-       fi \
+RUN --mount=type=bind,source=google-linux-signing-key.asc,target=/tmp/google-linux-signing-key.asc,ro \
     # Import Google's Linux Packages signing key into an ephemeral keyring
-    && GNUPGHOME="$(mktemp -d)" \
+    GNUPGHOME="$(mktemp -d)" \
     && export GNUPGHOME \
     && gpg --batch --import /tmp/google-linux-signing-key.asc \
     # Download and verify the official Go toolchain
@@ -42,6 +32,30 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 RUN --mount=type=cache,target=/root/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     GOBIN=/usr/local/bin /usr/local/go/bin/go install "golang.org/x/tools/gopls@${GOPLS_VERSION}"
+
+# ---- Final stage: only the verified binaries plus runtime dependencies ----
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
+
+ARG TARGETARCH
+
+USER root
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# cgo dependencies kept as runtime dependencies.
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    export DEBIAN_FRONTEND=noninteractive \
+        && apt-get update \
+        && apt-get --no-install-recommends install -y \
+            build-essential pkg-config \
+    # Go's external linker needs the gold linker on arm64
+    # https://github.com/golang/go/issues/22040
+    && if [ "${TARGETARCH}" = "arm64" ]; then \
+           apt-get --no-install-recommends install -y binutils-gold; \
+       fi
+
+COPY --from=builder /usr/local/go /usr/local/go
+COPY --from=builder /usr/local/bin/gopls /usr/local/bin/gopls
 
 ENV GOPATH=/home/dev/go
 ENV PATH=/usr/local/go/bin:${GOPATH}/bin:${PATH}

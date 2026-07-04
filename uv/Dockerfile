@@ -3,7 +3,11 @@
 # ARGs are intentionally required to prevent accidental builds with the wrong base image.
 
 ARG DEBIAN_TAG
-FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
+
+# ---- Builder stage: download and verify uv in isolation ----
+# gh is downloaded here only to verify uv's attestation and never reaches the
+# final image.
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 
 ARG UV_VERSION
 ARG GH_VERSION
@@ -47,6 +51,11 @@ RUN case "${TARGETARCH}" in \
     && tar xzf "${TMPDIR}/${UV_TARBALL}" -C "${TMPDIR}" \
     && mv "${TMPDIR}/uv-${UV_ARCH}-unknown-linux-gnu/uv" "${TMPDIR}/uv-${UV_ARCH}-unknown-linux-gnu/uvx" /usr/local/bin/ \
     && rm -rf "${TMPDIR}"
+
+# ---- Final stage: only the verified binaries (no gh, no download artifacts) ----
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
+
+COPY --from=builder /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
 
 USER dev
 WORKDIR /workspaces

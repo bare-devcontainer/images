@@ -3,7 +3,9 @@
 # ARGs are intentionally required to prevent accidental builds with the wrong base image.
 
 ARG DEBIAN_TAG
-FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
+
+# ---- Builder stage: download and verify the mise binary in isolation ----
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 
 ARG MISE_VERSION
 ARG TARGETARCH
@@ -17,7 +19,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=bind,source=mise-minisign.pub,target=/tmp/mise-minisign.pub,ro \
     export DEBIAN_FRONTEND=noninteractive \
         && apt-get update \
-        && apt-get --no-install-recommends install -y build-essential minisign \
+        && apt-get --no-install-recommends install -y minisign \
     && case "${TARGETARCH}" in \
         amd64) MISE_ARCH="x64" ;; \
         arm64) MISE_ARCH="arm64" ;; \
@@ -32,6 +34,20 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && (cd "${MISE_TMPDIR}" && grep "  \\./${MISE_BINARY}$" SHASUMS256.txt | sha256sum -c -) \
     && install -m 755 "${MISE_TMPDIR}/${MISE_BINARY}" /usr/local/bin/mise \
     && rm -rf "${MISE_TMPDIR}"
+
+# ---- Final stage: only the verified binary plus runtime dependencies ----
+FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
+
+USER root
+
+# build-essential kept as a runtime dependency for tools mise compiles from source.
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    export DEBIAN_FRONTEND=noninteractive \
+        && apt-get update \
+        && apt-get --no-install-recommends install -y build-essential
+
+COPY --from=builder /usr/local/bin/mise /usr/local/bin/mise
 
 ENV PATH=/home/dev/.local/share/mise/shims:${PATH}
 
