@@ -77,6 +77,13 @@
       "minimumReleaseAge": null
     },
     {
+      "description": "Apply dependency updates for published images without delay, since these are our own image build inputs and should be picked up promptly regardless of datasource.",
+      "matchFileNames": [
+        "**/build.yaml"
+      ],
+      "minimumReleaseAge": null
+    },
+    {
       "description": "Pin the Debian release to stay within the same major version (e.g., bookworm, trixie).",
       "matchFileNames": [
         "debian/build.yaml"
