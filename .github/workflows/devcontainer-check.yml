@@ -1,0 +1,68 @@
+name: Devcontainer Checks
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/devcontainer-check.yml
+      - .devcontainer/sandbox-**
+      - '*/Dockerfile'
+      - '*/smoke-test.sh'
+  push:
+    branches:
+      - main
+    paths:
+      - .devcontainer/sandbox-**
+      - '*/Dockerfile'
+      - '*/smoke-test.sh'
+
+permissions: {}
+
+jobs:
+  setup:
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Build sandbox matrix
+        id: matrix
+        run: |
+          MATRIX=$(find .devcontainer -maxdepth 1 -type d -name 'sandbox-*' -printf '%f\n' \
+            | sed 's/^sandbox-//' | sort | jq -R -s -c 'split("\n")[:-1]')
+          echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
+
+  check-sandbox:
+    needs: setup
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.setup.outputs.matrix) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Build and run sandbox devcontainer
+        uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
+        env:
+          MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}
+        with:
+          configFile: .devcontainer/sandbox-${{ matrix.image }}/devcontainer.json
+          push: never
+          env: |
+            MISE_GITHUB_TOKEN
+          runCmd: |
+            bash debian/smoke-test.sh
+            if [ "${{ matrix.image }}" != "debian" ]; then
+              bash ${{ matrix.image }}/smoke-test.sh
+            fi
