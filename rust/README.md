@@ -14,8 +14,8 @@ ghcr.io/bare-devcontainer/rust:<tag>
 
 | Tag | rustup version | Debian version |
 |-----|----------------|---------------|
-| `1.29.0-trixie`, `1.29-trixie`, `1-trixie`, `1.29.0`, `1.29`, `1`, `trixie` | 1.29.x | trixie |
-| `1.29.0-bookworm`, `1.29-bookworm`, `1-bookworm`, `bookworm` | 1.29.x | bookworm |
+| `1.29.0-trixie`, `1-trixie`, `1.29.0`, `1`, `trixie` | 1.29.0 | trixie |
+| `1.29.0-bookworm`, `1-bookworm`, `bookworm` | 1.29.0 | bookworm |
 
 Tags are also published with a date suffix (e.g., `1.29.0-trixie-20260623`) on each build.
 
