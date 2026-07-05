@@ -20,7 +20,7 @@ jobs:
   setup:
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     timeout-minutes: 5
     outputs:
       base_variants: ${{ steps.build.outputs.base_variants }}

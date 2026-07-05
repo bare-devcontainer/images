@@ -30,7 +30,7 @@ jobs:
   setup:
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     timeout-minutes: 5
     outputs:
       build_date: ${{ steps.init.outputs.build_date }}
@@ -189,7 +189,7 @@ jobs:
       contents: write
     needs: [setup, build-base, build-image]
     if: needs.setup.outputs.should_run == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     timeout-minutes: 5
     steps:
       - name: Create release tag
