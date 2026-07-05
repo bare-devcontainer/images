@@ -37,7 +37,7 @@ jobs:
     permissions:
       contents: read
       packages: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     timeout-minutes: 5
     outputs:
       dated_tag: ${{ steps.prep.outputs.dated_tag }}
@@ -108,7 +108,7 @@ jobs:
           OVERWRITE: ${{ inputs.overwrite }}
         run: |
           if docker manifest inspect "${IMAGE_REF}:${DATED_TAG}" > /dev/null 2>&1; then
-            if [ "$OVERWRITE" = "true" ]; then 
+            if [ "$OVERWRITE" = "true" ]; then
               echo "exists=false" >> "$GITHUB_OUTPUT"
               echo "Tag ${DATED_TAG} already exists, will overwrite."
             else
@@ -183,7 +183,7 @@ jobs:
       packages: write
       artifact-metadata: write
       attestations: write
-      id-token: write      
+      id-token: write
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

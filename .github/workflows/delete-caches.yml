@@ -14,7 +14,7 @@ jobs:
   delete-caches:
     permissions:
       actions: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     timeout-minutes: 5
     steps:
       - name: Delete caches by key prefix
