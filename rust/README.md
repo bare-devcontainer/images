@@ -2,7 +2,7 @@
 
 Dev container image with Rust installed via `rustup`, built on the [debian](../debian) base image.
 
-`rustup` is installed from the Debian package repository. Rust toolchains are managed by `rustup` and stored in `~/.cargo`.
+`rustup` is downloaded directly from the official [rustup release archive](https://static.rust-lang.org/rustup/) and verified against its published SHA-256 checksum. Rust toolchains are managed by `rustup` and stored in `~/.cargo`.
 
 ## Image
 
@@ -12,11 +12,12 @@ ghcr.io/bare-devcontainer/rust:<tag>
 
 ## Tags
 
-| Tag | Debian version |
-|-----|---------------|
-| `trixie` | Debian 13 (trixie) |
+| Tag | rustup version | Debian version |
+|-----|----------------|---------------|
+| `1.29.0-trixie`, `1.29-trixie`, `1-trixie`, `1.29.0`, `1.29`, `1`, `trixie` | 1.29.x | trixie |
+| `1.29.0-bookworm`, `1.29-bookworm`, `1-bookworm`, `bookworm` | 1.29.x | bookworm |
 
-Tags are also published with a date suffix (e.g., `trixie-20260623`) on each build.
+Tags are also published with a date suffix (e.g., `1.29.0-trixie-20260623`) on each build.
 
 ## Installed software
 
