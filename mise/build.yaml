@@ -1,21 +1,21 @@
 - variant: "latest-trixie"
   tags:
     # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
-    - "2026.6.12-trixie"
+    - "2026.7.0-trixie"
     # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
-    - "2026.6.12"
+    - "2026.7.0"
     - "trixie"
   debian_variant: "trixie"
   build_args:
     # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
-    MISE_VERSION: "2026.6.12"
+    MISE_VERSION: "2026.7.0"
 
 - variant: "latest-bookworm"
   tags:
     # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
-    - "2026.6.12-bookworm"
+    - "2026.7.0-bookworm"
     - "bookworm"
   debian_variant: "bookworm"
   build_args:
     # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
-    MISE_VERSION: "2026.6.12"
+    MISE_VERSION: "2026.7.0"
