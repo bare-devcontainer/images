@@ -51,6 +51,8 @@ FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 COPY --from=builder /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
 
+ENV PATH=/home/dev/.local/bin:${PATH}
 RUN mkdir -p \
       /home/dev/.cache/uv \
+      /home/dev/.local/bin \
       /home/dev/.local/share/uv
