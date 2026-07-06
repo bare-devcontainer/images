@@ -12,10 +12,9 @@
 
 - variant: "latest-bookworm"
   tags:
-    # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
-    - "2026.7.0-bookworm"
+    - "2026.6.15-bookworm"
     - "bookworm"
   debian_variant: "bookworm"
   build_args:
-    # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
-    MISE_VERSION: "2026.7.0"
+    # mise >= 2026.7.0 requires the newer glibc version, which is not available in bookworm.
+    MISE_VERSION: "2026.6.15"
