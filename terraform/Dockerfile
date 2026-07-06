@@ -58,3 +58,6 @@ RUN --mount=type=bind,source=hashicorp-signing-key.asc,target=/tmp/hashicorp-sig
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 COPY --from=builder /usr/local/bin/terraform /usr/local/bin/terraform-ls /usr/local/bin/
+
+ENV TF_PLUGIN_CACHE_DIR="/home/dev/.terraform.d/plugin-cache"
+RUN mkdir -p "${TF_PLUGIN_CACHE_DIR}" 
