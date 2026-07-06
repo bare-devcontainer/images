@@ -21,6 +21,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         && apt-get --no-install-recommends install -y \
                 # Git essentials
                 git openssh-client gnupg2 \
+                # Scripting
+                python3 \
                 # Network utilities
                 ca-certificates iproute2 curl wget \
                 # System monitoring utilities
