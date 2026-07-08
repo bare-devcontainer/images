@@ -41,9 +41,10 @@
         // YAML key-value line following a `# renovate:` comment where the value is in the form `tag@sha256:digest`
         // e.g. GOLANG_TAG: "1.26.4-trixie@sha256:abc123..."
         "# renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?( extractVersion=(?<extractVersion>\\S+))?\\s+\\S+: \"?(?<currentValue>[^@\\s\"]+)@(?<currentDigest>sha256:[a-f0-9]+)",
-        // YAML list item following a `# renovate:` comment with `versioning=semver` where the value has a non-semver suffix; captures only the semver part
-        // e.g. - "0.16.0-trixie" → currentValue: "0.16.0"
-        "# renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+) versioning=(?<versioning>semver)( extractVersion=(?<extractVersion>\\S+))?\\s+- \"(?<currentValue>[^\"\\-]+)(?:-[^\"]*)?\"",
+        // YAML list item following a `# renovate:` comment with an explicit versioning= annotation (semver-like versioning, e.g. semver, node) where the value has a non-version suffix; captures only the version part
+        // e.g. versioning=semver, - "0.16.0-trixie" → currentValue: "0.16.0"
+        // e.g. versioning=node,   - "26.4.0-trixie" → currentValue: "26.4.0"
+        "# renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+) versioning=(?<versioning>\\S+)( extractVersion=(?<extractVersion>\\S+))?\\s+- \"(?<currentValue>[^\"\\-]+)(?:-[^\"]*)?\"",
         // YAML list item following a `# renovate:` comment with no versioning= annotation; captures the version as currentValue and the optional compatibility suffix (e.g. `-trixie`, `-bookworm`) as currentCompatibility
         // e.g. - "1.26.4-trixie" → currentValue: "1.26.4", currentCompatibility: "trixie"
         // e.g. - "1.26.4"        → currentValue: "1.26.4"
