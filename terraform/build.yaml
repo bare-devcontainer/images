@@ -1,28 +1,28 @@
 - variant: "1-trixie"
   tags:
     # renovate: datasource=github-releases depName=hashicorp/terraform versioning=semver extractVersion=^v(?<version>.+)
-    - "1.15.7-trixie"
+    - "1.15.8-trixie"
     - "1-trixie"
     # renovate: datasource=github-releases depName=hashicorp/terraform versioning=semver extractVersion=^v(?<version>.+)
-    - "1.15.7"
+    - "1.15.8"
     - "1"
     - "trixie"
   debian_variant: "trixie"
   build_args:
     # renovate: datasource=github-releases depName=hashicorp/terraform versioning=semver extractVersion=^v(?<version>.+)
-    TERRAFORM_VERSION: "1.15.7"
+    TERRAFORM_VERSION: "1.15.8"
     # renovate: datasource=github-releases depName=hashicorp/terraform-ls versioning=semver extractVersion=^v(?<version>.+)
     TERRAFORM_LS_VERSION: "0.38.8"
 
 - variant: "1-bookworm"
   tags:
     # renovate: datasource=github-releases depName=hashicorp/terraform versioning=semver extractVersion=^v(?<version>.+)
-    - "1.15.7-bookworm"
+    - "1.15.8-bookworm"
     - "1-bookworm"
     - "bookworm"
   debian_variant: "bookworm"
   build_args:
     # renovate: datasource=github-releases depName=hashicorp/terraform versioning=semver extractVersion=^v(?<version>.+)
-    TERRAFORM_VERSION: "1.15.7"
+    TERRAFORM_VERSION: "1.15.8"
     # renovate: datasource=github-releases depName=hashicorp/terraform-ls versioning=semver extractVersion=^v(?<version>.+)
     TERRAFORM_LS_VERSION: "0.38.8"
