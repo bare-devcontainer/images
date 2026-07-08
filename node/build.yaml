@@ -1,29 +1,29 @@
 - variant: "26-trixie"
   tags:
     # renovate: datasource=node-version depName=node versioning=node
-    - "26.4.0-trixie"
+    - "26.5.0-trixie"
     - "26-trixie"
     - "trixie"
     # renovate: datasource=node-version depName=node versioning=node
-    - "26.4.0"
+    - "26.5.0"
     - "26"
   debian_variant: "trixie"
   build_args:
     # renovate: datasource=node-version depName=node versioning=node
-    NODE_VERSION: "26.4.0"
+    NODE_VERSION: "26.5.0"
     # renovate: datasource=npm depName=corepack versioning=semver
     COREPACK_VERSION: "0.35.0"
 
 - variant: "26-bookworm"
   tags:
     # renovate: datasource=node-version depName=node versioning=node
-    - "26.4.0-bookworm"
+    - "26.5.0-bookworm"
     - "26-bookworm"
     - "bookworm"
   debian_variant: "bookworm"
   build_args:
     # renovate: datasource=node-version depName=node versioning=node
-    NODE_VERSION: "26.4.0"
+    NODE_VERSION: "26.5.0"
     # renovate: datasource=npm depName=corepack versioning=semver
     COREPACK_VERSION: "0.35.0"
 
