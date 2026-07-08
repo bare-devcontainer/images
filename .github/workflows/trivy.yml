@@ -5,7 +5,7 @@ on:
     - cron: '0 6 * * 1'
   pull_request:
     paths:
-      - .github/workflows/trivy-published.yml
+      - .github/workflows/trivy.yml
   workflow_dispatch:
 
 permissions: {}
@@ -26,9 +26,24 @@ jobs:
       base_variants: ${{ steps.build.outputs.base_variants }}
       matrix: ${{ steps.build.outputs.matrix }}
     steps:
+      # Scan the build.yaml files from the latest release tag so that the
+      # image tags always match published images, even if main has moved on.
+      - name: Resolve latest release tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          LATEST_TAG=$(gh api "repos/${REPO}/git/refs/tags/v" \
+            --paginate \
+            --jq '.[] | select(.ref | test("refs/tags/v[0-9]{8}")) | .ref | ltrimstr("refs/tags/")' \
+            2>/dev/null | sort | tail -1 || echo "")
+          echo "Using ref: ${LATEST_TAG:-<default branch>}"
+          echo "latest_tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
+          ref: ${{ steps.tag.outputs.latest_tag }}
           persist-credentials: false
       - name: Build image matrix
         id: build
