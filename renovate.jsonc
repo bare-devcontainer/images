@@ -95,6 +95,16 @@
       "allowedVersions": "/^{{ lookup (split currentVersion '-') 0 }}-\\d{8}(?:\\.\\d+)?$/"
     },
     {
+      "description": "Create separate patch update branches so older Go release lines (e.g. 1.25.x) still receive patch updates while minor updates are disabled below.",
+      "matchFileNames": [
+        "golang/build.yaml"
+      ],
+      "matchPackageNames": [
+        "golang"
+      ],
+      "separateMinorPatch": true
+    },
+    {
       "matchFileNames": [
         "golang/build.yaml"
       ],
