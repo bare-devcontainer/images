@@ -1,21 +1,4 @@
 vulnerabilities:
-  # golang
-  - id: CVE-2026-33252
-    paths:
-      - "usr/local/bin/gopls"
-    expired_at: 2026-07-31
-    statement: |
-      Limited impact; only affects the experimental MCP feature in gopls.
-      Skipping until gopls v0.23.0, which includes the fix (expected late June 2026).
-      Release tracking: https://github.com/golang/go/issues/79966
-  - id: GHSA-q382-vc8q-7jhj
-    paths:
-      - "usr/local/bin/gopls"
-    expired_at: 2026-07-31
-    statement: |
-      Limited impact; only affects the experimental MCP feature in gopls.
-      Skipping until gopls v0.23.0, which includes the fix (expected late June 2026).
-      Release tracking: https://github.com/golang/go/issues/79966
   # terraform
   - id: CVE-2026-27145
     paths:
