@@ -4,7 +4,7 @@
     "dockerfile": "../../bun/Dockerfile",
     "args": {
       // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
-      "DEBIAN_TAG": "trixie-20260710@sha256:ee518cc92fadb9505d4b632edb131f5ae28706d8e6e49785182a40f70bc00392",
+      "DEBIAN_TAG": "trixie-20260711@sha256:a4016263075479795268ddc3f312d4ce487d6599cd24f537d441ece216bf4677",
       // renovate: datasource=github-releases depName=oven-sh/bun versioning=semver extractVersion=^bun-v(?<version>.+)
       "BUN_VERSION": "1.3.14"
     }
