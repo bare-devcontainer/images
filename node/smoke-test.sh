@@ -19,5 +19,4 @@ cat > "$TMPDIR/index.js" <<'EOF'
 console.log("Hello, world!");
 EOF
 
-cd "$TMPDIR"
-node index.js
+node "$TMPDIR/index.js"
