@@ -10,5 +10,10 @@
       // renovate: datasource=npm depName=corepack versioning=semver
       "COREPACK_VERSION": "0.35.0"
     }
-  }
+  },
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges"
+  ],
+  "remoteUser": "dev"
 }
