@@ -17,6 +17,9 @@
 #       Print the build_args for <variant> as KEY=VALUE pairs, one per line.
 #       Suitable for passing to Docker --build-arg flags.
 #
+#   primary-tag <image> <variant>
+#       Print the first (primary) tag for <variant>.
+#
 #   variants <image>
 #       Output all variant names for <image> as a JSON array.
 #

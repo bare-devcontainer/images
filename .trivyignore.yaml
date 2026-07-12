@@ -16,3 +16,13 @@ vulnerabilities:
       Terraform 1.15.7 was built with Go 1.25.10, which is affected by this CVE.
       The upstream development branch already uses Go 1.26.4, so the fix is
       expected in the next Terraform release.
+  - id: CVE-2026-39822
+    paths:
+      - "usr/local/bin/terraform"
+      - "usr/local/bin/terraform-ls"
+    expired_at: 2026-10-31
+    statement: |
+      Terraform 1.15.7 was built with Go 1.25.10, which is affected by this CVE.
+      The upstream development branch was upgraded to Go 1.26.4, but it is till affected.
+      Terraform Language Server 0.38.8 was built with Go 1.25.11, which is affected by this CVE.
+      The upstream development branch has not yet been updated to a Go version that is not affected by this CVE.
