@@ -16,9 +16,9 @@ ghcr.io/bare-devcontainer/mise:<tag>
 
 | Tag | mise version | Debian version |
 |-----|-------------|---------------|
-| `2026.7.5-trixie`, `2026.7.5`, `trixie` | 2026.7.5 | trixie |
+| <!-- renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+) -->`2026.7.5-trixie`, <!-- renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+) -->`2026.7.5`, `trixie` | latest | trixie |
 
-Tags are also published with a date suffix (e.g., `2026.7.5-trixie-20260623`) on each build.
+Tags are also published with a date suffix (e.g., `<tag>-20260623`) on each build.
 
 > [!NOTE]
 > The `bookworm` variant has been discontinued. mise 2026.7.0 and later require

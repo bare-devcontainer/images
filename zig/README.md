@@ -14,12 +14,12 @@ ghcr.io/bare-devcontainer/zig:<tag>
 
 | Tag | Zig version | Debian version |
 |-----|------------|---------------|
-| `0.16.0-trixie`, `0.16-trixie`, `0-trixie`, `0.16.0`, `0.16`, `0`, `trixie` | 0.16.x | trixie |
-| `0.16.0-bookworm`, `0.16-bookworm`, `bookworm` | 0.16.x | bookworm |
-| `0.15.2-trixie`, `0.15-trixie`, `0.15.2`, `0.15` | 0.15.x | trixie |
-| `0.15.2-bookworm`, `0.15-bookworm` | 0.15.x | bookworm |
+| <!-- renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver -->`0.16.0-trixie`, `0.16-trixie`, `0-trixie`, <!-- renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver -->`0.16.0`, `0.16`, `0`, `trixie` | 0.16.x | trixie |
+| <!-- renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver -->`0.16.0-bookworm`, `0.16-bookworm`, `bookworm` | 0.16.x | bookworm |
+| <!-- renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver -->`0.15.2-trixie`, `0.15-trixie`, <!-- renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver -->`0.15.2`, `0.15` | 0.15.x | trixie |
+| <!-- renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver -->`0.15.2-bookworm`, `0.15-bookworm` | 0.15.x | bookworm |
 
-Tags are also published with a date suffix (e.g., `0.16.0-trixie-20260623`) on each build.
+Tags are also published with a date suffix (e.g., `<tag>-20260623`) on each build.
 
 ## Installed software
 

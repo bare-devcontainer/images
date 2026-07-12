@@ -59,6 +59,20 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
+        "**/README.md"
+      ],
+      "matchStrings": [
+        // Backticked tag immediately preceded by an inline `<!-- renovate: -->` annotation.
+        // Captures only the version part so an optional Debian suffix is left untouched.
+        // e.g. <!-- renovate: datasource=golang-version depName=golang versioning=semver -->`1.26.5-trixie` → currentValue: "1.26.5"
+        // e.g. <!-- renovate: datasource=golang-version depName=golang versioning=semver -->`1.26.5`        → currentValue: "1.26.5"
+        "<!-- renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+) versioning=(?<versioning>\\S+)( extractVersion=(?<extractVersion>\\S+))? -->`(?<currentValue>[^`\\-]+)(?:-[^`]*)?`"
+      ],
+      "versioningTemplate": "{{{versioning}}}"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
         "**/.github/workflows/*.yml"
       ],
       "matchStrings": [
@@ -81,9 +95,10 @@
       "minimumReleaseAge": null
     },
     {
-      "description": "Apply dependency updates for published images without delay, since these are our own image build inputs and should be picked up promptly regardless of datasource.",
+      "description": "Apply dependency updates for published images without delay, since these are our own image build inputs and should be picked up promptly regardless of datasource. README tag tables mirror build.yaml and must update in the same branch.",
       "matchFileNames": [
-        "**/build.yaml"
+        "**/build.yaml",
+        "**/README.md"
       ],
       "minimumReleaseAge": null
     },
@@ -100,7 +115,8 @@
     {
       "description": "Create separate patch update branches so older Go release lines (e.g. 1.25.x) still receive patch updates while minor updates are disabled below.",
       "matchFileNames": [
-        "golang/build.yaml"
+        "golang/build.yaml",
+        "golang/README.md"
       ],
       "matchPackageNames": [
         "golang"
@@ -109,7 +125,8 @@
     },
     {
       "matchFileNames": [
-        "golang/build.yaml"
+        "golang/build.yaml",
+        "golang/README.md"
       ],
       "matchPackageNames": [
         "golang"
@@ -122,7 +139,8 @@
     },
     {
       "matchFileNames": [
-        "zig/build.yaml"
+        "zig/build.yaml",
+        "zig/README.md"
       ],
       "matchPackageNames": [
         "ziglang/zig",
@@ -153,7 +171,8 @@
     {
       "groupName": "Image Builds",
       "matchFileNames": [
-        "**/build.yaml"
+        "**/build.yaml",
+        "**/README.md"
       ],
       "matchUpdateTypes": [
         "patch",

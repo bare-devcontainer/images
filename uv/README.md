@@ -19,10 +19,10 @@ ghcr.io/bare-devcontainer/uv:<tag>
 
 | Tag | uv version | Debian version |
 |-----|-----------|---------------|
-| `0.11.26-trixie`, `0.11.26`, `trixie` | 0.11.26 | trixie |
-| `0.11.26-bookworm`, `bookworm` | 0.11.26 | bookworm |
+| <!-- renovate: datasource=github-releases depName=astral-sh/uv versioning=semver -->`0.11.28-trixie`, <!-- renovate: datasource=github-releases depName=astral-sh/uv versioning=semver -->`0.11.28`, `trixie` | latest | trixie |
+| <!-- renovate: datasource=github-releases depName=astral-sh/uv versioning=semver -->`0.11.28-bookworm`, `bookworm` | latest | bookworm |
 
-Tags are also published with a date suffix (e.g., `0.11.26-trixie-20260623`) on each build.
+Tags are also published with a date suffix (e.g., `<tag>-20260623`) on each build.
 
 ## Installed software
 

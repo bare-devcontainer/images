@@ -17,10 +17,10 @@ ghcr.io/bare-devcontainer/bun:<tag>
 
 | Tag | Bun version | Debian version |
 |-----|------------|---------------|
-| `1.3.14-trixie`, `1-trixie`, `1.3.14`, `1`, `trixie` | 1.3.14 | trixie |
-| `1.3.14-bookworm`, `1-bookworm`, `bookworm` | 1.3.14 | bookworm |
+| <!-- renovate: datasource=github-releases depName=oven-sh/bun versioning=semver extractVersion=^bun-v(?<version>.+) -->`1.3.14-trixie`, `1-trixie`, <!-- renovate: datasource=github-releases depName=oven-sh/bun versioning=semver extractVersion=^bun-v(?<version>.+) -->`1.3.14`, `1`, `trixie` | 1.x | trixie |
+| <!-- renovate: datasource=github-releases depName=oven-sh/bun versioning=semver extractVersion=^bun-v(?<version>.+) -->`1.3.14-bookworm`, `1-bookworm`, `bookworm` | 1.x | bookworm |
 
-Tags are also published with a date suffix (e.g., `1.3.14-trixie-20260704`) on each build.
+Tags are also published with a date suffix (e.g., `<tag>-20260623`) on each build.
 
 ## Installed software
 
