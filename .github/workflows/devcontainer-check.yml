@@ -37,7 +37,7 @@ jobs:
             | sed 's/^sandbox-//' | sort | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
 
-  check-sandbox:
+  test:
     needs: setup
     permissions:
       contents: read
@@ -47,12 +47,18 @@ jobs:
       fail-fast: false
       matrix:
         image: ${{ fromJson(needs.setup.outputs.matrix) }}
+    env:
+      # renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/decolint versioning=docker
+      DECOLINT_TAG: "latest@sha256:a859336041a89538f4cdd1d5887751ab03a46e448169e35bd0fe80d6097aa5d7"
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - name: Build and run sandbox devcontainer
+      - name: Lint
+        run: |
+          docker run --rm -v "$PWD:/workspace" ghcr.io/bare-devcontainer/decolint:${{ env.DECOLINT_TAG }} --format=github .
+      - name: Build and run smoke tests
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
           MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}

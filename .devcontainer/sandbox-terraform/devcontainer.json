@@ -10,5 +10,10 @@
       // renovate: datasource=github-releases depName=hashicorp/terraform-ls versioning=semver extractVersion=^v(?<version>.+)
       "TERRAFORM_LS_VERSION": "0.38.8"
     }
-  }
+  },
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges"
+  ],
+  "remoteUser": "dev"
 }

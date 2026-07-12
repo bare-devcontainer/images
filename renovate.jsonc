@@ -62,6 +62,9 @@
         "**/.github/workflows/*.yml"
       ],
       "matchStrings": [
+        // YAML key-value line following a `# renovate:` comment where the value is in the form `tag@sha256:digest`
+        // e.g. DECOLINT_TAG: "latest@sha256:abc123..."
+        "# renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?( extractVersion=(?<extractVersion>\\S+))?\\s+\\S+: \"?(?<currentValue>[^@\\s\"]+)@(?<currentDigest>sha256:[a-f0-9]+)",
         // YAML key-value line following a `# renovate:` comment where the value is a plain version string (no digest)
         // e.g. TRIVY_VERSION: "v0.71.2"
         "# renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?( extractVersion=(?<extractVersion>\\S+))?\\s+\\S+: \"(?<currentValue>[^@\"\\s]+)\""

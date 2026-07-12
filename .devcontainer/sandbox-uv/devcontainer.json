@@ -10,5 +10,10 @@
       // renovate: datasource=github-releases depName=cli/cli versioning=semver extractVersion=^v?(?<version>.+)
       "GH_VERSION": "2.96.0"
     }
-  }
+  },
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges"
+  ],
+  "remoteUser": "dev"
 }

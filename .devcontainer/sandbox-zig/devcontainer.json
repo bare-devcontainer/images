@@ -12,5 +12,10 @@
       // renovate: datasource=gitea-commits registryUrl=https://codeberg.org depName=ziglang/shell-completions
       "SHELL_COMPLETIONS_COMMIT": "c2983a75dcbcaf3a1df74ab563a9bd3c8e7f448e"
     }
-  }
+  },
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges"
+  ],
+  "remoteUser": "dev"
 }

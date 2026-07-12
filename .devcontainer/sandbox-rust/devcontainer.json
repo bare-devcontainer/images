@@ -8,5 +8,10 @@
       // renovate: datasource=github-releases depName=rust-lang/rustup versioning=semver
       "RUSTUP_VERSION": "1.29.0"
     }
-  }
+  },
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges"
+  ],
+  "remoteUser": "dev"
 }
