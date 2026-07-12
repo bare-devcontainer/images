@@ -1,0 +1,11 @@
+{
+  "platforms": [
+    "vscode"
+  ],
+  "categories": {
+    "correctness": "error",
+    "reproducibility": "error",
+    "security": "error",
+    "style": "error"
+  }
+}

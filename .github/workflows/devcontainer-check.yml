@@ -37,7 +37,7 @@ jobs:
             | sed 's/^sandbox-//' | sort | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
 
-  check-sandbox:
+  test:
     needs: setup
     permissions:
       contents: read
@@ -52,7 +52,12 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - name: Build and run sandbox devcontainer
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+      - name: Lint
+        run: |
+          docker run --rm -v "$PWD:/workspace" ghcr.io/bare-devcontainer/decolint --format=github .
+      - name: Build and run smoke tests
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
           MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}
