@@ -57,9 +57,15 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
        esac \
     && tar xJf "${ZIG_TMPDIR}/${ZLS_TARBALL}" -C "${ZIG_TMPDIR}" \
     && mv "${ZIG_TMPDIR}/zls" /usr/local/bin/zls \
-    # Install shell completions for Zig
-    && wget -q -T 30 -t 3 -O /usr/share/bash-completion/completions/zig \
-        "https://codeberg.org/ziglang/shell-completions/raw/commit/${SHELL_COMPLETIONS_COMMIT}/_zig.bash" \
+    # Install shell completions for Zig. Fetched via git rather than a raw
+    # file URL so the content is cryptographically bound to the pinned commit
+    # hash instead of trusting the server to serve honest content for it.
+    && git init -q "${ZIG_TMPDIR}/completions" \
+    && git -C "${ZIG_TMPDIR}/completions" -c fetch.fsckObjects=true fetch --depth 1 \
+        https://codeberg.org/ziglang/shell-completions.git "${SHELL_COMPLETIONS_COMMIT}" \
+    && git -C "${ZIG_TMPDIR}/completions" checkout -q "${SHELL_COMPLETIONS_COMMIT}" -- _zig.bash \
+    && install -m 644 "${ZIG_TMPDIR}/completions/_zig.bash" \
+        /usr/share/bash-completion/completions/zig \
     && rm -rf "${ZIG_TMPDIR}"
 
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
