@@ -13,6 +13,12 @@ ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
+# Dev Container metadata (https://containers.dev/implementors/reference/#labels),
+# applied automatically by Dev Container clients when this image is referenced.
+# Inherited by every image built FROM this one; re-declaring this label in a
+# child image replaces (does not merge with) this value.
+LABEL devcontainer.metadata="[{\"remoteUser\":\"dev\",\"containerUser\":\"dev\"}]"
+
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     rm -f /etc/apt/apt.conf.d/docker-clean \
