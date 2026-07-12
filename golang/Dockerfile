@@ -60,7 +60,6 @@ ENV GOPATH=/home/dev/go
 ENV PATH=/usr/local/go/bin:${GOPATH}/bin:${PATH}
 
 USER dev
-WORKDIR /workspaces
 
 RUN mkdir -p \
     "${GOPATH}/pkg/mod" \

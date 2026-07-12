@@ -40,6 +40,7 @@ FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 USER root
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # node-gyp dependencies
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -50,4 +51,3 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 COPY --from=builder /usr/local /usr/local
 
 USER dev
-WORKDIR /workspaces

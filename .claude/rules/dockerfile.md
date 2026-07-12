@@ -11,6 +11,9 @@ paths:
 - Combine related commands into a single `RUN` statement to minimize the number of layers.
 - Use BuildKit cache mounts to speed up builds without bloating image layers.
 - Create a non-root user and switch to it at the end of the Dockerfile.
+- Remove `/etc/apt/apt.conf.d/docker-clean` only in the debian base image. Images built on the base inherit its filesystem, so re-removing it is redundant.
+- Set `SHELL ["/bin/bash", "-o", "pipefail", "-c"]` at the top of every stage that runs non-trivial `RUN` commands (network fetches, verification, apt), so pipes added later fail safely by default.
+- Restate `USER dev` only in stages that previously switched to `USER root`. Never restate `WORKDIR /workspaces`; it is inherited from the base image config.
 
 For example:
 
