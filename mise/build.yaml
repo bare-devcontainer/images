@@ -11,6 +11,8 @@ variants:
     build_args:
       # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
       MISE_VERSION: "2026.7.5"
+      # renovate: datasource=github-releases depName=jdx/usage versioning=semver extractVersion=^v?(?<version>.+)
+      USAGE_VERSION: "3.5.4"
 
 # No bookworm variant: mise >= 2026.7.0 requires a newer glibc than bookworm
 # provides, and mise uses calendar versioning, so no future release can ever

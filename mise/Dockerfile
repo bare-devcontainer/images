@@ -37,13 +37,17 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
+ARG USAGE_VERSION
+
 COPY --from=builder /usr/local/bin/mise /usr/local/bin/mise
 ENV PATH=/home/dev/.local/share/mise/shims:${PATH}
 
+# usage is pinned so this build-time fetch is deterministic and version bumps
+# go through review like every other dependency.
 # hadolint ignore=SC2016 # intentional single quotes
 RUN mkdir -p \
       /home/dev/.cache/mise \
       /home/dev/.config/mise \
       /home/dev/.local/share/mise \
       /home/dev/.local/state/mise \
-    && mise use -g usage
+    && mise use -g "usage@${USAGE_VERSION}"
