@@ -72,6 +72,15 @@ jobs:
             exit 0
           fi
 
+          # Guarantee at least one release per week so Debian security
+          # updates from the package archive are picked up even when no
+          # image commits have landed since the last release.
+          if [ "${EVENT_NAME}" = "schedule" ] && [ "$(date -u +%u)" = "1" ]; then
+            echo "Weekly scheduled rebuild, skipping commit check."
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           if [ -n "$LATEST_TAG" ]; then
             IMAGE_COMMITS=$(gh api "repos/${REPO}/compare/${LATEST_TAG}...${SHA}" \
               --jq '[.commits[].commit.message | split("\n")[0]] | map(select(test("^image(\\([^)]*\\))?!?:"))) | length' \
