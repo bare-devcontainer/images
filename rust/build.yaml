@@ -1,24 +1,26 @@
-- variant: "1-trixie"
-  tags:
-    # renovate: datasource=github-releases depName=rust-lang/rustup versioning=semver
-    - "1.29.0-trixie"
-    - "1-trixie"
-    - "trixie"
-    # renovate: datasource=github-releases depName=rust-lang/rustup versioning=semver
-    - "1.29.0"
-    - "1"
-  debian_variant: "trixie"
-  build_args:
-    # renovate: datasource=github-releases depName=rust-lang/rustup versioning=semver
-    RUSTUP_VERSION: "1.29.0"
+description: "Rust (via rustup) on Debian"
+variants:
+  - variant: "1-trixie"
+    tags:
+      # renovate: datasource=github-releases depName=rust-lang/rustup versioning=semver
+      - "1.29.0-trixie"
+      - "1-trixie"
+      - "trixie"
+      # renovate: datasource=github-releases depName=rust-lang/rustup versioning=semver
+      - "1.29.0"
+      - "1"
+    debian_variant: "trixie"
+    build_args:
+      # renovate: datasource=github-releases depName=rust-lang/rustup versioning=semver
+      RUSTUP_VERSION: "1.29.0"
 
-- variant: "1-bookworm"
-  tags:
-    # renovate: datasource=github-releases depName=rust-lang/rustup versioning=semver
-    - "1.29.0-bookworm"
-    - "1-bookworm"
-    - "bookworm"
-  debian_variant: "bookworm"
-  build_args:
-    # renovate: datasource=github-releases depName=rust-lang/rustup versioning=semver
-    RUSTUP_VERSION: "1.29.0"
+  - variant: "1-bookworm"
+    tags:
+      # renovate: datasource=github-releases depName=rust-lang/rustup versioning=semver
+      - "1.29.0-bookworm"
+      - "1-bookworm"
+      - "bookworm"
+    debian_variant: "bookworm"
+    build_args:
+      # renovate: datasource=github-releases depName=rust-lang/rustup versioning=semver
+      RUSTUP_VERSION: "1.29.0"

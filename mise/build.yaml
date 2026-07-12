@@ -1,20 +1,22 @@
-- variant: "latest-trixie"
-  tags:
-    # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
-    - "2026.7.5-trixie"
-    # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
-    - "2026.7.5"
-    - "trixie"
-  debian_variant: "trixie"
-  build_args:
-    # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
-    MISE_VERSION: "2026.7.5"
+description: "mise runtime manager on Debian"
+variants:
+  - variant: "latest-trixie"
+    tags:
+      # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
+      - "2026.7.5-trixie"
+      # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
+      - "2026.7.5"
+      - "trixie"
+    debian_variant: "trixie"
+    build_args:
+      # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
+      MISE_VERSION: "2026.7.5"
 
-- variant: "latest-bookworm"
-  tags:
-    - "2026.6.14-bookworm"
-    - "bookworm"
-  debian_variant: "bookworm"
-  build_args:
-    # mise >= 2026.7.0 requires the newer glibc version, which is not available in bookworm.
-    MISE_VERSION: "2026.6.14"
+  - variant: "latest-bookworm"
+    tags:
+      - "2026.6.14-bookworm"
+      - "bookworm"
+    debian_variant: "bookworm"
+    build_args:
+      # mise >= 2026.7.0 requires the newer glibc version, which is not available in bookworm.
+      MISE_VERSION: "2026.6.14"

@@ -1,25 +1,27 @@
-- variant: "trixie"
-  tags:
-    # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
-    - "0.11.28-trixie"
-    # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
-    - "0.11.28"
-    - "trixie"
-  debian_variant: "trixie"
-  build_args:
-    # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
-    UV_VERSION: "0.11.28"
-    # renovate: datasource=github-releases depName=cli/cli versioning=semver extractVersion=^v?(?<version>.+)
-    GH_VERSION: "2.96.0"
+description: "Python (via uv) on Debian"
+variants:
+  - variant: "trixie"
+    tags:
+      # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
+      - "0.11.28-trixie"
+      # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
+      - "0.11.28"
+      - "trixie"
+    debian_variant: "trixie"
+    build_args:
+      # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
+      UV_VERSION: "0.11.28"
+      # renovate: datasource=github-releases depName=cli/cli versioning=semver extractVersion=^v?(?<version>.+)
+      GH_VERSION: "2.96.0"
 
-- variant: "bookworm"
-  tags:
-    # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
-    - "0.11.28-bookworm"
-    - "bookworm"
-  debian_variant: "bookworm"
-  build_args:
-    # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
-    UV_VERSION: "0.11.28"
-    # renovate: datasource=github-releases depName=cli/cli versioning=semver extractVersion=^v?(?<version>.+)
-    GH_VERSION: "2.96.0"
+  - variant: "bookworm"
+    tags:
+      # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
+      - "0.11.28-bookworm"
+      - "bookworm"
+    debian_variant: "bookworm"
+    build_args:
+      # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
+      UV_VERSION: "0.11.28"
+      # renovate: datasource=github-releases depName=cli/cli versioning=semver extractVersion=^v?(?<version>.+)
+      GH_VERSION: "2.96.0"
