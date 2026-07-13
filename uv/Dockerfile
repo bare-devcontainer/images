@@ -14,10 +14,22 @@ ARG TARGETARCH
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# Install gh from GitHub's official apt repository to verify uv's GitHub
+# Artifact Attestation below. The repository keyring is committed to this repo
+# and kept in sync by the update-keys workflow.
+RUN --mount=type=bind,source=githubcli-archive-keyring.gpg,target=/etc/apt/keyrings/githubcli-archive-keyring.gpg,readonly \
+    --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+        > /etc/apt/sources.list.d/github-cli.list \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get update \
+    && apt-get --no-install-recommends install -y "gh=${GH_VERSION}"
+
 # hadolint ignore=DL3003 # cd only used in subshell
 RUN case "${TARGETARCH}" in \
-        amd64) UV_ARCH="x86_64"; GH_ARCH="amd64" ;; \
-        arm64) UV_ARCH="aarch64"; GH_ARCH="arm64" ;; \
+        amd64) UV_ARCH="x86_64" ;; \
+        arm64) UV_ARCH="aarch64" ;; \
         *) echo "Unsupported TARGETARCH: ${TARGETARCH}" >&2; exit 1 ;; \
     esac \
     && TMPDIR="$(mktemp -d)" \
@@ -26,13 +38,6 @@ RUN case "${TARGETARCH}" in \
     && wget -q -T 30 -t 3 -P "${TMPDIR}" "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/${UV_TARBALL}" \
     && wget -q -T 30 -t 3 -P "${TMPDIR}" "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/${UV_TARBALL}.sha256" \
     && (cd "${TMPDIR}" && sha256sum -c "${UV_TARBALL}.sha256") \
-    # Download gh to verify uv's GitHub Artifact Attestation below.
-    && GH_TARBALL="gh_${GH_VERSION}_linux_${GH_ARCH}.tar.gz" \
-    && wget -q -T 30 -t 3 -P "${TMPDIR}" "https://github.com/cli/cli/releases/download/v${GH_VERSION}/${GH_TARBALL}" \
-    && wget -q -T 30 -t 3 -P "${TMPDIR}" "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_checksums.txt" \
-    && (cd "${TMPDIR}" && grep " ${GH_TARBALL}\$" "gh_${GH_VERSION}_checksums.txt" | sha256sum -c -) \
-    && tar xzf "${TMPDIR}/${GH_TARBALL}" -C "${TMPDIR}" \
-    && GH_BIN="${TMPDIR}/gh_${GH_VERSION}_linux_${GH_ARCH}/bin/gh" \
     # Verify uv's release artifact against its GitHub Artifact Attestation.
     && UV_DIGEST="$(sha256sum "${TMPDIR}/${UV_TARBALL}" | awk '{print $1}')" \
     && wget -q -T 30 -t 3 -O "${TMPDIR}/attestations.json" \
@@ -40,7 +45,7 @@ RUN case "${TARGETARCH}" in \
         "https://api.github.com/repos/astral-sh/uv/attestations/sha256:${UV_DIGEST}" \
     && jq -c '.attestations[].bundle' "${TMPDIR}/attestations.json" > "${TMPDIR}/bundles.jsonl" \
     && [ -s "${TMPDIR}/bundles.jsonl" ] \
-    && GH_CONFIG_DIR="${TMPDIR}/gh-config" "${GH_BIN}" attestation verify "${TMPDIR}/${UV_TARBALL}" \
+    && GH_CONFIG_DIR="${TMPDIR}/gh-config" gh attestation verify "${TMPDIR}/${UV_TARBALL}" \
         --bundle "${TMPDIR}/bundles.jsonl" --repo astral-sh/uv \
     # Install uv
     && tar xzf "${TMPDIR}/${UV_TARBALL}" -C "${TMPDIR}" \

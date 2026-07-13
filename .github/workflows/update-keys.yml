@@ -63,6 +63,15 @@ jobs:
               C874011F0AB405110D02105534365D9472D7468F), which HashiCorp uses to sign the
               `SHA256SUMS.sig` files published alongside Terraform release archives on
               releases.hashicorp.com.
+          - id: uv-githubcli-archive-keyring
+            path: uv/githubcli-archive-keyring.gpg
+            url: https://cli.github.com/packages/githubcli-archive-keyring.gpg
+            title: "chore(uv): update GitHub CLI apt repository keyring"
+            body: >-
+              Automated sync of `uv/githubcli-archive-keyring.gpg` from
+              [cli.github.com](https://cli.github.com/packages/githubcli-archive-keyring.gpg),
+              the GPG keyring that signs GitHub's official apt repository used to
+              install the `gh` CLI in the uv builder stage.
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
