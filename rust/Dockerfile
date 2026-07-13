@@ -10,17 +10,16 @@ ARG TARGETARCH
 
 USER root
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    rm -f /etc/apt/apt.conf.d/docker-clean \
-        && export DEBIAN_FRONTEND=noninteractive \
+    export DEBIAN_FRONTEND=noninteractive \
         && apt-get update \
         && apt-get --no-install-recommends install -y build-essential
 
 ENV PATH=/home/dev/.cargo/bin:${PATH}
 
 USER dev
-WORKDIR /workspaces
 
 # hadolint ignore=DL3003 # cd only used in subshell
 RUN case "${TARGETARCH}" in \
