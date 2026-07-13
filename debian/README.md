@@ -8,6 +8,12 @@ Minimal Debian base image for dev containers. All other images in this repositor
 ghcr.io/bare-devcontainer/debian:<tag>
 ```
 
+## Dev Container Template
+
+A ready-to-use Dev Container template for this image is available at
+[bare-devcontainer/templates](https://github.com/bare-devcontainer/templates/tree/main/src/debian).
+It provides the recommended configuration for this image, including security hardening.
+
 ## Tags
 
 <!-- tags:begin -->
