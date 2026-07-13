@@ -12,6 +12,13 @@ The mise binary is downloaded from GitHub Releases and verified with a minisign 
 ghcr.io/bare-devcontainer/mise:<tag>
 ```
 
+## Dev Container Template
+
+A ready-to-use Dev Container template for this image is available at
+[bare-devcontainer/templates](https://github.com/bare-devcontainer/templates/tree/main/src/mise).
+It provides the recommended configuration for this image, including security hardening and
+volume mounts that persist cache directories for faster rebuilds.
+
 ## Tags
 
 <!-- tags:begin -->

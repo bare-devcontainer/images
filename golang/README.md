@@ -10,6 +10,13 @@ The Go toolchain is downloaded directly from [go.dev](https://go.dev/dl/) and ve
 ghcr.io/bare-devcontainer/golang:<tag>
 ```
 
+## Dev Container Template
+
+A ready-to-use Dev Container template for this image is available at
+[bare-devcontainer/templates](https://github.com/bare-devcontainer/templates/tree/main/src/golang).
+It provides the recommended configuration for this image, including security hardening and
+volume mounts that persist cache directories for faster rebuilds.
+
 ## Tags
 
 <!-- tags:begin -->

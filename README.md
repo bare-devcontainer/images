@@ -43,7 +43,7 @@ See the individual image directories for more details on each image, including a
 
 ### Using a Dev Container Template (Recommended)
 
-The quickest way to get started is to use one of the pre-built templates from the [bare-devcontainer/templates](https://github.com/bare-devcontainer/templates) repository. These templates provide ready-to-use Dev Container configurations for available images.
+The quickest way to get started is to use one of the pre-built templates from the [bare-devcontainer/templates](https://github.com/bare-devcontainer/templates) repository. Each image in this repository has a corresponding template that provides the recommended Dev Container configuration out of the box, including security hardening (dropping all Linux capabilities, `no-new-privileges`, running as a non-root user) and volume mounts that persist language and package manager cache directories for faster rebuilds.
 
 ### Using Directly in devcontainer.json
 

@@ -10,6 +10,13 @@ Dev container image with Rust installed via `rustup`, built on the [debian](../d
 ghcr.io/bare-devcontainer/rust:<tag>
 ```
 
+## Dev Container Template
+
+A ready-to-use Dev Container template for this image is available at
+[bare-devcontainer/templates](https://github.com/bare-devcontainer/templates/tree/main/src/rust).
+It provides the recommended configuration for this image, including security hardening and
+volume mounts that persist cache directories for faster rebuilds.
+
 ## Tags
 
 <!-- tags:begin -->
