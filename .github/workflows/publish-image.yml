@@ -167,6 +167,7 @@ jobs:
           labels: ${{ needs.prepare.outputs.labels }}
           annotations: ${{ needs.prepare.outputs.annotations }}
           sbom: true
+          provenance: mode=max
           no-cache: ${{ !inputs.dryrun }}
           cache-from: ${{ inputs.dryrun && format('type=gha,scope={0}-{1}-{2}', inputs.image, inputs.variant, matrix.arch) || '' }}
           cache-to: ${{ !inputs.dryrun && format('type=gha,mode=max,scope={0}-{1}-{2}', inputs.image, inputs.variant, matrix.arch) || '' }}
