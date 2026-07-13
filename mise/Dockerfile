@@ -45,5 +45,4 @@ RUN mkdir -p \
       /home/dev/.cache/mise \
       /home/dev/.config/mise \
       /home/dev/.local/share/mise \
-      /home/dev/.local/state/mise \
-    && mise use -g usage
+      /home/dev/.local/state/mise
