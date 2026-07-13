@@ -7,7 +7,10 @@ installed, built on the [debian](../debian) base image.
 and its checksum is verified before installation. It is also verified against its
 [GitHub Artifact Attestation](https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds)
 using `gh attestation verify`, which runs fully unauthenticated at build time (the
-attestation bundle is fetched from GitHub's public REST API).
+attestation bundle is fetched from GitHub's public REST API). The `gh` CLI used for
+this verification is installed in the builder stage from
+[GitHub's official apt repository](https://cli.github.com/packages), whose signing
+keyring is committed to this repository and kept in sync by the update-keys workflow.
 
 ## Image
 

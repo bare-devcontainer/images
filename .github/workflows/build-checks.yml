@@ -8,6 +8,7 @@ on:
       - '*/build.yaml'
       - '*/smoke-test.sh'
       - '*/node-keyring.kbx'
+      - '*/githubcli-archive-keyring.gpg'
       - build-config.sh
       - .trivyignore.yaml
   push:
@@ -18,6 +19,7 @@ on:
       - '*/build.yaml'
       - '*/smoke-test.sh'
       - '*/node-keyring.kbx'
+      - '*/githubcli-archive-keyring.gpg'
       - build-config.sh
 
 permissions: {}
