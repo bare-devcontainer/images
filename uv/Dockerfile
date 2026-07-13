@@ -16,7 +16,7 @@ USER root
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Install gh from GitHub's official apt repository to verify uv's GitHub
 # Artifact Attestation below. The repository keyring is committed to this repo
-# and kept in sync by the update-keys workflow.
+# and kept in sync by .github/workflows/update-material.yml.
 RUN --mount=type=bind,source=githubcli-archive-keyring.gpg,target=/etc/apt/keyrings/githubcli-archive-keyring.gpg,readonly \
     --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
