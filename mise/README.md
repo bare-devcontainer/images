@@ -33,5 +33,4 @@ Tags are also published with a date suffix (e.g., `2026.7.5-trixie-20260623`) on
 Everything from the [debian](../debian) base image, plus:
 
 - [mise](https://mise.jdx.dev/)
-- [usage](https://usage.jdx.dev/) (global mise tool; for CLI completion support,
-  installed via mise at a version pinned in `build.yaml`)
+- [usage](https://usage.jdx.dev/) (global mise tool; for CLI completion support)
