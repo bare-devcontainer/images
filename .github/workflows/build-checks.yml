@@ -89,6 +89,11 @@ jobs:
           # builds and release dry-runs share the same cache entries.
           cache-from: type=gha,scope=debian-${{ matrix.variant }}-${{ matrix.arch }}
           cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,scope=debian-{0}-{1},mode=max', matrix.variant, matrix.arch) || '' }}
+      - name: Verify devcontainer.metadata label
+        run: |
+          docker inspect --format '{{ index .Config.Labels "devcontainer.metadata" }}' \
+            "debian:${{ matrix.variant }}" \
+            | jq -e 'map(select(.remoteUser == "dev")) | length > 0'
       - name: Run smoke test
         run: |
           docker run --rm \
@@ -149,6 +154,13 @@ jobs:
           # builds and release dry-runs share the same cache entries.
           cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.variant }}-${{ matrix.arch }}
           cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,scope={0}-{1}-{2},mode=max', matrix.image, matrix.variant, matrix.arch) || '' }}
+      - name: Verify devcontainer.metadata label
+        # Guards against a child image accidentally dropping the label
+        # inherited from the debian base image.
+        run: |
+          docker inspect --format '{{ index .Config.Labels "devcontainer.metadata" }}' \
+            "${{ matrix.image }}:${{ matrix.variant }}" \
+            | jq -e 'map(select(.remoteUser == "dev")) | length > 0'
       - name: Run smoke test
         env:
           MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}
