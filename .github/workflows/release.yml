@@ -204,6 +204,35 @@ jobs:
       overwrite: ${{ inputs.overwrite || false }}
       dryrun: ${{ github.event_name == 'pull_request' }}
 
+  create-tag:
+    permissions:
+      actions: write
+      contents: write
+    needs: [setup, build-base, build-image]
+    if: needs.setup.outputs.should_run == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
+      - name: Create release tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          BUILD_DATE: ${{ needs.setup.outputs.build_date }}
+        run: |
+          if gh api "repos/${REPO}/git/ref/tags/v${BUILD_DATE}" > /dev/null 2>&1; then
+            echo "Tag v${BUILD_DATE} already exists, skipping."
+          else
+            gh api "repos/${REPO}/git/refs" \
+              --method POST \
+              -f ref="refs/tags/v${BUILD_DATE}" \
+              -f sha="${SHA}"
+            echo "Created release tag v${BUILD_DATE}."
+            gh workflow run trivy.yml \
+              --repo "${REPO}" \
+              --ref main
+          fi
+
   update-readme:
     permissions:
       contents: read
@@ -279,33 +308,4 @@ jobs:
               --body "Automated regeneration of image README tag tables from each image's \`build.yaml\` after release v${BUILD_DATE}." \
               --head "${BRANCH}" \
               --base main
-          fi
-
-  create-tag:
-    permissions:
-      actions: write
-      contents: write
-    needs: [setup, build-base, build-image]
-    if: needs.setup.outputs.should_run == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-slim
-    timeout-minutes: 5
-    steps:
-      - name: Create release tag
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
-          BUILD_DATE: ${{ needs.setup.outputs.build_date }}
-        run: |
-          if gh api "repos/${REPO}/git/ref/tags/v${BUILD_DATE}" > /dev/null 2>&1; then
-            echo "Tag v${BUILD_DATE} already exists, skipping."
-          else
-            gh api "repos/${REPO}/git/refs" \
-              --method POST \
-              -f ref="refs/tags/v${BUILD_DATE}" \
-              -f sha="${SHA}"
-            echo "Created release tag v${BUILD_DATE}."
-            gh workflow run trivy.yml \
-              --repo "${REPO}" \
-              --ref main
           fi
