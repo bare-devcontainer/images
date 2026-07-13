@@ -286,8 +286,8 @@ jobs:
           fi
 
           # Commit each changed README via the contents API (one commit per
-          # file, same pattern as update-keys.yml). Commits are created by
-          # the app, so they are verified.
+          # file, same pattern as update-material.yml). Commits are created
+          # by the app, so they are verified.
           while IFS= read -r path; do
             image="${path%%/*}"
             existing_sha=$(gh api "repos/${REPO}/contents/${path}?ref=${BRANCH}" \

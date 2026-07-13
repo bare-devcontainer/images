@@ -9,6 +9,7 @@ on:
       - '*/smoke-test.sh'
       - '*/node-keyring.kbx'
       - '*/githubcli-archive-keyring.gpg'
+      - '*/rustup-init-*.sha256'
       - build-config.sh
       - .trivyignore.yaml
   push:
@@ -20,6 +21,7 @@ on:
       - '*/smoke-test.sh'
       - '*/node-keyring.kbx'
       - '*/githubcli-archive-keyring.gpg'
+      - '*/rustup-init-*.sha256'
       - build-config.sh
 
 permissions: {}

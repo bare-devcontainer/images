@@ -1,9 +1,19 @@
-name: Update Trusted Keys
+name: Update Trusted Material
+
+# Keeps trust material committed to this repository — signing keys,
+# keyrings, and per-version checksum files with no signature of their
+# own — in sync with each upstream. Format-specific verification (GPG,
+# minisign, sha256sum) happens in each image's Dockerfile against the
+# committed file; this workflow only keeps that file's content current.
 
 on:
   pull_request:
     paths:
-      - .github/workflows/update-keys.yml
+      - .github/workflows/update-material.yml
+      # Entries with a version_file re-run promptly when Renovate bumps the
+      # pinned version, since the currently committed checksum would
+      # otherwise go stale until the next scheduled run.
+      - rust/build.yaml
   schedule:
     - cron: '0 6 * * 3'
   workflow_dispatch:
@@ -72,6 +82,33 @@ jobs:
               [cli.github.com](https://cli.github.com/packages/githubcli-archive-keyring.gpg),
               the GPG keyring that signs GitHub's official apt repository used to
               install the `gh` CLI in the uv builder stage.
+          - id: rust-rustup-init-sha256-amd64
+            path: rust/rustup-init-amd64.sha256
+            # VERSION is replaced with RUSTUP_VERSION, read from version_file below.
+            url: https://static.rust-lang.org/rustup/archive/VERSION/x86_64-unknown-linux-gnu/rustup-init.sha256
+            version_file: rust/build.yaml
+            version_key: RUSTUP_VERSION
+            title: "chore(rust): update rustup-init checksum (amd64)"
+            body: >-
+              Automated sync of `rust/rustup-init-amd64.sha256` from
+              [static.rust-lang.org](https://static.rust-lang.org/rustup/), matching the
+              currently pinned `RUSTUP_VERSION`. rustup publishes no GPG/minisign signature
+              for `rustup-init`, so this checksum file, committed to the repo and reviewed
+              like any other change, is the trust anchor `rust/Dockerfile` verifies the
+              downloaded binary against.
+          - id: rust-rustup-init-sha256-arm64
+            path: rust/rustup-init-arm64.sha256
+            url: https://static.rust-lang.org/rustup/archive/VERSION/aarch64-unknown-linux-gnu/rustup-init.sha256
+            version_file: rust/build.yaml
+            version_key: RUSTUP_VERSION
+            title: "chore(rust): update rustup-init checksum (arm64)"
+            body: >-
+              Automated sync of `rust/rustup-init-arm64.sha256` from
+              [static.rust-lang.org](https://static.rust-lang.org/rustup/), matching the
+              currently pinned `RUSTUP_VERSION`. rustup publishes no GPG/minisign signature
+              for `rustup-init`, so this checksum file, committed to the repo and reviewed
+              like any other change, is the trust anchor `rust/Dockerfile` verifies the
+              downloaded binary against.
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -81,7 +118,14 @@ jobs:
       - name: Download remote file
         env:
           URL: ${{ matrix.url }}
-        run: wget -q -T 30 -t 3 -O /tmp/downloaded "${URL}"
+          VERSION_FILE: ${{ matrix.version_file }}
+          VERSION_KEY: ${{ matrix.version_key }}
+        run: |
+          if [ -n "$VERSION_FILE" ]; then
+            VERSION=$(KEY="$VERSION_KEY" yq '.variants[0].build_args.[strenv(KEY)]' "$VERSION_FILE")
+            URL="${URL//VERSION/${VERSION}}"
+          fi
+          wget -q -T 30 -t 3 -O /tmp/downloaded "${URL}"
 
       - name: Check for changes
         id: diff
