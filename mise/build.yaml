@@ -12,11 +12,7 @@ variants:
       # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
       MISE_VERSION: "2026.7.5"
 
-  - variant: "latest-bookworm"
-    tags:
-      - "2026.6.14-bookworm"
-      - "bookworm"
-    debian_variant: "bookworm"
-    build_args:
-      # mise >= 2026.7.0 requires the newer glibc version, which is not available in bookworm.
-      MISE_VERSION: "2026.6.14"
+# No bookworm variant: mise >= 2026.7.0 requires a newer glibc than bookworm
+# provides, and mise uses calendar versioning, so no future release can ever
+# satisfy bookworm again. Publishing a permanently frozen mise would mean
+# shipping a tool that no longer receives security fixes.
