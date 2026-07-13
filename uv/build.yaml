@@ -11,7 +11,7 @@ variants:
     build_args:
       # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
       UV_VERSION: "0.11.28"
-      # renovate: datasource=github-releases depName=cli/cli versioning=semver extractVersion=^v?(?<version>.+)
+      # renovate: datasource=deb registryUrl=https://cli.github.com/packages?suite=stable&components=main&binaryArch=amd64,arm64 depName=gh versioning=deb
       GH_VERSION: "2.96.0"
 
   - variant: "bookworm"
@@ -23,5 +23,5 @@ variants:
     build_args:
       # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
       UV_VERSION: "0.11.28"
-      # renovate: datasource=github-releases depName=cli/cli versioning=semver extractVersion=^v?(?<version>.+)
+      # renovate: datasource=deb registryUrl=https://cli.github.com/packages?suite=stable&components=main&binaryArch=amd64,arm64 depName=gh versioning=deb
       GH_VERSION: "2.96.0"
