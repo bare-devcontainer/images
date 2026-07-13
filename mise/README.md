@@ -26,4 +26,3 @@ Tags are also published with a date suffix (e.g., `2026.6.12-trixie-20260623`) o
 Everything from the [debian](../debian) base image, plus:
 
 - [mise](https://mise.jdx.dev/)
-- [usage](https://usage.jdx.dev/) (global mise tool; for CLI completion support)
