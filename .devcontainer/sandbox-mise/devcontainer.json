@@ -6,7 +6,7 @@
       // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
       "DEBIAN_TAG": "trixie-20260711@sha256:a4016263075479795268ddc3f312d4ce487d6599cd24f537d441ece216bf4677",
       // renovate: datasource=github-releases depName=jdx/mise versioning=semver
-      "MISE_VERSION": "2026.6.12"
+      "MISE_VERSION": "2026.7.5"
     }
   },
   "runArgs": [
