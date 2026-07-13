@@ -44,6 +44,7 @@ jobs:
       skip: ${{ steps.check.outputs.exists }}
       build_args: ${{ steps.prep.outputs.build_args }}
       tags: ${{ steps.prep.outputs.tags }}
+      description: ${{ steps.prep.outputs.description }}
       labels: ${{ steps.meta.outputs.labels }}
       annotations: ${{ steps.meta.outputs.annotations }}
     steps:
@@ -69,6 +70,7 @@ jobs:
           DATED_TAG="${PRIMARY_TAG}-${BUILD_DATE}"
           BUILD_ARGS=$(bash build-config.sh build-args "$IMAGE" "$VARIANT")
           STATIC_TAGS=$(bash build-config.sh tags "$IMAGE" "$VARIANT" "$IMAGE_REF")
+          DESCRIPTION=$(bash build-config.sh description "$IMAGE")
 
           DEBIAN_VARIANT=$(bash build-config.sh get-field "$IMAGE" "$VARIANT" debian_variant)
           if [ -n "$DEBIAN_VARIANT" ] && [ "$DEBIAN_VARIANT" != "null" ]; then
@@ -87,6 +89,7 @@ jobs:
           DELIM="EOF_$(openssl rand -hex 8)"
           {
             echo "dated_tag=${DATED_TAG}"
+            echo "description=${DESCRIPTION}"
             echo "build_args<<${DELIM}"
             echo "$BUILD_ARGS"
             echo "${DELIM}"
@@ -127,6 +130,16 @@ jobs:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest
         with:
           images: ${{ inputs.image_ref }}
+          # Override the repository-level defaults with per-image values.
+          # annotations must be set explicitly in addition to labels: the
+          # DOCKER_METADATA_ANNOTATIONS_LEVELS env var only controls where
+          # annotations are attached, not what feeds them.
+          labels: |
+            org.opencontainers.image.title=${{ inputs.image }}
+            org.opencontainers.image.description=${{ steps.prep.outputs.description }}
+          annotations: |
+            org.opencontainers.image.title=${{ inputs.image }}
+            org.opencontainers.image.description=${{ steps.prep.outputs.description }}
 
   build:
     permissions:
@@ -209,6 +222,16 @@ jobs:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: index
         with:
           images: ${{ inputs.image_ref }}
+          # Override the repository-level defaults with per-image values.
+          # annotations must be set explicitly in addition to labels: the
+          # DOCKER_METADATA_ANNOTATIONS_LEVELS env var only controls where
+          # annotations are attached, not what feeds them.
+          labels: |
+            org.opencontainers.image.title=${{ inputs.image }}
+            org.opencontainers.image.description=${{ needs.prepare.outputs.description }}
+          annotations: |
+            org.opencontainers.image.title=${{ inputs.image }}
+            org.opencontainers.image.description=${{ needs.prepare.outputs.description }}
       - name: Create multi-arch manifest
         id: merge
         env:

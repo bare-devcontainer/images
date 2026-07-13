@@ -5,7 +5,7 @@ This repository builds and publishes minimal Debian-based Docker images for use 
 ```
 <image>/
   Dockerfile    # image build instructions
-  build.yaml    # variant definitions: tags, build args, debian_variant
+  build.yaml    # image description and variant definitions: tags, build args, debian_variant
 build-config.sh              # CLI for querying build.yaml; used by CI to generate matrices and build args
 .github/workflows/
   release.yml                # builds and pushes images to GHCR

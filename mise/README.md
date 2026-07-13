@@ -16,10 +16,17 @@ ghcr.io/bare-devcontainer/mise:<tag>
 
 | Tag | mise version | Debian version |
 |-----|-------------|---------------|
-| `2026.6.12-trixie`, `2026.6.12`, `trixie` | 2026.6.12 | trixie |
-| `2026.6.12-bookworm`, `bookworm` | 2026.6.12 | bookworm |
+| `2026.7.5-trixie`, `2026.7.5`, `trixie` | 2026.7.5 | trixie |
 
-Tags are also published with a date suffix (e.g., `2026.6.12-trixie-20260623`) on each build.
+Tags are also published with a date suffix (e.g., `2026.7.5-trixie-20260623`) on each build.
+
+> [!NOTE]
+> The `bookworm` variant has been discontinued. mise 2026.7.0 and later require
+> a newer glibc than bookworm provides, and mise uses calendar versioning, so
+> no future mise release will ever be compatible with bookworm again. Rather
+> than publishing a permanently frozen mise that no longer receives security
+> fixes, only the trixie variant is maintained. Previously published bookworm
+> tags remain available on GHCR but will not be updated.
 
 ## Installed software
 

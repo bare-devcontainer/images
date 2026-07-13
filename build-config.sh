@@ -23,6 +23,9 @@
 #   variants <image>
 #       Output all variant names for <image> as a JSON array.
 #
+#   description <image>
+#       Print the human-readable image description.
+#
 #   tags <image> <variant> <image_ref>
 #       Print all tags for <variant> as <image_ref>:<tag>, one per line.
 set -euo pipefail
@@ -33,24 +36,27 @@ FILE="${IMAGE_NAME:+${IMAGE_NAME}/build.yaml}"
 
 case "$COMMAND" in
   variants)
-    yq -o json '[.[].variant]' "$FILE"
+    yq -o json '[.variants[].variant]' "$FILE"
+    ;;
+  description)
+    yq '.description // ""' "$FILE"
     ;;
   get-field)
     VARIANT="${3:?Missing variant}" FIELD="${4:?Missing field}" yq \
-      '.[] | select(.variant == strenv(VARIANT)) | .[strenv(FIELD)]' "$FILE"
+      '.variants[] | select(.variant == strenv(VARIANT)) | .[strenv(FIELD)]' "$FILE"
     ;;
   build-args)
     VARIANT="${3:?Missing variant}" yq \
-      '.[] | select(.variant == strenv(VARIANT)) | .build_args | to_entries[] | .key + "=" + .value' \
+      '.variants[] | select(.variant == strenv(VARIANT)) | .build_args | to_entries[] | .key + "=" + .value' \
       "$FILE"
     ;;
   primary-tag)
     VARIANT="${3:?Missing variant}" yq \
-      '.[] | select(.variant == strenv(VARIANT)) | .tags[0]' "$FILE"
+      '.variants[] | select(.variant == strenv(VARIANT)) | .tags[0]' "$FILE"
     ;;
   tags)
     VARIANT="${3:?Missing variant}" REF="${4:?Missing image_ref}" yq \
-      '.[] | select(.variant == strenv(VARIANT)) | .tags[] | strenv(REF) + ":" + .' \
+      '.variants[] | select(.variant == strenv(VARIANT)) | .tags[] | strenv(REF) + ":" + .' \
       "$FILE"
     ;;
   all-matrix)
@@ -60,13 +66,13 @@ case "$COMMAND" in
       -printf '%h\n' | sed 's|^\./||' | sort | \
     while IFS= read -r IMG; do
       IMAGE="$IMG" yq -o json \
-        '[.[] | {"image": strenv(IMAGE), "variant": .variant, "primary_tag": .tags[0]}]' \
+        '[.variants[] | {"image": strenv(IMAGE), "variant": .variant, "primary_tag": .tags[0]}]' \
         "${IMG}/build.yaml"
     done | jq -c -s 'add // []'
     ;;
   *)
     echo "Unknown command: $COMMAND" >&2
-    echo "Available commands: all-matrix, variants, get-field, primary-tag, build-args, tags" >&2
+    echo "Available commands: all-matrix, variants, get-field, description, primary-tag, build-args, tags" >&2
     exit 1
     ;;
 esac
