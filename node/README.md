@@ -12,14 +12,16 @@ ghcr.io/bare-devcontainer/node:<tag>
 
 ## Tags
 
-| Tag | Node.js version | Debian version |
-|-----|-----------------|---------------|
-| `26.4.0-trixie`, `26-trixie`, `26.4.0`, `26`, `trixie` | 26.x (Current) | trixie |
-| `26.4.0-bookworm`, `26-bookworm`, `bookworm` | 26.x (Current) | bookworm |
-| `24.18.0-trixie`, `24-trixie`, `24.18.0`, `24` | 24.x (LTS) | trixie |
-| `24.18.0-bookworm`, `24-bookworm` | 24.x (LTS) | bookworm |
+<!-- tags:begin -->
+| Tags | Debian variant |
+|------|----------------|
+| `26.5.0-trixie`, `26-trixie`, `trixie`, `26.5.0`, `26` | trixie |
+| `26.5.0-bookworm`, `26-bookworm`, `bookworm` | bookworm |
+| `24.18.0-trixie`, `24-trixie`, `24.18.0`, `24` | trixie |
+| `24.18.0-bookworm`, `24-bookworm` | bookworm |
 
-Tags are also published with a date suffix (e.g., `24.18.0-trixie-20260623`) on each build.
+Tags are also published with a date suffix on each build (e.g., `26.5.0-trixie-<YYYYMMDD>`).
+<!-- tags:end -->
 
 ## Installed software
 

@@ -10,12 +10,14 @@ ghcr.io/bare-devcontainer/debian:<tag>
 
 ## Tags
 
-| Tag | Debian version |
-|-----|---------------|
-| `trixie` | Debian 13 (trixie) |
-| `bookworm` | Debian 12 (bookworm) |
+<!-- tags:begin -->
+| Tags | Debian variant |
+|------|----------------|
+| `trixie` | trixie |
+| `bookworm` | bookworm |
 
-Tags are also published with a date suffix (e.g., `trixie-20260623`) on each build.
+Tags are also published with a date suffix on each build (e.g., `trixie-<YYYYMMDD>`).
+<!-- tags:end -->
 
 ## Installed software
 
