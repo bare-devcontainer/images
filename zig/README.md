@@ -12,14 +12,16 @@ ghcr.io/bare-devcontainer/zig:<tag>
 
 ## Tags
 
-| Tag | Zig version | Debian version |
-|-----|------------|---------------|
-| `0.16.0-trixie`, `0.16-trixie`, `0-trixie`, `0.16.0`, `0.16`, `0`, `trixie` | 0.16.x | trixie |
-| `0.16.0-bookworm`, `0.16-bookworm`, `bookworm` | 0.16.x | bookworm |
-| `0.15.2-trixie`, `0.15-trixie`, `0.15.2`, `0.15` | 0.15.x | trixie |
-| `0.15.2-bookworm`, `0.15-bookworm` | 0.15.x | bookworm |
+<!-- tags:begin -->
+| Tags | Debian variant |
+|------|----------------|
+| `0.16.0-trixie`, `0.16-trixie`, `0-trixie`, `trixie`, `0.16.0`, `0.16`, `0` | trixie |
+| `0.16.0-bookworm`, `0.16-bookworm`, `bookworm` | bookworm |
+| `0.15.2-trixie`, `0.15-trixie`, `0.15.2`, `0.15` | trixie |
+| `0.15.2-bookworm`, `0.15-bookworm` | bookworm |
 
-Tags are also published with a date suffix (e.g., `0.16.0-trixie-20260623`) on each build.
+Tags are also published with a date suffix on each build (e.g., `0.16.0-trixie-<YYYYMMDD>`).
+<!-- tags:end -->
 
 ## Installed software
 

@@ -17,12 +17,14 @@ ghcr.io/bare-devcontainer/uv:<tag>
 
 ## Tags
 
-| Tag | uv version | Debian version |
-|-----|-----------|---------------|
-| `0.11.26-trixie`, `0.11.26`, `trixie` | 0.11.26 | trixie |
-| `0.11.26-bookworm`, `bookworm` | 0.11.26 | bookworm |
+<!-- tags:begin -->
+| Tags | Debian variant |
+|------|----------------|
+| `0.11.28-trixie`, `0.11.28`, `trixie` | trixie |
+| `0.11.28-bookworm`, `bookworm` | bookworm |
 
-Tags are also published with a date suffix (e.g., `0.11.26-trixie-20260623`) on each build.
+Tags are also published with a date suffix on each build (e.g., `0.11.28-trixie-<YYYYMMDD>`).
+<!-- tags:end -->
 
 ## Installed software
 

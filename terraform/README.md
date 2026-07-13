@@ -17,12 +17,14 @@ ghcr.io/bare-devcontainer/terraform:<tag>
 
 ## Tags
 
-| Tag | Terraform version | Debian version |
-|-----|-------------------|-----------------|
-| `1.15.7-trixie`, `1-trixie`, `1.15.7`, `1`, `trixie` | 1.15.7 | trixie |
-| `1.15.7-bookworm`, `1-bookworm`, `bookworm` | 1.15.7 | bookworm |
+<!-- tags:begin -->
+| Tags | Debian variant |
+|------|----------------|
+| `1.15.8-trixie`, `1-trixie`, `1.15.8`, `1`, `trixie` | trixie |
+| `1.15.8-bookworm`, `1-bookworm`, `bookworm` | bookworm |
 
-Tags are also published with a date suffix (e.g., `1.15.7-trixie-20260704`) on each build.
+Tags are also published with a date suffix on each build (e.g., `1.15.8-trixie-<YYYYMMDD>`).
+<!-- tags:end -->
 
 ## Installed software
 

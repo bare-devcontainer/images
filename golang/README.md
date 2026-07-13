@@ -12,14 +12,16 @@ ghcr.io/bare-devcontainer/golang:<tag>
 
 ## Tags
 
-| Tag | Go version | Debian version |
-|-----|-----------|---------------|
-| `1.26.4-trixie`, `1.26-trixie`, `1-trixie`, `1.26.4`, `1.26`, `1`, `trixie` | 1.26.x | trixie |
-| `1.26.4-bookworm`, `1.26-bookworm`, `1-bookworm`, `bookworm` | 1.26.x | bookworm |
-| `1.25.11-trixie`, `1.25-trixie`, `1.25.11`, `1.25` | 1.25.x | trixie |
-| `1.25.11-bookworm`, `1.25-bookworm` | 1.25.x | bookworm |
+<!-- tags:begin -->
+| Tags | Debian variant |
+|------|----------------|
+| `1.26.5-trixie`, `1.26-trixie`, `1-trixie`, `trixie`, `1.26.5`, `1.26`, `1` | trixie |
+| `1.26.5-bookworm`, `1.26-bookworm`, `1-bookworm`, `bookworm` | bookworm |
+| `1.25.12-trixie`, `1.25-trixie`, `1.25.12`, `1.25` | trixie |
+| `1.25.12-bookworm`, `1.25-bookworm` | bookworm |
 
-Tags are also published with a date suffix (e.g., `1.26.4-trixie-20260623`) on each build.
+Tags are also published with a date suffix on each build (e.g., `1.26.5-trixie-<YYYYMMDD>`).
+<!-- tags:end -->
 
 ## Installed software
 
