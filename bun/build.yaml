@@ -1,4 +1,4 @@
-description: "Bun runtime on Debian"
+description: "Dev Container image with the Bun JavaScript/TypeScript runtime, built on Debian"
 variants:
   - variant: "1-trixie"
     tags:

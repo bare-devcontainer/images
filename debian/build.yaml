@@ -1,4 +1,4 @@
-description: "Debian base image"
+description: "Minimal Debian base image for Dev Containers"
 variants:
   - variant: "trixie"
     tags:

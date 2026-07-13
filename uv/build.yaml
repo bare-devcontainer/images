@@ -1,4 +1,4 @@
-description: "Python (via uv) on Debian"
+description: "Dev Container image for Python development with uv, built on Debian"
 variants:
   - variant: "trixie"
     tags:

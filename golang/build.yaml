@@ -1,4 +1,4 @@
-description: "Go toolchain on Debian"
+description: "Dev Container image with the Go toolchain, built on Debian"
 variants:
   - variant: "1.26-trixie"
     tags:

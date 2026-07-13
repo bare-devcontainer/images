@@ -1,4 +1,4 @@
-description: "Terraform CLI on Debian"
+description: "Dev Container image with the Terraform CLI and terraform-ls, built on Debian"
 variants:
   - variant: "1-trixie"
     tags:

@@ -1,4 +1,4 @@
-description: "Rust (via rustup) on Debian"
+description: "Dev Container image with Rust installed via rustup, built on Debian"
 variants:
   - variant: "1-trixie"
     tags:

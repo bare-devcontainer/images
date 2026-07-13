@@ -1,4 +1,4 @@
-description: "Zig toolchain on Debian"
+description: "Dev Container image with the Zig compiler, built on Debian"
 variants:
   - variant: "0.16-trixie"
     tags:

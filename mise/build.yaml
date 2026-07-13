@@ -1,4 +1,4 @@
-description: "mise runtime manager on Debian"
+description: "Dev Container image with the mise polyglot runtime manager, built on Debian"
 variants:
   - variant: "latest-trixie"
     tags:

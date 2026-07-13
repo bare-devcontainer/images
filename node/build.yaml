@@ -1,4 +1,4 @@
-description: "Node.js on Debian"
+description: "Dev Container image with Node.js, built on Debian"
 variants:
   - variant: "26-trixie"
     tags:
