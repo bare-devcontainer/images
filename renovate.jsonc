@@ -28,7 +28,12 @@
         "// renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\"(?<currentValue>[^\"@]+)@(?<currentDigest>sha256:[a-f0-9]+)\"",
         // JSON string following a `// renovate:` comment in the form `"name@version"` (no sha256 digest)
         // e.g. "anthropic.claude-code@2.1.168"
-        "// renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\"[^\"@]+@(?<currentValue>[^\":]+)\""
+        "// renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\"[^\"@]+@(?<currentValue>[^\":]+)\"",
+        // JSON key-value pair following a `// renovate:` comment where the value is a
+        // plain version string (no `@`). Skips the quoted key first so currentValue
+        // captures the value, not the key.
+        // e.g. "MISE_VERSION": "2026.6.12"
+        "// renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?( extractVersion=(?<extractVersion>\\S+))?[\\s\\S]*?\"[^\"]+\":\\s*\"(?<currentValue>[^@\"\\s]+)\""
       ],
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
     },
