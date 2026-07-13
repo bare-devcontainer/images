@@ -207,7 +207,7 @@ jobs:
   update-readme:
     permissions:
       contents: read
-    needs: [setup, build-base, build-image]
+    needs: [setup, create-tag]
     if: needs.setup.outputs.should_run == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-slim
     timeout-minutes: 10
@@ -246,45 +246,31 @@ jobs:
           BUILD_DATE: ${{ needs.setup.outputs.build_date }}
         run: |
           set -e
-          BRANCH="housekeeper/update-readme-tags"
+          BRANCH="housekeeper/update-readme-tags-${BUILD_DATE}"
           PR_TITLE="docs: update README tag tables"
 
-          # Build a single commit containing every changed README via the
-          # Git Data API (blobs -> tree -> commit -> ref) so the commit is
-          # created and verified by the app without pushing credentials.
-          BASE_TREE=$(gh api "repos/${REPO}/git/commits/${SHA}" --jq '.tree.sha')
-          TREE_ITEMS='[]'
-          while IFS= read -r path; do
-            BLOB_SHA=$(gh api "repos/${REPO}/git/blobs" \
-              --method POST \
-              -f encoding=base64 \
-              -f content="$(base64 -w0 "$path")" \
-              --jq '.sha')
-            TREE_ITEMS=$(jq -c --arg p "$path" --arg s "$BLOB_SHA" \
-              '. + [{path: $p, mode: "100644", type: "blob", sha: $s}]' \
-              <<< "$TREE_ITEMS")
-          done < <(git diff --name-only)
-          TREE_SHA=$(jq -nc --arg base "$BASE_TREE" --argjson tree "$TREE_ITEMS" \
-              '{base_tree: $base, tree: $tree}' \
-            | gh api "repos/${REPO}/git/trees" --method POST --input - --jq '.sha')
-          COMMIT_SHA=$(gh api "repos/${REPO}/git/commits" \
-            --method POST \
-            -f message="${PR_TITLE}" \
-            -f tree="${TREE_SHA}" \
-            -F "parents[]=${SHA}" \
-            --jq '.sha')
-
-          if gh api "repos/${REPO}/git/ref/heads/${BRANCH}" > /dev/null 2>&1; then
-            gh api "repos/${REPO}/git/refs/heads/${BRANCH}" \
-              --method PATCH \
-              -f sha="${COMMIT_SHA}" \
-              -F force=true
-          else
+          if ! gh api "repos/${REPO}/git/ref/heads/${BRANCH}" > /dev/null 2>&1; then
             gh api "repos/${REPO}/git/refs" \
               --method POST \
               -f ref="refs/heads/${BRANCH}" \
-              -f sha="${COMMIT_SHA}"
+              -f sha="${SHA}"
           fi
+
+          # Commit each changed README via the contents API (one commit per
+          # file, same pattern as update-keys.yml). Commits are created by
+          # the app, so they are verified.
+          while IFS= read -r path; do
+            existing_sha=$(gh api "repos/${REPO}/contents/${path}?ref=${BRANCH}" \
+              --jq '.sha' 2>/dev/null || true)
+            args=(
+              --method PUT
+              -F message="${PR_TITLE}"
+              -F content="$(base64 -w0 "$path")"
+              -F branch="${BRANCH}"
+            )
+            [ -n "$existing_sha" ] && args+=(-F sha="$existing_sha")
+            gh api "repos/${REPO}/contents/${path}" "${args[@]}"
+          done < <(git diff --name-only)
 
           if [ -z "$(gh pr list --state open --head "${BRANCH}" --json number --jq '.[0]')" ]; then
             gh pr create \
