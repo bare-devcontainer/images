@@ -260,11 +260,12 @@ jobs:
           # file, same pattern as update-keys.yml). Commits are created by
           # the app, so they are verified.
           while IFS= read -r path; do
+            image="${path%%/*}"
             existing_sha=$(gh api "repos/${REPO}/contents/${path}?ref=${BRANCH}" \
               --jq '.sha' 2>/dev/null || true)
             args=(
               --method PUT
-              -F message="${PR_TITLE}"
+              -F message="docs(${image}): update README tag table"
               -F content="$(base64 -w0 "$path")"
               -F branch="${BRANCH}"
             )
