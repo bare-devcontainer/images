@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-slim
     timeout-minutes: 5
     outputs:
-      base_variants: ${{ steps.build.outputs.base_variants }}
+      base_matrix: ${{ steps.build.outputs.base_matrix }}
       matrix: ${{ steps.build.outputs.matrix }}
     steps:
       - name: Checkout repository
@@ -43,20 +43,24 @@ jobs:
           persist-credentials: false
       - name: Build matrix
         id: build
+        # Expand each entry across both architectures so images are
+        # smoke-tested on the same platforms they are published for.
         run: |
-          echo "base_variants=$(bash build-config.sh variants debian | jq -c .)" >> "$GITHUB_OUTPUT"
-          echo "matrix=$(bash build-config.sh all-matrix)" >> "$GITHUB_OUTPUT"
+          echo "base_matrix=$(bash build-config.sh variants debian \
+            | jq -c '[.[] as $v | ("amd64", "arm64") | {variant: $v, arch: .}]')" >> "$GITHUB_OUTPUT"
+          echo "matrix=$(bash build-config.sh all-matrix \
+            | jq -c '[.[] as $m | ("amd64", "arm64") | $m + {arch: .}]')" >> "$GITHUB_OUTPUT"
 
   check-base:
     needs: setup
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        variant: ${{ fromJson(needs.setup.outputs.base_variants) }}
+        include: ${{ fromJson(needs.setup.outputs.base_matrix) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -81,8 +85,10 @@ jobs:
           load: true
           tags: debian:${{ matrix.variant }}
           build-args: ${{ steps.read.outputs.build_args }}
-          cache-from: type=gha,scope=debian-${{ matrix.variant }}
-          cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,scope=debian-{0},mode=max', matrix.variant) || '' }}
+          # Cache scopes are arch-suffixed to match publish-image.yml so PR
+          # builds and release dry-runs share the same cache entries.
+          cache-from: type=gha,scope=debian-${{ matrix.variant }}-${{ matrix.arch }}
+          cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,scope=debian-{0}-{1},mode=max', matrix.variant, matrix.arch) || '' }}
       - name: Run smoke test
         run: |
           docker run --rm \
@@ -90,6 +96,8 @@ jobs:
             "debian:${{ matrix.variant }}" \
             bash /smoke-test.sh
       - name: Run Trivy vulnerability scanner
+        # Vulnerability findings are identical across architectures; scan once.
+        if: matrix.arch == 'amd64'
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           version: ${{ env.TRIVY_VERSION }}
@@ -104,7 +112,7 @@ jobs:
     needs: setup
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -137,8 +145,10 @@ jobs:
           load: true
           tags: ${{ matrix.image }}:${{ matrix.variant }}
           build-args: ${{ steps.read.outputs.image_args }}
-          cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.variant }}
-          cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,scope={0}-{1},mode=max', matrix.image, matrix.variant) || '' }}
+          # Cache scopes are arch-suffixed to match publish-image.yml so PR
+          # builds and release dry-runs share the same cache entries.
+          cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.variant }}-${{ matrix.arch }}
+          cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,scope={0}-{1}-{2},mode=max', matrix.image, matrix.variant, matrix.arch) || '' }}
       - name: Run smoke test
         env:
           MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}
@@ -150,6 +160,8 @@ jobs:
             "${{ matrix.image }}:${{ matrix.variant }}" \
             bash -c "bash /smoke-test-debian.sh && bash /smoke-test.sh"
       - name: Run Trivy vulnerability scanner
+        # Vulnerability findings are identical across architectures; scan once.
+        if: matrix.arch == 'amd64'
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           version: ${{ env.TRIVY_VERSION }}
