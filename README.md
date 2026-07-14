@@ -5,7 +5,9 @@
 [![Trivy Scan](https://github.com/bare-devcontainer/images/actions/workflows/trivy.yml/badge.svg)](https://github.com/bare-devcontainer/images/actions/workflows/trivy.yml)
 [![Attestation Checks](https://github.com/bare-devcontainer/images/actions/workflows/attest-check.yml/badge.svg?branch=main)](https://github.com/bare-devcontainer/images/actions/workflows/attest-check.yml)
 
-Minimal, secure, and bloat-free Dev Container base images for various technology stacks, published to GitHub Container Registry.
+Development environments routinely download and execute software from many upstream sources. When those sources, versions, and build inputs are not tightly controlled and verifiable, the environment itself becomes a software supply-chain risk.
+
+Bare Dev Container Images provides minimal, purpose-built foundations designed to keep those dependencies explicit, reproducible, and auditable. The following goals define how that principle is applied.
 
 ## Goals
 
