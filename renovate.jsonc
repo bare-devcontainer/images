@@ -93,14 +93,15 @@
       "minimumReleaseAge": null
     },
     {
-      "description": "Pin the Debian release to stay within the same major version (e.g., bookworm, trixie).",
-      "matchFileNames": [
-        "debian/build.yaml"
+      "description": "Keep Debian image tags in the <codename>-<yyyymmdd> format and pinned to the same release line (e.g., bookworm, trixie). Renovate's built-in debian versioning rewrites dated codename tags to bare numeric release tags (e.g. trixie-20260713 -> 13) in getNewValue, so override it (including the per-line versioning=debian annotations) with a regex versioning that treats the codename as the compatibility layer.",
+      "matchDatasources": [
+        "docker"
       ],
       "matchPackageNames": [
-        "debian"
+        "debian",
+        "**/debian"
       ],
-      "allowedVersions": "/^{{ lookup (split currentVersion '-') 0 }}-\\d{8}(?:\\.\\d+)?$/"
+      "versioning": "regex:^(?<compatibility>[a-z]+)-(?<patch>\\d{8})(?:\\.(?<build>\\d+))?$"
     },
     {
       "description": "Create separate patch update branches so older Go release lines (e.g. 1.25.x) still receive patch updates while minor updates are disabled below.",
