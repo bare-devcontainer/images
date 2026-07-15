@@ -1,4 +1,10 @@
 description: "Dev Container image with the Go toolchain, built on Debian"
+materials:
+  - path: google-linux-signing-key.asc
+    url: https://dl.google.com/linux/linux_signing_key.pub
+    description: >-
+      Google's Linux Packages signing key from dl.google.com, used to verify
+      the Go toolchain.
 variants:
   - variant: "1.26-trixie"
     tags:

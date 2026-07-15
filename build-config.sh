@@ -10,6 +10,11 @@
 #       {"image": <image>, "variant": "...", "primary_tag": "..."}.
 #       Used to generate the GitHub Actions job matrix.
 #
+#   materials-images
+#       Output the names of images declaring trust material (`materials`
+#       in build.yaml) as a JSON array. Used to generate the
+#       update-material.yml job matrix.
+#
 #   get-field <image> <variant> <field>
 #       Print the value of an arbitrary field for the entry matching <variant>.
 #
@@ -70,9 +75,19 @@ case "$COMMAND" in
         "${IMG}/build.yaml"
     done | jq -c -s 'add // []'
     ;;
+  materials-images)
+    find . -maxdepth 2 -name build.yaml \
+      ! -path './.devcontainer/*' \
+      -printf '%h\n' | sed 's|^\./||' | sort | \
+    while IFS= read -r IMG; do
+      if [ "$(yq '.materials // [] | length' "${IMG}/build.yaml")" -gt 0 ]; then
+        printf '%s\n' "$IMG"
+      fi
+    done | jq -c -R -s 'split("\n") | map(select(. != ""))'
+    ;;
   *)
     echo "Unknown command: $COMMAND" >&2
-    echo "Available commands: all-matrix, variants, get-field, description, primary-tag, build-args, tags" >&2
+    echo "Available commands: all-matrix, materials-images, variants, get-field, description, primary-tag, build-args, tags" >&2
     exit 1
     ;;
 esac

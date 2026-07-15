@@ -1,4 +1,11 @@
 description: "Dev Container image with the Terraform CLI and terraform-ls, built on Debian"
+materials:
+  - path: hashicorp-signing-key.asc
+    url: https://www.hashicorp.com/.well-known/pgp-key.txt
+    description: >-
+      HashiCorp release signing key (fingerprint
+      C874011F0AB405110D02105534365D9472D7468F), which signs the SHA256SUMS.sig
+      files published alongside Terraform release archives.
 variants:
   - variant: "1-trixie"
     tags:

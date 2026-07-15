@@ -1,4 +1,10 @@
 description: "Dev Container image with the mise polyglot runtime manager, built on Debian"
+materials:
+  - path: mise-minisign.pub
+    url: https://raw.githubusercontent.com/jdx/mise/main/minisign.pub
+    description: >-
+      minisign public key published by jdx/mise, used to verify mise release
+      artifacts.
 variants:
   - variant: "latest-trixie"
     tags:

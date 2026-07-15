@@ -1,19 +1,25 @@
 name: Update Trusted Material
 
 # Keeps trust material committed to this repository — signing keys,
-# keyrings, and per-version checksum files with no signature of their
-# own — in sync with each upstream. Format-specific verification (GPG,
-# minisign, sha256sum) happens in each image's Dockerfile against the
-# committed file; this workflow only keeps that file's content current.
+# keyrings, and per-version checksum files — in sync with each upstream,
+# as declared under `materials` in each image's build.yaml.
+# update-material.sh refreshes one image's files in the working tree and
+# reports whether anything changed; this workflow loops over every image
+# with materials, then does the git side once for everything that
+# changed: on schedule/dispatch it commits to a single housekeeper
+# branch and opens one pull request, and on pull_request events it
+# commits materials marked commit_to_pr directly to the PR's head
+# branch, so a version bump and its matching checksums land in a single
+# PR.
 
 on:
   pull_request:
     paths:
       - .github/workflows/update-material.yml
-      # Entries with a version_file re-run promptly when Renovate bumps the
-      # pinned version, since the currently committed checksum would
-      # otherwise go stale until the next scheduled run.
-      - rust/build.yaml
+      - update-material.sh
+      - build-config.sh
+      # Re-syncs commit_to_pr materials when Renovate bumps a pinned version.
+      - '*/build.yaml'
   schedule:
     - cron: '0 6 * * 3'
   workflow_dispatch:
@@ -25,169 +31,121 @@ jobs:
     permissions:
       contents: read
     runs-on: ubuntu-slim
-    timeout-minutes: 5
+    timeout-minutes: 10
     env:
       # PRs from forks don't have access to secrets.
       IS_FORK_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - id: node-keyring
-            path: node/node-keyring.kbx
-            url: https://github.com/nodejs/release-keys/raw/HEAD/gpg/pubring.kbx
-            title: "chore(node): update Node.js release keyring"
-            body: >-
-              Automated sync of `node/node-keyring.kbx` from
-              [nodejs/release-keys](https://github.com/nodejs/release-keys), which tracks
-              the current set of Node.js release-signing keys.
-          - id: mise-minisign
-            path: mise/mise-minisign.pub
-            url: https://raw.githubusercontent.com/jdx/mise/main/minisign.pub
-            title: "chore(mise): update mise minisign public key"
-            body: >-
-              Automated sync of `mise/mise-minisign.pub` from
-              [jdx/mise](https://github.com/jdx/mise), which publishes the current mise
-              release-signing minisign key.
-          - id: golang-google-signing-key
-            path: golang/google-linux-signing-key.asc
-            url: https://dl.google.com/linux/linux_signing_key.pub
-            title: "chore(golang): update Google Linux signing key"
-            body: >-
-              Automated sync of `golang/google-linux-signing-key.asc` from
-              [dl.google.com](https://dl.google.com/linux/linux_signing_key.pub), which
-              publishes Google's Linux Packages signing key used to verify the Go toolchain.
-          - id: bun-signing-key
-            path: bun/bun-signing-key.asc
-            url: https://keys.openpgp.org/vks/v1/by-fingerprint/F3DCC08A8572C0749B3E18888EAB4D40A7B22B59
-            title: "chore(bun): update Bun release signing key"
-            body: >-
-              Automated sync of `bun/bun-signing-key.asc` from
-              [keys.openpgp.org](https://keys.openpgp.org), which hosts the current Bun
-              release-signing key (fingerprint F3DCC08A8572C0749B3E18888EAB4D40A7B22B59), matching
-              the same key Bun's own official Docker image verifies against.
-          - id: terraform-hashicorp-signing-key
-            path: terraform/hashicorp-signing-key.asc
-            url: https://www.hashicorp.com/.well-known/pgp-key.txt
-            title: "chore(terraform): update HashiCorp release signing key"
-            body: >-
-              Automated sync of `terraform/hashicorp-signing-key.asc` from
-              [hashicorp.com](https://www.hashicorp.com/.well-known/pgp-key.txt) (fingerprint
-              C874011F0AB405110D02105534365D9472D7468F), which HashiCorp uses to sign the
-              `SHA256SUMS.sig` files published alongside Terraform release archives on
-              releases.hashicorp.com.
-          - id: uv-githubcli-archive-keyring
-            path: uv/githubcli-archive-keyring.gpg
-            url: https://cli.github.com/packages/githubcli-archive-keyring.gpg
-            title: "chore(uv): update GitHub CLI apt repository keyring"
-            body: >-
-              Automated sync of `uv/githubcli-archive-keyring.gpg` from
-              [cli.github.com](https://cli.github.com/packages/githubcli-archive-keyring.gpg),
-              the GPG keyring that signs GitHub's official apt repository used to
-              install the `gh` CLI in the uv builder stage.
-          - id: rust-rustup-init-sha256-amd64
-            path: rust/rustup-init-amd64.sha256
-            # VERSION is replaced with RUSTUP_VERSION, read from version_file below.
-            url: https://static.rust-lang.org/rustup/archive/VERSION/x86_64-unknown-linux-gnu/rustup-init.sha256
-            version_file: rust/build.yaml
-            version_key: RUSTUP_VERSION
-            title: "chore(rust): update rustup-init checksum (amd64)"
-            body: >-
-              Automated sync of `rust/rustup-init-amd64.sha256` from
-              [static.rust-lang.org](https://static.rust-lang.org/rustup/), matching the
-              currently pinned `RUSTUP_VERSION`. rustup publishes no GPG/minisign signature
-              for `rustup-init`, so this checksum file, committed to the repo and reviewed
-              like any other change, is the trust anchor `rust/Dockerfile` verifies the
-              downloaded binary against.
-          - id: rust-rustup-init-sha256-arm64
-            path: rust/rustup-init-arm64.sha256
-            url: https://static.rust-lang.org/rustup/archive/VERSION/aarch64-unknown-linux-gnu/rustup-init.sha256
-            version_file: rust/build.yaml
-            version_key: RUSTUP_VERSION
-            title: "chore(rust): update rustup-init checksum (arm64)"
-            body: >-
-              Automated sync of `rust/rustup-init-arm64.sha256` from
-              [static.rust-lang.org](https://static.rust-lang.org/rustup/), matching the
-              currently pinned `RUSTUP_VERSION`. rustup publishes no GPG/minisign signature
-              for `rustup-init`, so this checksum file, committed to the repo and reviewed
-              like any other change, is the trust anchor `rust/Dockerfile` verifies the
-              downloaded binary against.
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
-      - name: Download remote file
+      - name: Update trusted material
+        id: update
         env:
-          URL: ${{ matrix.url }}
-          VERSION_FILE: ${{ matrix.version_file }}
-          VERSION_KEY: ${{ matrix.version_key }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
-          if [ -n "$VERSION_FILE" ]; then
-            VERSION=$(KEY="$VERSION_KEY" yq '.variants[0].build_args.[strenv(KEY)]' "$VERSION_FILE")
-            URL="${URL//VERSION/${VERSION}}"
-          fi
-          wget -q -T 30 -t 3 -O /tmp/downloaded "${URL}"
-
-      - name: Check for changes
-        id: diff
-        env:
-          TARGET_PATH: ${{ matrix.path }}
-        run: |
-          if cmp -s /tmp/downloaded "${TARGET_PATH}"; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi
+          set -eo pipefail
+          images=$(bash build-config.sh materials-images | jq -r '.[]')
+          changed=false
+          for image in $images; do
+            args=("$image")
+            if [ "$EVENT_NAME" = "pull_request" ]; then
+              args+=(--commit-to-pr-only)
+            fi
+            result=$(bash update-material.sh "${args[@]}")
+            if [ "$result" = "true" ]; then
+              changed=true
+            fi
+          done
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
 
       - name: Generate GitHub App Token
         id: app-token
-        if: steps.diff.outputs.changed == 'true' && env.IS_FORK_PR != 'true'
+        if: steps.update.outputs.changed == 'true' && env.IS_FORK_PR != 'true'
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           client-id: ${{ secrets.HOUSEKEEPER_CLIENT_ID }}
           private-key: ${{ secrets.HOUSEKEEPER_PRIVATE_KEY }}
 
-      - name: Open pull request
-        if: steps.diff.outputs.changed == 'true' && env.IS_FORK_PR != 'true'
+      - name: Commit refreshed files
+        if: steps.update.outputs.changed == 'true' && env.IS_FORK_PR != 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          TARGET_PATH: ${{ matrix.path }}
-          TARGET_ID: ${{ matrix.id }}
-          PR_TITLE: ${{ matrix.title }}
-          PR_BODY: ${{ matrix.body }}
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          set -e
-          cp /tmp/downloaded "${TARGET_PATH}"
+          set -eo pipefail
 
           OWNER="${GITHUB_REPOSITORY_OWNER}"
           REPO="${GITHUB_REPOSITORY#*/}"
-          BRANCH="housekeeper/update-${TARGET_ID}"
 
-          if ! gh api "repos/${OWNER}/${REPO}/git/ref/heads/${BRANCH}" > /dev/null 2>&1; then
-            gh api "repos/${OWNER}/${REPO}/git/refs" \
-              --method POST \
-              -F ref="refs/heads/${BRANCH}" \
-              -F sha="${GITHUB_SHA}"
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BRANCH="${HEAD_REF}"
+          else
+            BRANCH="housekeeper/update-material"
+            if ! gh api "repos/${OWNER}/${REPO}/git/ref/heads/${BRANCH}" > /dev/null 2>&1; then
+              gh api "repos/${OWNER}/${REPO}/git/refs" \
+                --method POST \
+                -f ref="refs/heads/${BRANCH}" \
+                -f sha="${GITHUB_SHA}"
+            fi
           fi
 
-          existing_sha=$(gh api "repos/${OWNER}/${REPO}/contents/${TARGET_PATH}?ref=${BRANCH}" \
-            --jq '.sha' 2>/dev/null || true)
+          head_sha=$(gh api "repos/${OWNER}/${REPO}/git/ref/heads/${BRANCH}" --jq '.object.sha')
+          base_tree=$(gh api "repos/${OWNER}/${REPO}/git/commits/${head_sha}" --jq '.tree.sha')
 
-          args=(
-            --method PUT
-            -F message="${PR_TITLE}"
-            -F content="$(base64 -w0 "${TARGET_PATH}")"
-            -F branch="${BRANCH}"
-          )
-          [ -n "$existing_sha" ] && args+=(-F sha="$existing_sha")
-          gh api "repos/${OWNER}/${REPO}/contents/${TARGET_PATH}" "${args[@]}"
+          # base64 keeps binary keyrings intact; --input avoids the kernel's
+          # per-argument size limit. update-material.sh already refreshed
+          # these paths in the working tree, across every changed image.
+          tree_entries='[]'
+          while IFS= read -r path; do
+            blob_sha=$(base64 -w0 "$path" \
+              | jq -R '{content: ., encoding: "base64"}' \
+              | gh api "repos/${OWNER}/${REPO}/git/blobs" \
+                  --method POST --input - --jq '.sha')
+            tree_entries=$(jq --arg path "$path" --arg sha "$blob_sha" \
+              '. + [{path: $path, mode: "100644", type: "blob", sha: $sha}]' \
+              <<< "$tree_entries")
+          done < <(git diff --name-only)
 
+          tree_sha=$(jq -n --arg base_tree "$base_tree" --argjson tree "$tree_entries" \
+            '{base_tree: $base_tree, tree: $tree}' \
+            | gh api "repos/${OWNER}/${REPO}/git/trees" \
+                --method POST --input - --jq '.sha')
+
+          if [ "$tree_sha" = "$base_tree" ]; then
+            echo "Branch ${BRANCH} is already up to date; nothing to commit."
+            exit 0
+          fi
+
+          # No author/committer, so GitHub signs the commit (Verified).
+          commit_sha=$(gh api "repos/${OWNER}/${REPO}/git/commits" \
+            --method POST \
+            -f message="chore: update trusted material" \
+            -f tree="${tree_sha}" \
+            -f "parents[]=${head_sha}" \
+            --jq '.sha')
+
+          # Fast-forward only; if a concurrent push moved the branch, the
+          # run that push triggers refreshes the files again.
+          gh api "repos/${OWNER}/${REPO}/git/refs/heads/${BRANCH}" \
+            --method PATCH \
+            -f sha="${commit_sha}"
+
+      - name: Open pull request
+        if: steps.update.outputs.changed == 'true' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -eo pipefail
+          BRANCH="housekeeper/update-material"
           if [ -z "$(gh pr list --state open --head "${BRANCH}" --json number --jq '.[0]')" ]; then
+            files=$(git diff --name-only | sed 's/^/- `/;s/$/`/')
             gh pr create \
-              --title "${PR_TITLE}" \
-              --body "${PR_BODY}" \
+              --title "chore: update trusted material" \
+              --body "Automated sync of trusted material."$'\n\n'"${files}" \
               --head "${BRANCH}" \
               --base main
           fi

@@ -1,4 +1,10 @@
 description: "Dev Container image with Node.js, built on Debian"
+materials:
+  - path: node-keyring.kbx
+    url: https://github.com/nodejs/release-keys/raw/HEAD/gpg/pubring.kbx
+    description: >-
+      GPG keyring from nodejs/release-keys, which tracks the current set of
+      Node.js release-signing keys.
 variants:
   - variant: "26-trixie"
     tags:

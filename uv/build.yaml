@@ -1,4 +1,10 @@
 description: "Dev Container image for Python development with uv, built on Debian"
+materials:
+  - path: githubcli-archive-keyring.gpg
+    url: https://cli.github.com/packages/githubcli-archive-keyring.gpg
+    description: >-
+      GPG keyring that signs GitHub's official apt repository, used to install
+      the gh CLI in the uv builder stage.
 variants:
   - variant: "trixie"
     tags:
