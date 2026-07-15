@@ -3,25 +3,25 @@ variants:
   - variant: "trixie"
     tags:
       # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
-      - "0.11.28-trixie"
+      - "0.11.29-trixie"
       # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
-      - "0.11.28"
+      - "0.11.29"
       - "trixie"
     debian_variant: "trixie"
     build_args:
       # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
-      UV_VERSION: "0.11.28"
+      UV_VERSION: "0.11.29"
       # renovate: datasource=deb registryUrl=https://cli.github.com/packages?suite=stable&components=main&binaryArch=amd64 depName=gh versioning=deb
       GH_VERSION: "2.96.0"
 
   - variant: "bookworm"
     tags:
       # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
-      - "0.11.28-bookworm"
+      - "0.11.29-bookworm"
       - "bookworm"
     debian_variant: "bookworm"
     build_args:
       # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
-      UV_VERSION: "0.11.28"
+      UV_VERSION: "0.11.29"
       # renovate: datasource=deb registryUrl=https://cli.github.com/packages?suite=stable&components=main&binaryArch=amd64 depName=gh versioning=deb
       GH_VERSION: "2.96.0"
