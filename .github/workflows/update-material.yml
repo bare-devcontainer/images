@@ -26,6 +26,9 @@ jobs:
       contents: read
     runs-on: ubuntu-slim
     timeout-minutes: 5
+    env:
+      # PRs from forks don't have access to secrets.
+      IS_FORK_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
     strategy:
       fail-fast: false
       matrix:
@@ -140,14 +143,14 @@ jobs:
 
       - name: Generate GitHub App Token
         id: app-token
-        if: steps.diff.outputs.changed == 'true'
+        if: steps.diff.outputs.changed == 'true' && env.IS_FORK_PR != 'true'
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           client-id: ${{ secrets.HOUSEKEEPER_CLIENT_ID }}
           private-key: ${{ secrets.HOUSEKEEPER_PRIVATE_KEY }}
 
       - name: Open pull request
-        if: steps.diff.outputs.changed == 'true'
+        if: steps.diff.outputs.changed == 'true' && env.IS_FORK_PR != 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           TARGET_PATH: ${{ matrix.path }}

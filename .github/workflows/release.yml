@@ -7,8 +7,6 @@ on:
     paths:
       - .github/workflows/release.yml
       - .github/workflows/publish-image.yml
-      - '*/Dockerfile'
-      - '*/build.yaml'
   workflow_dispatch:
     inputs:
       overwrite:
@@ -22,9 +20,10 @@ on:
         type: boolean
         default: false
 
+# PR dry-runs use a per-PR group so they never queue against real releases.
 concurrency:
-  group: publish
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('publish-pr-{0}', github.event.pull_request.number) || 'publish' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions: {}
 
@@ -154,7 +153,11 @@ jobs:
   gate:
     permissions: {}
     needs: [setup]
-    if: needs.setup.outputs.should_run == 'true'
+    # Skipping the build jobs on PRs from forks.
+    if: >-
+      needs.setup.outputs.should_run == 'true' &&
+      (github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository)
     environment: ${{ github.event_name != 'pull_request' && 'release' || 'ci' }}
     runs-on: ubuntu-slim
     timeout-minutes: 5
