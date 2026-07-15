@@ -4,7 +4,7 @@
     "dockerfile": "../../terraform/Dockerfile",
     "args": {
       // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
-      "DEBIAN_TAG": "trixie-20260714@sha256:6aad51db021ad1c0efa324d62e53538cf2c693061bc246c417c00cc7a9facab6",
+      "DEBIAN_TAG": "trixie-20260715@sha256:c05f04d17975f23f6bd2f72a4eb462d5edced42c6806f824be5bc4d0b94a0af3",
       // renovate: datasource=github-releases depName=hashicorp/terraform versioning=semver extractVersion=^v(?<version>.+)
       "TERRAFORM_VERSION": "1.15.7",
       // renovate: datasource=github-releases depName=hashicorp/terraform-ls versioning=semver extractVersion=^v(?<version>.+)
