@@ -9,6 +9,12 @@ FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG} AS builder
 ARG DENO_VERSION
 ARG GH_VERSION
 ARG TARGETARCH
+# Only ever set to "true" by the devcontainer sandbox build (see
+# .devcontainer/sandbox-deno/devcontainer.json), which has no way to supply
+# the github_token build secret below. Every other build path (the published
+# image) leaves this false, so a missing/broken secret fails the build loudly
+# instead of silently skipping attestation verification.
+ARG SKIP_ATTESTATION_VERIFY=false
 
 # hadolint ignore=DL3002 # builder stage is a throwaway; never shipped or run
 USER root
@@ -27,9 +33,14 @@ RUN --mount=type=bind,source=githubcli-archive-keyring.gpg,target=/etc/apt/keyri
     && apt-get --no-install-recommends install -y "gh=${GH_VERSION}"
 
 # Deno publishes no signature for its release archives, so its checksum is
-# verified below.
+# verified below. It is also verified against Deno's GitHub Artifact
+# Attestation using `gh release verify-asset`, which requires an
+# authenticated token (supplied as the github_token build secret; the
+# ambient GITHUB_TOKEN from the publish workflow is sufficient, since
+# reading public attestation data needs no special permissions).
 # hadolint ignore=DL3003 # cd only used in subshell
-RUN case "${TARGETARCH}" in \
+RUN --mount=type=secret,id=github_token,required=false \
+    case "${TARGETARCH}" in \
         amd64) DENO_ARCH="x86_64" ;; \
         arm64) DENO_ARCH="aarch64" ;; \
         *) echo "Unsupported TARGETARCH: ${TARGETARCH}" >&2; exit 1 ;; \
@@ -41,15 +52,11 @@ RUN case "${TARGETARCH}" in \
     && wget -q -T 30 -t 3 -P "${DENO_TMPDIR}" "https://github.com/denoland/deno/releases/download/v${DENO_VERSION}/${DENO_ZIP}.sha256sum" \
     && (cd "${DENO_TMPDIR}" && sha256sum -c "${DENO_ZIP}.sha256sum") \
     # Verify deno's release artifact against its GitHub Artifact Attestation.
-    && DENO_DIGEST="$(sha256sum "${DENO_TMPDIR}/${DENO_ZIP}" | awk '{print $1}')" \
-    && wget -q -T 30 -t 3 -O "${DENO_TMPDIR}/attestations.json" \
-        --header="Accept: application/vnd.github+json" \
-        "https://api.github.com/repos/denoland/deno/attestations/sha256:${DENO_DIGEST}" \
-    && jq -c '.attestations[].bundle' "${DENO_TMPDIR}/attestations.json" > "${DENO_TMPDIR}/bundles.jsonl" \
-    && [ -s "${DENO_TMPDIR}/bundles.jsonl" ] \
-    && GH_CONFIG_DIR="${DENO_TMPDIR}/gh-config" gh attestation verify "${DENO_TMPDIR}/${DENO_ZIP}" \
-        --bundle "${DENO_TMPDIR}/bundles.jsonl" --repo denoland/deno \
-        --predicate-type "https://in-toto.io/attestation/release/v0.2" \
+    && if [ "${SKIP_ATTESTATION_VERIFY}" != "true" ]; then \
+         GH_TOKEN="$(cat /run/secrets/github_token)" \
+         GH_CONFIG_DIR="${DENO_TMPDIR}/gh-config" gh release verify-asset "v${DENO_VERSION}" \
+             "${DENO_TMPDIR}/${DENO_ZIP}" --repo denoland/deno; \
+       fi \
     # Install deno
     && unzip -q "${DENO_TMPDIR}/${DENO_ZIP}" -d "${DENO_TMPDIR}" \
     && mv "${DENO_TMPDIR}/deno" /usr/local/bin/deno \

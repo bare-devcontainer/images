@@ -8,7 +8,12 @@
       // renovate: datasource=github-releases depName=denoland/deno versioning=semver extractVersion=^v(?<version>.+)
       "DENO_VERSION": "2.9.2",
       // renovate: datasource=deb registryUrl=https://cli.github.com/packages?suite=stable&components=main&binaryArch=amd64 depName=gh versioning=deb
-      "GH_VERSION": "2.96.0"
+      "GH_VERSION": "2.96.0",
+      // devcontainers/ci has no way to supply the github_token build secret
+      // that gh release verify-asset needs, so this throwaway sandbox build
+      // (never published) skips that check; the real image build always
+      // verifies it.
+      "SKIP_ATTESTATION_VERIFY": "true"
     }
   },
   "runArgs": [

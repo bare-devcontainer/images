@@ -6,11 +6,15 @@ runtime installed, built on the [debian](../debian) base image.
 `deno` is downloaded directly from [GitHub Releases](https://github.com/denoland/deno/releases)
 and its checksum is verified before installation. It is also verified against its
 [GitHub Artifact Attestation](https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds)
-using `gh attestation verify`, which runs fully unauthenticated at build time (the attestation
-bundle is fetched from GitHub's public REST API). Deno's release archives carry GitHub's
-automatic `https://in-toto.io/attestation/release/v0.2` release attestation rather than a SLSA
-build provenance attestation, so it confirms the archive was genuinely published as part of that
-GitHub release rather than proving the build process that produced it.
+using `gh release verify-asset`. Deno's release archives carry GitHub's automatic
+`https://in-toto.io/attestation/release/v0.2` release attestation rather than a SLSA build
+provenance attestation, so this confirms the archive was genuinely published as part of that
+GitHub release rather than proving the build process that produced it. `gh release verify-asset`
+requires an authenticated token, supplied as a `github_token` build secret from the publish
+workflow's ambient `GITHUB_TOKEN` (reading public attestation data needs no special permissions).
+The disposable devcontainer sandbox build used for CI smoke tests has no way to supply build
+secrets, so it explicitly skips this check via the `SKIP_ATTESTATION_VERIFY` build arg; the
+published image always verifies it.
 
 Bash completions are generated at build time with `deno completions bash` and installed for the
 `bash-completion` support already present in the [debian](../debian) base image.
