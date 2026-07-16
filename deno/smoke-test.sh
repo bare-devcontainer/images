@@ -20,6 +20,7 @@ cd "$TMPDIR"
 deno run index.ts
 
 echo "=== Verifying deno eval ==="
+# shellcheck disable=SC2016  # the template literal is evaluated by deno, not bash
 deno eval 'console.log(`1 + 2 = ${1 + 2}`)'
 
 echo "=== Verifying deno type checking ==="
