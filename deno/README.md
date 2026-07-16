@@ -6,7 +6,8 @@ runtime installed, built on the [debian](../debian) base image.
 `deno` is downloaded directly from [GitHub Releases](https://github.com/denoland/deno/releases)
 and its checksum is verified before installation. It is also verified against its
 [GitHub Artifact Attestation](https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds)
-using `gh release verify-asset`, which runs fully unauthenticated at build time.
+using `gh attestation verify`, which runs fully unauthenticated at build time (the attestation
+bundle is fetched from GitHub's public REST API).
 
 Bash completions are generated at build time with `deno completions bash` and installed for the
 `bash-completion` support already present in the [debian](../debian) base image.

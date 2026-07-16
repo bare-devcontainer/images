@@ -27,9 +27,7 @@ RUN --mount=type=bind,source=githubcli-archive-keyring.gpg,target=/etc/apt/keyri
     && apt-get --no-install-recommends install -y "gh=${GH_VERSION}"
 
 # Deno publishes no signature for its release archives, so its checksum is
-# verified below. It is also verified against Deno's GitHub Artifact
-# Attestation using `gh release verify-asset`, which runs fully
-# unauthenticated at build time.
+# verified below.
 # hadolint ignore=DL3003 # cd only used in subshell
 RUN case "${TARGETARCH}" in \
         amd64) DENO_ARCH="x86_64" ;; \
@@ -43,8 +41,14 @@ RUN case "${TARGETARCH}" in \
     && wget -q -T 30 -t 3 -P "${DENO_TMPDIR}" "https://github.com/denoland/deno/releases/download/v${DENO_VERSION}/${DENO_ZIP}.sha256sum" \
     && (cd "${DENO_TMPDIR}" && sha256sum -c "${DENO_ZIP}.sha256sum") \
     # Verify deno's release artifact against its GitHub Artifact Attestation.
-    && GH_CONFIG_DIR="${DENO_TMPDIR}/gh-config" gh release verify-asset "v${DENO_VERSION}" \
-        "${DENO_TMPDIR}/${DENO_ZIP}" --repo denoland/deno \
+    && DENO_DIGEST="$(sha256sum "${DENO_TMPDIR}/${DENO_ZIP}" | awk '{print $1}')" \
+    && wget -q -T 30 -t 3 -O "${DENO_TMPDIR}/attestations.json" \
+        --header="Accept: application/vnd.github+json" \
+        "https://api.github.com/repos/denoland/deno/attestations/sha256:${DENO_DIGEST}" \
+    && jq -c '.attestations[].bundle' "${DENO_TMPDIR}/attestations.json" > "${DENO_TMPDIR}/bundles.jsonl" \
+    && [ -s "${DENO_TMPDIR}/bundles.jsonl" ] \
+    && GH_CONFIG_DIR="${DENO_TMPDIR}/gh-config" gh attestation verify "${DENO_TMPDIR}/${DENO_ZIP}" \
+        --bundle "${DENO_TMPDIR}/bundles.jsonl" --repo denoland/deno \
     # Install deno
     && unzip -q "${DENO_TMPDIR}/${DENO_ZIP}" -d "${DENO_TMPDIR}" \
     && mv "${DENO_TMPDIR}/deno" /usr/local/bin/deno \
