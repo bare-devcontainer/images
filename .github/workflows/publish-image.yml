@@ -177,11 +177,6 @@ jobs:
           push: false
           outputs: type=oci,dest=/tmp/image,tar=false
           build-args: ${{ needs.prepare.outputs.build_args }}
-          # Only consumed by deno/Dockerfile (to verify Deno's GitHub Artifact
-          # Attestation via `gh release verify-asset`); harmless no-op for
-          # every other image, which declares no matching secret mount.
-          secrets: |
-            github_token=${{ secrets.GITHUB_TOKEN }}
           labels: ${{ needs.prepare.outputs.labels }}
           annotations: ${{ needs.prepare.outputs.annotations }}
           sbom: true

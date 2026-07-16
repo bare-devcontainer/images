@@ -154,11 +154,6 @@ jobs:
           load: true
           tags: ${{ matrix.image }}:${{ matrix.variant }}
           build-args: ${{ steps.read.outputs.image_args }}
-          # Only consumed by deno/Dockerfile (to verify Deno's GitHub Artifact
-          # Attestation via `gh release verify-asset`); harmless no-op for
-          # every other image, which declares no matching secret mount.
-          secrets: |
-            github_token=${{ secrets.GITHUB_TOKEN }}
           # Cache scopes are arch-suffixed to match publish-image.yml so PR
           # builds and release dry-runs share the same cache entries.
           cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.variant }}-${{ matrix.arch }}
