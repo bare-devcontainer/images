@@ -18,6 +18,11 @@ materials:
     description: >-
       Checksum for the deno release archive (arm64); same trust anchor as the
       amd64 entry.
+  - path: githubcli-archive-keyring.gpg
+    url: https://cli.github.com/packages/githubcli-archive-keyring.gpg
+    description: >-
+      GPG keyring that signs GitHub's official apt repository, used to install
+      the gh CLI in the deno builder stage.
 variants:
   - variant: "2-trixie"
     tags:
@@ -32,6 +37,8 @@ variants:
     build_args:
       # renovate: datasource=github-releases depName=denoland/deno versioning=semver extractVersion=^v(?<version>.+)
       DENO_VERSION: "2.9.2"
+      # renovate: datasource=deb registryUrl=https://cli.github.com/packages?suite=stable&components=main&binaryArch=amd64 depName=gh versioning=deb
+      GH_VERSION: "2.96.0"
 
   - variant: "2-bookworm"
     tags:
@@ -43,3 +50,5 @@ variants:
     build_args:
       # renovate: datasource=github-releases depName=denoland/deno versioning=semver extractVersion=^v(?<version>.+)
       DENO_VERSION: "2.9.2"
+      # renovate: datasource=deb registryUrl=https://cli.github.com/packages?suite=stable&components=main&binaryArch=amd64 depName=gh versioning=deb
+      GH_VERSION: "2.96.0"

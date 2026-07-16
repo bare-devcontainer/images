@@ -8,7 +8,9 @@ Deno publishes no signature for its release archives, so the download is verifie
 SHA-256 checksum file committed to this repository (`deno/deno-<arch>.sha256`) rather than one
 fetched from the same server as the archive. The committed checksum files are kept in sync with
 the pinned `DENO_VERSION` by an automated workflow and reviewed like any other change, so later
-tampering with the download channel cannot affect builds.
+tampering with the download channel cannot affect builds. It is also verified against its
+[GitHub Artifact Attestation](https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds)
+using `gh release verify-asset`, which runs fully unauthenticated at build time.
 
 Bash completions are generated at build time with `deno completions bash` and installed for the
 `bash-completion` support already present in the [debian](../debian) base image.
