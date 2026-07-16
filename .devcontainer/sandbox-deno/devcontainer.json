@@ -1,0 +1,17 @@
+{
+  "name": "sandbox-deno",
+  "build": {
+    "dockerfile": "../../deno/Dockerfile",
+    "args": {
+      // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
+      "DEBIAN_TAG": "trixie-20260716@sha256:42d01856e5d2b4ac9cb2e479490ce70d1676025c3c928f2e49094e8b34cb1b11",
+      // renovate: datasource=github-releases depName=denoland/deno versioning=semver extractVersion=^v(?<version>.+)
+      "DENO_VERSION": "2.9.2"
+    }
+  },
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges"
+  ],
+  "remoteUser": "dev"
+}

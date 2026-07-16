@@ -25,6 +25,7 @@ Dev Container base images are available from Microsoft ([link](https://github.co
 |-------|----------|-------------|
 | [bun](bun/README.md) | `ghcr.io/bare-devcontainer/bun` | Bun runtime on Debian |
 | [debian](debian/README.md) | `ghcr.io/bare-devcontainer/debian` | Debian base image |
+| [deno](deno/README.md) | `ghcr.io/bare-devcontainer/deno` | Deno runtime on Debian |
 | [golang](golang/README.md) | `ghcr.io/bare-devcontainer/golang` | Go toolchain on Debian |
 | [mise](mise/README.md) | `ghcr.io/bare-devcontainer/mise` | mise runtime manager on Debian |
 | [node](node/README.md) | `ghcr.io/bare-devcontainer/node` | Node.js on Debian |
