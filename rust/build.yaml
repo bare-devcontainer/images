@@ -1,4 +1,22 @@
 description: "Dev Container image with Rust installed via rustup, built on Debian"
+# VERSION in each url is replaced with the build_args value named by
+# version_key; commit_to_pr files are pushed onto version-bump PRs.
+materials:
+  - path: rustup-init-amd64.sha256
+    url: https://static.rust-lang.org/rustup/archive/VERSION/x86_64-unknown-linux-gnu/rustup-init.sha256
+    version_key: RUSTUP_VERSION
+    commit_to_pr: true
+    description: >-
+      Checksum for rustup-init (amd64) from static.rust-lang.org, matching the
+      pinned RUSTUP_VERSION. rustup publishes no signature for rustup-init, so
+      this committed file is the trust anchor the Dockerfile verifies the
+      downloaded binary against.
+  - path: rustup-init-arm64.sha256
+    url: https://static.rust-lang.org/rustup/archive/VERSION/aarch64-unknown-linux-gnu/rustup-init.sha256
+    version_key: RUSTUP_VERSION
+    commit_to_pr: true
+    description: >-
+      Checksum for rustup-init (arm64); same trust anchor as the amd64 entry.
 variants:
   - variant: "1-trixie"
     tags:

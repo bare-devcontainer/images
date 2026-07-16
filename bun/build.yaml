@@ -1,4 +1,11 @@
 description: "Dev Container image with the Bun JavaScript/TypeScript runtime, built on Debian"
+materials:
+  - path: bun-signing-key.asc
+    url: https://keys.openpgp.org/vks/v1/by-fingerprint/F3DCC08A8572C0749B3E18888EAB4D40A7B22B59
+    description: >-
+      Bun release-signing key from keys.openpgp.org (fingerprint
+      F3DCC08A8572C0749B3E18888EAB4D40A7B22B59), matching the key Bun's own
+      official Docker image verifies against.
 variants:
   - variant: "1-trixie"
     tags:

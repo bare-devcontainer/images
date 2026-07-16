@@ -5,9 +5,10 @@ This repository builds and publishes minimal Debian-based Docker images for use 
 ```
 <image>/
   Dockerfile    # image build instructions
-  build.yaml    # image description and variant definitions: tags, build args, debian_variant
+  build.yaml    # image description, variant definitions (tags, build args, debian_variant), and trusted material sources (materials)
   README.md     # image docs; the Tags table between <!-- tags:begin/end --> markers is generated
 build-config.sh              # CLI for querying build.yaml; used by CI to generate matrices and build args
+update-material.sh           # refreshes the trust material declared in build.yaml (materials); called by update-material.yml
 update-readme.sh             # regenerates the README Tags tables from build.yaml; run by CI after each release
 .github/workflows/
   release.yml                # builds and pushes images to GHCR
