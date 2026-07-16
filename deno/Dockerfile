@@ -47,6 +47,7 @@ RUN case "${TARGETARCH}" in \
         "https://api.github.com/repos/denoland/deno/attestations/sha256:${DENO_DIGEST}" \
     && jq -c '.attestations[].bundle' "${DENO_TMPDIR}/attestations.json" > "${DENO_TMPDIR}/bundles.jsonl" \
     && [ -s "${DENO_TMPDIR}/bundles.jsonl" ] \
+    && echo "DIAGNOSTIC predicate types: $(jq -r '.attestations[].bundle.dsseEnvelope.payload | @base64d | fromjson.predicateType' "${DENO_TMPDIR}/attestations.json" | paste -sd ',')" \
     && GH_CONFIG_DIR="${DENO_TMPDIR}/gh-config" gh attestation verify "${DENO_TMPDIR}/${DENO_ZIP}" \
         --bundle "${DENO_TMPDIR}/bundles.jsonl" --repo denoland/deno \
     # Install deno
