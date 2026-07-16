@@ -1,23 +1,5 @@
 description: "Dev Container image with the Deno JavaScript/TypeScript runtime, built on Debian"
-# VERSION in each url is replaced with the build_args value named by
-# version_key; commit_to_pr files are pushed onto version-bump PRs.
 materials:
-  - path: deno-amd64.sha256
-    url: https://github.com/denoland/deno/releases/download/vVERSION/deno-x86_64-unknown-linux-gnu.zip.sha256sum
-    version_key: DENO_VERSION
-    commit_to_pr: true
-    description: >-
-      Checksum for the deno release archive (amd64) from GitHub Releases,
-      matching the pinned DENO_VERSION. Deno publishes no signature for its
-      release archives, so this committed file is the trust anchor the
-      Dockerfile verifies the downloaded binary against.
-  - path: deno-arm64.sha256
-    url: https://github.com/denoland/deno/releases/download/vVERSION/deno-aarch64-unknown-linux-gnu.zip.sha256sum
-    version_key: DENO_VERSION
-    commit_to_pr: true
-    description: >-
-      Checksum for the deno release archive (arm64); same trust anchor as the
-      amd64 entry.
   - path: githubcli-archive-keyring.gpg
     url: https://cli.github.com/packages/githubcli-archive-keyring.gpg
     description: >-

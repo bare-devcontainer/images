@@ -26,26 +26,26 @@ RUN --mount=type=bind,source=githubcli-archive-keyring.gpg,target=/etc/apt/keyri
     && apt-get update \
     && apt-get --no-install-recommends install -y "gh=${GH_VERSION}"
 
-# Deno publishes no signature for its release archives, so verify the download
-# against a checksum file committed to this repository (kept in sync via the
-# `materials` declarations in build.yaml and reviewed like any other change)
-# instead of one fetched from the same server as the archive. Also verify the
-# download against Deno's GitHub Artifact Attestation using
-# `gh release verify-asset`, which runs fully unauthenticated at build time.
+# Deno publishes no signature for its release archives, so its checksum is
+# verified below. It is also verified against Deno's GitHub Artifact
+# Attestation using `gh release verify-asset`, which runs fully
+# unauthenticated at build time.
 # hadolint ignore=DL3003 # cd only used in subshell
-RUN --mount=type=bind,source=deno-amd64.sha256,target=/tmp/deno-amd64.sha256,ro \
-    --mount=type=bind,source=deno-arm64.sha256,target=/tmp/deno-arm64.sha256,ro \
-    case "${TARGETARCH}" in \
-        amd64) DENO_ARCH="x86_64"; DENO_SHA256_FILE="/tmp/deno-amd64.sha256" ;; \
-        arm64) DENO_ARCH="aarch64"; DENO_SHA256_FILE="/tmp/deno-arm64.sha256" ;; \
+RUN case "${TARGETARCH}" in \
+        amd64) DENO_ARCH="x86_64" ;; \
+        arm64) DENO_ARCH="aarch64" ;; \
         *) echo "Unsupported TARGETARCH: ${TARGETARCH}" >&2; exit 1 ;; \
     esac \
     && DENO_ZIP="deno-${DENO_ARCH}-unknown-linux-gnu.zip" \
     && DENO_TMPDIR="$(mktemp -d)" \
+    # Download deno and verify its checksum
     && wget -q -T 30 -t 3 -P "${DENO_TMPDIR}" "https://github.com/denoland/deno/releases/download/v${DENO_VERSION}/${DENO_ZIP}" \
-    && (cd "${DENO_TMPDIR}" && sha256sum -c "${DENO_SHA256_FILE}") \
+    && wget -q -T 30 -t 3 -P "${DENO_TMPDIR}" "https://github.com/denoland/deno/releases/download/v${DENO_VERSION}/${DENO_ZIP}.sha256sum" \
+    && (cd "${DENO_TMPDIR}" && sha256sum -c "${DENO_ZIP}.sha256sum") \
+    # Verify deno's release artifact against its GitHub Artifact Attestation.
     && GH_CONFIG_DIR="${DENO_TMPDIR}/gh-config" gh release verify-asset "v${DENO_VERSION}" \
         "${DENO_TMPDIR}/${DENO_ZIP}" --repo denoland/deno \
+    # Install deno
     && unzip -q "${DENO_TMPDIR}/${DENO_ZIP}" -d "${DENO_TMPDIR}" \
     && mv "${DENO_TMPDIR}/deno" /usr/local/bin/deno \
     && rm -rf "${DENO_TMPDIR}" \

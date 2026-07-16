@@ -3,12 +3,8 @@
 Dev container image for JavaScript/TypeScript development, with the [Deno](https://deno.com/)
 runtime installed, built on the [debian](../debian) base image.
 
-`deno` is downloaded directly from [GitHub Releases](https://github.com/denoland/deno/releases).
-Deno publishes no signature for its release archives, so the download is verified against a
-SHA-256 checksum file committed to this repository (`deno/deno-<arch>.sha256`) rather than one
-fetched from the same server as the archive. The committed checksum files are kept in sync with
-the pinned `DENO_VERSION` by an automated workflow and reviewed like any other change, so later
-tampering with the download channel cannot affect builds. It is also verified against its
+`deno` is downloaded directly from [GitHub Releases](https://github.com/denoland/deno/releases)
+and its checksum is verified before installation. It is also verified against its
 [GitHub Artifact Attestation](https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds)
 using `gh release verify-asset`, which runs fully unauthenticated at build time.
 
