@@ -10,6 +10,9 @@ fetched from the same server as the archive. The committed checksum files are ke
 the pinned `DENO_VERSION` by an automated workflow and reviewed like any other change, so later
 tampering with the download channel cannot affect builds.
 
+Bash completions are generated at build time with `deno completions bash` and installed for the
+`bash-completion` support already present in the [debian](../debian) base image.
+
 ## Image
 
 ```
@@ -38,4 +41,4 @@ Tags are also published with a date suffix on each build (e.g., `2.9.2-trixie-<Y
 
 Everything from the [debian](../debian) base image, plus:
 
-- [Deno](https://deno.com/) (`deno`)
+- [Deno](https://deno.com/) (`deno`), with bash completions installed

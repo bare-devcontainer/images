@@ -13,8 +13,8 @@ ARG TARGETARCH
 USER root
 
 # Deno publishes no signature for its release archives, so verify the download
-# against a checksum file committed to this repository (kept in sync by
-# .github/workflows/update-material.yml and reviewed like any other change)
+# against a checksum file committed to this repository (kept in sync via the
+# `materials` declarations in build.yaml and reviewed like any other change)
 # instead of one fetched from the same server as the archive.
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3003 # cd only used in subshell
@@ -31,10 +31,12 @@ RUN --mount=type=bind,source=deno-amd64.sha256,target=/tmp/deno-amd64.sha256,ro 
     && (cd "${DENO_TMPDIR}" && sha256sum -c "${DENO_SHA256_FILE}") \
     && unzip -q "${DENO_TMPDIR}/${DENO_ZIP}" -d "${DENO_TMPDIR}" \
     && mv "${DENO_TMPDIR}/deno" /usr/local/bin/deno \
-    && rm -rf "${DENO_TMPDIR}"
+    && rm -rf "${DENO_TMPDIR}" \
+    && /usr/local/bin/deno completions bash > /usr/share/bash-completion/completions/deno
 
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 COPY --from=builder /usr/local/bin/deno /usr/local/bin/
+COPY --from=builder /usr/share/bash-completion/completions/deno /usr/share/bash-completion/completions/deno
 
 RUN mkdir -p /home/dev/.cache/deno

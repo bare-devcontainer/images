@@ -4,6 +4,9 @@ set -euo pipefail
 echo "=== Verifying tool installations ==="
 echo "deno: $(deno --version)"
 
+echo "=== Verifying shell completions ==="
+test -s /usr/share/bash-completion/completions/deno
+
 echo "=== Verifying program execution ==="
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
