@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # update-material.sh — refresh the trust material declared under `materials`
 # in <image>/build.yaml, writing changed files in place in the working tree.
-# Prints "true" or "false" to stdout depending on whether anything changed.
-# Performs no git or GitHub operations.
+# Prints "true" or "false" to stdout depending on whether anything changed;
+# per-file download and comparison progress goes to stderr. Performs no git
+# or GitHub operations.
 #
 # Usage:
 #   update-material.sh <image> [--commit-to-pr-only]
@@ -39,9 +40,15 @@ fi
 
 changed=false
 while IFS=$'\t' read -r path url; do
+  echo "Downloading ${url} -> ${path}" >&2
   tmp=$(mktemp)
   wget -q -T 30 -t 3 -O "$tmp" "$url"
-  cmp -s "$tmp" "$path" 2>/dev/null || changed=true
+  if cmp -s "$tmp" "$path" 2>/dev/null; then
+    echo "  unchanged" >&2
+  else
+    echo "  changed" >&2
+    changed=true
+  fi
   chmod 644 "$tmp"
   mkdir -p "$(dirname "$path")"
   mv "$tmp" "$path"
