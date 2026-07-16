@@ -7,7 +7,10 @@ runtime installed, built on the [debian](../debian) base image.
 and its checksum is verified before installation. It is also verified against its
 [GitHub Artifact Attestation](https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds)
 using `gh attestation verify`, which runs fully unauthenticated at build time (the attestation
-bundle is fetched from GitHub's public REST API).
+bundle is fetched from GitHub's public REST API). Deno's release archives carry GitHub's
+automatic `https://in-toto.io/attestation/release/v0.2` release attestation rather than a SLSA
+build provenance attestation, so it confirms the archive was genuinely published as part of that
+GitHub release rather than proving the build process that produced it.
 
 Bash completions are generated at build time with `deno completions bash` and installed for the
 `bash-completion` support already present in the [debian](../debian) base image.
