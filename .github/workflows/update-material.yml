@@ -3,14 +3,14 @@ name: Update Trusted Material
 # Keeps trust material committed to this repository — signing keys,
 # keyrings, and per-version checksum files — in sync with each upstream,
 # as declared under `materials` in each image's build.yaml.
-# update-material.sh refreshes one image's files in the working tree and
-# reports whether anything changed; this workflow loops over every image
-# with materials, then does the git side once for everything that
-# changed: on schedule/dispatch it commits to a single housekeeper
-# branch and opens one pull request, and on pull_request events it
-# commits materials marked commit_to_pr directly to the PR's head
-# branch, so a version bump and its matching checksums land in a single
-# PR.
+# update-material.sh refreshes one image's materials (a no-op if it has
+# none) in the working tree and reports whether anything changed; this
+# workflow loops over every image, then does the git side once for
+# everything that changed: on schedule/dispatch it commits to a single
+# housekeeper branch and opens one pull request, and on pull_request
+# events it commits materials marked commit_to_pr directly to the PR's
+# head branch, so a version bump and its matching checksums land in a
+# single PR.
 
 on:
   pull_request:
@@ -47,7 +47,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
         run: |
           set -eo pipefail
-          images=$(bash build-config.sh materials-images | jq -r '.[]')
+          images=$(bash build-config.sh images | jq -r '.[]')
           changed=false
           for image in $images; do
             args=("$image")

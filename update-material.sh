@@ -32,6 +32,11 @@ if [ "$FILTER" = "--commit-to-pr-only" ]; then
   FILES=$(jq -c '[.[] | select(.commit_to_pr)]' <<< "$FILES")
 fi
 
+if [ "$FILES" = "[]" ]; then
+  echo false
+  exit 0
+fi
+
 changed=false
 while IFS=$'\t' read -r path url; do
   tmp=$(mktemp)

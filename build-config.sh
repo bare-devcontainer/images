@@ -10,10 +10,22 @@
 #       {"image": <image>, "variant": "...", "primary_tag": "..."}.
 #       Used to generate the GitHub Actions job matrix.
 #
-#   materials-images
-#       Output the names of images declaring trust material (`materials`
-#       in build.yaml) as a JSON array. Used to generate the
-#       update-material.yml job matrix.
+#   images
+#       Output the names of every image directory (one containing a
+#       build.yaml) as a JSON array. Used by update-material.yml to loop
+#       over every image and refresh its trust material, if any.
+#
+#   description <image>
+#       Print the human-readable image description.
+#
+#   variants <image>
+#       Output all variant names for <image> as a JSON array.
+#
+#   tags <image> <variant> <image_ref>
+#       Print all tags for <variant> as <image_ref>:<tag>, one per line.
+#
+#   primary-tag <image> <variant>
+#       Print the first (primary) tag for <variant>.
 #
 #   get-field <image> <variant> <field>
 #       Print the value of an arbitrary field for the entry matching <variant>.
@@ -21,18 +33,6 @@
 #   build-args <image> <variant>
 #       Print the build_args for <variant> as KEY=VALUE pairs, one per line.
 #       Suitable for passing to Docker --build-arg flags.
-#
-#   primary-tag <image> <variant>
-#       Print the first (primary) tag for <variant>.
-#
-#   variants <image>
-#       Output all variant names for <image> as a JSON array.
-#
-#   description <image>
-#       Print the human-readable image description.
-#
-#   tags <image> <variant> <image_ref>
-#       Print all tags for <variant> as <image_ref>:<tag>, one per line.
 set -euo pipefail
 
 COMMAND="${1:?Usage: build-config.sh <command> [image] [args...]}"
@@ -40,11 +40,26 @@ IMAGE_NAME="${2:-}"
 FILE="${IMAGE_NAME:+${IMAGE_NAME}/build.yaml}"
 
 case "$COMMAND" in
+  images)
+    find . -maxdepth 2 -name build.yaml \
+      ! -path './.devcontainer/*' \
+      -printf '%h\n' | sed 's|^\./||' | sort | \
+    jq -c -R -s 'split("\n") | map(select(. != ""))'
+    ;;
   variants)
     yq -o json '[.variants[].variant]' "$FILE"
     ;;
   description)
     yq '.description // ""' "$FILE"
+    ;;
+  tags)
+    VARIANT="${3:?Missing variant}" REF="${4:?Missing image_ref}" yq \
+      '.variants[] | select(.variant == strenv(VARIANT)) | .tags[] | strenv(REF) + ":" + .' \
+      "$FILE"
+    ;;
+  primary-tag)
+    VARIANT="${3:?Missing variant}" yq \
+      '.variants[] | select(.variant == strenv(VARIANT)) | .tags[0]' "$FILE"
     ;;
   get-field)
     VARIANT="${3:?Missing variant}" FIELD="${4:?Missing field}" yq \
@@ -53,15 +68,6 @@ case "$COMMAND" in
   build-args)
     VARIANT="${3:?Missing variant}" yq \
       '.variants[] | select(.variant == strenv(VARIANT)) | .build_args | to_entries[] | .key + "=" + .value' \
-      "$FILE"
-    ;;
-  primary-tag)
-    VARIANT="${3:?Missing variant}" yq \
-      '.variants[] | select(.variant == strenv(VARIANT)) | .tags[0]' "$FILE"
-    ;;
-  tags)
-    VARIANT="${3:?Missing variant}" REF="${4:?Missing image_ref}" yq \
-      '.variants[] | select(.variant == strenv(VARIANT)) | .tags[] | strenv(REF) + ":" + .' \
       "$FILE"
     ;;
   all-matrix)
@@ -75,19 +81,9 @@ case "$COMMAND" in
         "${IMG}/build.yaml"
     done | jq -c -s 'add // []'
     ;;
-  materials-images)
-    find . -maxdepth 2 -name build.yaml \
-      ! -path './.devcontainer/*' \
-      -printf '%h\n' | sed 's|^\./||' | sort | \
-    while IFS= read -r IMG; do
-      if [ "$(yq '.materials // [] | length' "${IMG}/build.yaml")" -gt 0 ]; then
-        printf '%s\n' "$IMG"
-      fi
-    done | jq -c -R -s 'split("\n") | map(select(. != ""))'
-    ;;
   *)
     echo "Unknown command: $COMMAND" >&2
-    echo "Available commands: all-matrix, materials-images, variants, get-field, description, primary-tag, build-args, tags" >&2
+    echo "Available commands: images, variants, description, tags, primary-tag, get-field, build-args, all-matrix" >&2
     exit 1
     ;;
 esac
