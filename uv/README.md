@@ -4,10 +4,10 @@ Dev container image for Python development, with [uv](https://docs.astral.sh/uv/
 installed, built on the [debian](../debian) base image.
 
 `uv` is downloaded directly from [GitHub Releases](https://github.com/astral-sh/uv/releases)
-and its checksum is verified before installation. It is also verified against its
-[GitHub Artifact Attestation](https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds)
-using `gh attestation verify`, which runs fully unauthenticated at build time (the
-attestation bundle is fetched from GitHub's public REST API).
+and verified before installation against a checksum committed to this repository.
+The checksum is sourced from [releases.astral.sh](https://releases.astral.sh/) and
+kept in sync with the pinned version by `.github/workflows/update-material.yml`, so it
+is reviewed like any other change rather than fetched alongside the binary at build time.
 
 ## Image
 
