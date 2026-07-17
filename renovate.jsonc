@@ -23,17 +23,23 @@
         "**/devcontainer.json"
       ],
       "matchStrings": [
-        // JSON string following a `// renovate:` comment in the form `"tag@sha256:digest"`
-        // e.g. "ubuntu:22.04@sha256:abc123..."
-        "// renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\"(?<currentValue>[^\"@]+)@(?<currentDigest>sha256:[a-f0-9]+)\"",
-        // JSON string following a `// renovate:` comment in the form `"name@version"` (no sha256 digest)
+        // Each pattern binds a `// renovate:` comment to the JSON value on the
+        // immediately following line (`\s+`, whitespace only in between). A lazy
+        // `[\s\S]*?` must not be used here: it lets a comment whose own value
+        // does not fit the pattern (e.g. a digest-pinned DEBIAN_TAG vs. the
+        // plain-version pattern) skip ahead and swallow the next comment's
+        // value, so that dependency is never detected.
+        //
+        // JSON key-value pair where the value is in the form `tag@sha256:digest`
+        // e.g. "DEBIAN_TAG": "trixie-20260716@sha256:abc123..."
+        "// renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\s+\"[^\"]+\":\\s*\"(?<currentValue>[^\"@]+)@(?<currentDigest>sha256:[a-f0-9]+)\"",
+        // JSON string in the form `"name@version"` (no sha256 digest)
         // e.g. "anthropic.claude-code@2.1.168"
-        "// renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?[\\s\\S]*?\"[^\"@]+@(?<currentValue>[^\":]+)\"",
-        // JSON key-value pair following a `// renovate:` comment where the value is a
-        // plain version string (no `@`). Skips the quoted key first so currentValue
-        // captures the value, not the key.
+        "// renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\s+\"[^\"@]+@(?<currentValue>[^\":]+)\"",
+        // JSON key-value pair where the value is a plain version string (no `@`).
+        // Skips the quoted key first so currentValue captures the value, not the key.
         // e.g. "MISE_VERSION": "2026.6.12"
-        "// renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?( extractVersion=(?<extractVersion>\\S+))?[\\s\\S]*?\"[^\"]+\":\\s*\"(?<currentValue>[^@\"\\s]+)\""
+        "// renovate: datasource=(?<datasource>\\S+)( registryUrl=(?<registryUrl>\\S+))? depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?( extractVersion=(?<extractVersion>\\S+))?\\s+\"[^\"]+\":\\s*\"(?<currentValue>[^@\"\\s]+)\""
       ],
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
     },
@@ -93,6 +99,13 @@
       "minimumReleaseAge": null
     },
     {
+      "description": "Sandbox dev containers pin the same versions as the image build.yaml files (updated without delay above) and must stay in sync with the committed trust material those updates refresh, so apply their updates without delay as well.",
+      "matchFileNames": [
+        ".devcontainer/sandbox-*/devcontainer.json"
+      ],
+      "minimumReleaseAge": null
+    },
+    {
       "description": "Keep Debian image tags in the <codename>-<yyyymmdd> format and pinned to the same release line (e.g., bookworm, trixie). Renovate's built-in debian versioning rewrites dated codename tags to bare numeric release tags (e.g. trixie-20260713 -> 13) in getNewValue, so override it (including the per-line versioning=debian annotations) with a regex versioning that treats the codename as the compatibility layer.",
       "matchDatasources": [
         "docker"
@@ -115,7 +128,8 @@
     },
     {
       "matchFileNames": [
-        "golang/build.yaml"
+        "golang/build.yaml",
+        ".devcontainer/sandbox-golang/devcontainer.json"
       ],
       "matchPackageNames": [
         "golang"
@@ -128,7 +142,8 @@
     },
     {
       "matchFileNames": [
-        "zig/build.yaml"
+        "zig/build.yaml",
+        ".devcontainer/sandbox-zig/devcontainer.json"
       ],
       "matchPackageNames": [
         "ziglang/zig",

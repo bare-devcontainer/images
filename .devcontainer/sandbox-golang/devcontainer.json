@@ -6,9 +6,9 @@
       // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
       "DEBIAN_TAG": "trixie-20260716@sha256:42d01856e5d2b4ac9cb2e479490ce70d1676025c3c928f2e49094e8b34cb1b11",
       // renovate: datasource=golang-version depName=golang
-      "GOLANG_VERSION": "1.26.4",
+      "GOLANG_VERSION": "1.26.5",
       // renovate: datasource=go depName=golang.org/x/tools/gopls
-      "GOPLS_VERSION": "v0.22.0"
+      "GOPLS_VERSION": "v0.23.0"
     }
   },
   "runArgs": [
