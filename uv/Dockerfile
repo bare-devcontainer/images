@@ -18,7 +18,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # (downloaded from https://releases.astral.sh/, kept in sync by
 # .github/workflows/update-material.yml and reviewed like any other change)
 # instead of one fetched alongside the binary.
-# hadolint ignore=DL3003 # cd only used in subshell
 RUN --mount=type=bind,source=uv-amd64.sha256,target=/tmp/uv-amd64.sha256,ro \
     --mount=type=bind,source=uv-arm64.sha256,target=/tmp/uv-arm64.sha256,ro \
     case "${TARGETARCH}" in \
@@ -30,7 +29,7 @@ RUN --mount=type=bind,source=uv-amd64.sha256,target=/tmp/uv-amd64.sha256,ro \
     # Download uv and verify it against the committed checksum
     && UV_TARBALL="uv-${UV_ARCH}-unknown-linux-gnu.tar.gz" \
     && wget -q -T 30 -t 3 -P "${TMPDIR}" "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/${UV_TARBALL}" \
-    && (cd "${TMPDIR}" && sha256sum -c "${UV_SHA256_FILE}") \
+    && env --chdir="${TMPDIR}" sha256sum -c "${UV_SHA256_FILE}" \
     # Install uv
     && tar xzf "${TMPDIR}/${UV_TARBALL}" -C "${TMPDIR}" \
     && mv "${TMPDIR}/uv-${UV_ARCH}-unknown-linux-gnu/uv" "${TMPDIR}/uv-${UV_ARCH}-unknown-linux-gnu/uvx" /usr/local/bin/ \

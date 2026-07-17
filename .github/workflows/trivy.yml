@@ -48,8 +48,8 @@ jobs:
       - name: Build image matrix
         id: build
         run: |
-          echo "base_variants=$(bash build-config.sh variants debian | jq -c .)" >> "$GITHUB_OUTPUT"
-          echo "matrix=$(bash build-config.sh all-matrix | jq -c '[.[] | . + {"platform": "linux/amd64"}, . + {"platform": "linux/arm64"}]')" >> "$GITHUB_OUTPUT"
+          echo "base_variants=$(bash scripts/build-config.sh variants debian | jq -c .)" >> "$GITHUB_OUTPUT"
+          echo "matrix=$(bash scripts/build-config.sh all-matrix | jq -c '[.[] | . + {"platform": "linux/amd64"}, . + {"platform": "linux/arm64"}]')" >> "$GITHUB_OUTPUT"
 
   scan-base:
     needs: setup

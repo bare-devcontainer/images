@@ -13,7 +13,6 @@ ARG TARGETARCH
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-# hadolint ignore=DL3003 # cd only used in subshell
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     --mount=type=bind,source=mise-minisign.pub,target=/tmp/mise-minisign.pub,ro \
@@ -31,7 +30,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && wget -q -T 30 -t 3 -P "${MISE_TMPDIR}" "https://github.com/jdx/mise/releases/download/v${MISE_VERSION}/SHASUMS256.txt" \
     && wget -q -T 30 -t 3 -P "${MISE_TMPDIR}" "https://github.com/jdx/mise/releases/download/v${MISE_VERSION}/SHASUMS256.txt.minisig" \
     && minisign -Vm "${MISE_TMPDIR}/SHASUMS256.txt" -p /tmp/mise-minisign.pub \
-    && (cd "${MISE_TMPDIR}" && grep "  \\./${MISE_BINARY}$" SHASUMS256.txt | sha256sum -c -) \
+    && grep "  \\./${MISE_BINARY}$" "${MISE_TMPDIR}/SHASUMS256.txt" | env --chdir="${MISE_TMPDIR}" sha256sum -c - \
     && install -m 755 "${MISE_TMPDIR}/${MISE_BINARY}" /usr/local/bin/mise \
     && rm -rf "${MISE_TMPDIR}"
 

@@ -13,7 +13,6 @@ ARG TARGETARCH
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-# hadolint ignore=DL3003 # cd only used in subshell
 RUN --mount=type=bind,source=bun-signing-key.asc,target=/tmp/bun-signing-key.asc,ro \
     case "${TARGETARCH}" in \
         amd64) BUN_ARCH="x64" ;; \
@@ -30,7 +29,7 @@ RUN --mount=type=bind,source=bun-signing-key.asc,target=/tmp/bun-signing-key.asc
     && wget -q -T 30 -t 3 -P "${BUN_TMPDIR}" "https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/${BUN_ZIP}" \
     && wget -q -T 30 -t 3 -P "${BUN_TMPDIR}" "https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/SHASUMS256.txt.asc" \
     && gpg --batch --verify --output "${BUN_TMPDIR}/SHASUMS256.txt" "${BUN_TMPDIR}/SHASUMS256.txt.asc" \
-    && (cd "${BUN_TMPDIR}" && grep " ${BUN_ZIP}\$" SHASUMS256.txt | sha256sum -c -) \
+    && grep " ${BUN_ZIP}\$" "${BUN_TMPDIR}/SHASUMS256.txt" | env --chdir="${BUN_TMPDIR}" sha256sum -c - \
     && gpgconf --kill all \
     # Install bun
     && unzip -q "${BUN_TMPDIR}/${BUN_ZIP}" -d "${BUN_TMPDIR}" \

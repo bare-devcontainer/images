@@ -25,7 +25,6 @@ USER dev
 # checksum file committed to this repository (kept in sync by
 # .github/workflows/update-material.yml and reviewed like any other change)
 # instead of one fetched from the same server as the binary.
-# hadolint ignore=DL3003 # cd only used in subshell
 RUN --mount=type=bind,source=rustup-init-amd64.sha256,target=/tmp/rustup-init-amd64.sha256,ro \
     --mount=type=bind,source=rustup-init-arm64.sha256,target=/tmp/rustup-init-arm64.sha256,ro \
     case "${TARGETARCH}" in \
@@ -36,7 +35,7 @@ RUN --mount=type=bind,source=rustup-init-amd64.sha256,target=/tmp/rustup-init-am
     && RUSTUP_TMPDIR="$(mktemp -d)" \
     && wget -q -T 30 -t 3 -P "${RUSTUP_TMPDIR}" \
         "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUST_ARCH}-unknown-linux-gnu/rustup-init" \
-    && (cd "${RUSTUP_TMPDIR}" && sha256sum -c "${RUSTUP_SHA256_FILE}") \
+    && env --chdir="${RUSTUP_TMPDIR}" sha256sum -c "${RUSTUP_SHA256_FILE}" \
     && chmod +x "${RUSTUP_TMPDIR}/rustup-init" \
     && "${RUSTUP_TMPDIR}/rustup-init" -y --no-modify-path --default-toolchain none \
     && rm -rf "${RUSTUP_TMPDIR}" \

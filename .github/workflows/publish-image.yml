@@ -66,13 +66,13 @@ jobs:
           IMAGE_REF: ${{ inputs.image_ref }}
           BUILD_DATE: ${{ inputs.build_date }}
         run: |
-          PRIMARY_TAG=$(bash build-config.sh primary-tag "$IMAGE" "$VARIANT")
+          PRIMARY_TAG=$(bash scripts/build-config.sh primary-tag "$IMAGE" "$VARIANT")
           DATED_TAG="${PRIMARY_TAG}-${BUILD_DATE}"
-          BUILD_ARGS=$(bash build-config.sh build-args "$IMAGE" "$VARIANT")
-          STATIC_TAGS=$(bash build-config.sh tags "$IMAGE" "$VARIANT" "$IMAGE_REF")
-          DESCRIPTION=$(bash build-config.sh description "$IMAGE")
+          BUILD_ARGS=$(bash scripts/build-config.sh build-args "$IMAGE" "$VARIANT")
+          STATIC_TAGS=$(bash scripts/build-config.sh tags "$IMAGE" "$VARIANT" "$IMAGE_REF")
+          DESCRIPTION=$(bash scripts/build-config.sh description "$IMAGE")
 
-          DEBIAN_VARIANT=$(bash build-config.sh get-field "$IMAGE" "$VARIANT" debian_variant)
+          DEBIAN_VARIANT=$(bash scripts/build-config.sh get-field "$IMAGE" "$VARIANT" debian_variant)
           if [ -n "$DEBIAN_VARIANT" ] && [ "$DEBIAN_VARIANT" != "null" ]; then
             DIGEST=$(docker buildx imagetools inspect \
               "$(dirname "$IMAGE_REF")/debian:${DEBIAN_VARIANT}" \

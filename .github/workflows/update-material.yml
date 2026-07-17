@@ -16,8 +16,8 @@ on:
   pull_request:
     paths:
       - .github/workflows/update-material.yml
-      - update-material.sh
-      - build-config.sh
+      - scripts/update-material.sh
+      - scripts/build-config.sh
       # Re-syncs commit_to_pr materials when Renovate bumps a pinned version.
       - '*/build.yaml'
   schedule:
@@ -47,14 +47,14 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
         run: |
           set -eo pipefail
-          images=$(bash build-config.sh images | jq -r '.[]')
+          images=$(bash scripts/build-config.sh images | jq -r '.[]')
           changed=false
           for image in $images; do
             args=("$image")
             if [ "$EVENT_NAME" = "pull_request" ]; then
               args+=(--commit-to-pr-only)
             fi
-            result=$(bash update-material.sh "${args[@]}")
+            result=$(bash scripts/update-material.sh "${args[@]}")
             if [ "$result" = "true" ]; then
               changed=true
             fi

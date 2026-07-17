@@ -14,7 +14,6 @@ ARG TARGETARCH
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-# hadolint ignore=DL3003 # cd only used in subshell
 RUN --mount=type=bind,source=hashicorp-signing-key.asc,target=/tmp/hashicorp-signing-key.asc,ro \
     # Import HashiCorp's release signing key into an ephemeral keyring
     GNUPGHOME="$(mktemp -d)" \
@@ -29,7 +28,7 @@ RUN --mount=type=bind,source=hashicorp-signing-key.asc,target=/tmp/hashicorp-sig
     && gpg --batch --verify \
         "${TF_TMPDIR}/terraform_${TERRAFORM_VERSION}_SHA256SUMS.sig" \
         "${TF_TMPDIR}/terraform_${TERRAFORM_VERSION}_SHA256SUMS" \
-    && (cd "${TF_TMPDIR}" && grep " ${TF_ZIP}\$" "terraform_${TERRAFORM_VERSION}_SHA256SUMS" | sha256sum -c -) \
+    && grep " ${TF_ZIP}\$" "${TF_TMPDIR}/terraform_${TERRAFORM_VERSION}_SHA256SUMS" | env --chdir="${TF_TMPDIR}" sha256sum -c - \
     && gpgconf --kill all \
     # Install terraform
     && unzip -q "${TF_TMPDIR}/${TF_ZIP}" -d "${TF_TMPDIR}" \
@@ -48,7 +47,7 @@ RUN --mount=type=bind,source=hashicorp-signing-key.asc,target=/tmp/hashicorp-sig
     && gpg --batch --verify \
         "${TFLS_TMPDIR}/terraform-ls_${TERRAFORM_LS_VERSION}_SHA256SUMS.sig" \
         "${TFLS_TMPDIR}/terraform-ls_${TERRAFORM_LS_VERSION}_SHA256SUMS" \
-    && (cd "${TFLS_TMPDIR}" && grep " ${TFLS_ZIP}\$" "terraform-ls_${TERRAFORM_LS_VERSION}_SHA256SUMS" | sha256sum -c -) \
+    && grep " ${TFLS_ZIP}\$" "${TFLS_TMPDIR}/terraform-ls_${TERRAFORM_LS_VERSION}_SHA256SUMS" | env --chdir="${TFLS_TMPDIR}" sha256sum -c - \
     && gpgconf --kill all \
     # Install terraform-ls
     && unzip -q "${TFLS_TMPDIR}/${TFLS_ZIP}" -d "${TFLS_TMPDIR}" \
@@ -60,4 +59,4 @@ FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 COPY --from=builder /usr/local/bin/terraform /usr/local/bin/terraform-ls /usr/local/bin/
 
 ENV TF_PLUGIN_CACHE_DIR="/home/dev/.terraform.d/plugin-cache"
-RUN mkdir -p "${TF_PLUGIN_CACHE_DIR}" 
+RUN mkdir -p "${TF_PLUGIN_CACHE_DIR}"

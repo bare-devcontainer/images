@@ -30,8 +30,8 @@ jobs:
       - name: Build image matrix
         id: build
         run: |
-          echo "base_variants=$(bash build-config.sh variants debian | jq -c .)" >> "$GITHUB_OUTPUT"
-          echo "matrix=$(bash build-config.sh all-matrix)" >> "$GITHUB_OUTPUT"
+          echo "base_variants=$(bash scripts/build-config.sh variants debian | jq -c .)" >> "$GITHUB_OUTPUT"
+          echo "matrix=$(bash scripts/build-config.sh all-matrix)" >> "$GITHUB_OUTPUT"
 
   verify-base:
     needs: setup
@@ -53,7 +53,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IMAGE_REF: ${{ env.BASE_IMAGE_REF }}:${{ matrix.variant }}
           OWNER: ${{ github.repository_owner }}
-        run: bash verify-image.sh "$IMAGE_REF" "$OWNER"
+        run: bash scripts/verify-image.sh "$IMAGE_REF" "$OWNER"
 
   verify-image:
     needs: setup
@@ -75,4 +75,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IMAGE_REF: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:${{ matrix.primary_tag }}
           OWNER: ${{ github.repository_owner }}
-        run: bash verify-image.sh "$IMAGE_REF" "$OWNER"
+        run: bash scripts/verify-image.sh "$IMAGE_REF" "$OWNER"
