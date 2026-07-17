@@ -24,11 +24,7 @@
       ],
       "matchStrings": [
         // Each pattern binds a `// renovate:` comment to the JSON value on the
-        // immediately following line (`\s+`, whitespace only in between). A lazy
-        // `[\s\S]*?` must not be used here: it lets a comment whose own value
-        // does not fit the pattern (e.g. a digest-pinned DEBIAN_TAG vs. the
-        // plain-version pattern) skip ahead and swallow the next comment's
-        // value, so that dependency is never detected.
+        // immediately following line (`\s+`, whitespace only in between).
         //
         // JSON key-value pair where the value is in the form `tag@sha256:digest`
         // e.g. "DEBIAN_TAG": "trixie-20260716@sha256:abc123..."

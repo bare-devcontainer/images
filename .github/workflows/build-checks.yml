@@ -10,7 +10,7 @@ on:
       - '*/node-keyring.kbx'
       - '*/rustup-init-*.sha256'
       - '*/uv-*.sha256'
-      - build-config.sh
+      - scripts/build-config.sh
       - .trivyignore.yaml
   push:
     branches:
@@ -22,7 +22,7 @@ on:
       - '*/node-keyring.kbx'
       - '*/rustup-init-*.sha256'
       - '*/uv-*.sha256'
-      - build-config.sh
+      - scripts/build-config.sh
 
 permissions: {}
 
@@ -50,9 +50,9 @@ jobs:
         # Expand each entry across both architectures so images are
         # smoke-tested on the same platforms they are published for.
         run: |
-          echo "base_matrix=$(bash build-config.sh variants debian \
+          echo "base_matrix=$(bash scripts/build-config.sh variants debian \
             | jq -c '[.[] as $v | ("amd64", "arm64") | {variant: $v, arch: .}]')" >> "$GITHUB_OUTPUT"
-          echo "matrix=$(bash build-config.sh all-matrix \
+          echo "matrix=$(bash scripts/build-config.sh all-matrix \
             | jq -c '[.[] as $m | ("amd64", "arm64") | $m + {arch: .}]')" >> "$GITHUB_OUTPUT"
 
   check-base:
@@ -76,7 +76,7 @@ jobs:
           DELIM="EOF_$(openssl rand -hex 8)"
           {
             echo "build_args<<${DELIM}"
-            bash build-config.sh build-args debian "${{ matrix.variant }}"
+            bash scripts/build-config.sh build-args debian "${{ matrix.variant }}"
             echo "${DELIM}"
           } >> "$GITHUB_OUTPUT"
       - name: Set up Docker Buildx
@@ -135,12 +135,12 @@ jobs:
       - name: Read build args
         id: read
         run: |
-          DEBIAN_VARIANT=$(bash build-config.sh get-field "${{ matrix.image }}" \
+          DEBIAN_VARIANT=$(bash scripts/build-config.sh get-field "${{ matrix.image }}" \
             "${{ matrix.variant }}" debian_variant)
           DELIM="EOF_$(openssl rand -hex 8)"
           {
             echo "image_args<<${DELIM}"
-            bash build-config.sh build-args "${{ matrix.image }}" "${{ matrix.variant }}"
+            bash scripts/build-config.sh build-args "${{ matrix.image }}" "${{ matrix.variant }}"
             echo "DEBIAN_TAG=${DEBIAN_VARIANT}"
             echo "${DELIM}"
           } >> "$GITHUB_OUTPUT"

@@ -99,8 +99,8 @@ jobs:
       - name: Build image matrix
         id: matrix
         run: |
-          MATRIX=$(bash build-config.sh all-matrix)
-          BASE_VARIANTS=$(bash build-config.sh variants debian | jq -c .)
+          MATRIX=$(bash scripts/build-config.sh all-matrix)
+          BASE_VARIANTS=$(bash scripts/build-config.sh variants debian | jq -c .)
           echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
           echo "base_variants=${BASE_VARIANTS}" >> "$GITHUB_OUTPUT"
 
@@ -252,7 +252,7 @@ jobs:
       - name: Regenerate README tag tables
         id: regen
         run: |
-          ./update-readme.sh
+          ./scripts/update-readme.sh
           if git diff --quiet; then
             echo "READMEs are already in sync with build.yaml."
             echo "changed=false" >> "$GITHUB_OUTPUT"

@@ -19,7 +19,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # change). The committed checksum is sourced from dl.deno.land while the
 # archive is downloaded from GitHub Releases, so a successful build requires
 # both distribution channels to agree.
-# hadolint ignore=DL3003 # cd only used in subshell
 RUN --mount=type=bind,source=deno-amd64.sha256,target=/tmp/deno-amd64.sha256,ro \
     --mount=type=bind,source=deno-arm64.sha256,target=/tmp/deno-arm64.sha256,ro \
     case "${TARGETARCH}" in \
@@ -30,7 +29,7 @@ RUN --mount=type=bind,source=deno-amd64.sha256,target=/tmp/deno-amd64.sha256,ro 
     && DENO_ZIP="deno-${DENO_ARCH}-unknown-linux-gnu.zip" \
     && DENO_TMPDIR="$(mktemp -d)" \
     && wget -q -T 30 -t 3 -P "${DENO_TMPDIR}" "https://github.com/denoland/deno/releases/download/v${DENO_VERSION}/${DENO_ZIP}" \
-    && (cd "${DENO_TMPDIR}" && sha256sum -c "${DENO_SHA256_FILE}") \
+    && env --chdir="${DENO_TMPDIR}" sha256sum -c "${DENO_SHA256_FILE}" \
     && unzip -q "${DENO_TMPDIR}/${DENO_ZIP}" -d "${DENO_TMPDIR}" \
     && mv "${DENO_TMPDIR}/deno" /usr/local/bin/deno \
     && rm -rf "${DENO_TMPDIR}" \

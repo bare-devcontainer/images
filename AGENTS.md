@@ -7,9 +7,11 @@ This repository builds and publishes minimal Debian-based Docker images for use 
   Dockerfile    # image build instructions
   build.yaml    # image description, variant definitions (tags, build args, debian_variant), and trusted material sources (materials)
   README.md     # image docs; the Tags table between <!-- tags:begin/end --> markers is generated
-build-config.sh              # CLI for querying build.yaml; used by CI to generate matrices and build args
-update-material.sh           # refreshes the trust material declared in build.yaml (materials); called by update-material.yml
-update-readme.sh             # regenerates the README Tags tables from build.yaml; run by CI after each release
+scripts/
+  build-config.sh            # CLI for querying build.yaml; used by CI to generate matrices and build args
+  update-material.sh         # refreshes the trust material declared in build.yaml (materials); called by update-material.yml
+  update-readme.sh           # regenerates the README Tags tables from build.yaml; run by CI after each release
+  verify-image.sh            # confirms image verification steps succeed for a published image; run by attest-check.yml
 .github/workflows/
   release.yml                # builds and pushes images to GHCR
 .devcontainer/
@@ -23,6 +25,9 @@ renovate.json                # Renovate config
   - language-specific images built on the debian base
 - All images are built on Debian base images, and target multi-arch (linux/amd64 + linux/arm64) builds.
 - Use English for all documentation and comments.
+- Comments should follow either of the following types:
+  - Documentation comments: describe the purpose/signature of a file, function, or block of code. 
+  - Inline comments: describe the important details of a line or block of code for future maintainers. Avoid obvious comments, or comments only useful in the context of the current change. 
 - PR titles must follow Conventional Commits format:
   - Allowed types: `image`, `ci`, `chore`, `test`, `docs`
   - The scope is optional. Examples:
