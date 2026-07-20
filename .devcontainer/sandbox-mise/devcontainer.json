@@ -4,7 +4,7 @@
     "dockerfile": "../../mise/Dockerfile",
     "args": {
       // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
-      "DEBIAN_TAG": "trixie-20260717@sha256:5c3dabd547ffe662601fe6b6ba25895838b3b0a6e8301723e74fbb327e019874",
+      "DEBIAN_TAG": "trixie-20260720@sha256:7e3d1c1e5b1aa522383ecd861889823500025dbb205351b1397be91d4f686e7a",
       // renovate: datasource=github-releases depName=jdx/mise versioning=semver
       "MISE_VERSION": "2026.7.7"
     }
