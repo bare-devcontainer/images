@@ -49,7 +49,7 @@ jobs:
         image: ${{ fromJson(needs.setup.outputs.matrix) }}
     env:
       # renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/decolint versioning=docker
-      DECOLINT_TAG: "latest@sha256:953847743e86fe7da153d87d194261c0a64a7ddb076d25f5626206b99a612368"
+      DECOLINT_TAG: "latest@sha256:a3c563be09aaa362438adc39bac01323a4abc98d587663f5a8d8fa504b6775d4"
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
