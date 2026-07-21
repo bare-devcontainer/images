@@ -6,7 +6,7 @@
       // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
       "DEBIAN_TAG": "trixie-20260720@sha256:7e3d1c1e5b1aa522383ecd861889823500025dbb205351b1397be91d4f686e7a",
       // renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
-      "UV_VERSION": "0.11.29",
+      "UV_VERSION": "0.11.30",
       // renovate: datasource=deb registryUrl=https://cli.github.com/packages?suite=stable&components=main&binaryArch=amd64 depName=gh versioning=deb
       "GH_VERSION": "2.96.0"
     }
