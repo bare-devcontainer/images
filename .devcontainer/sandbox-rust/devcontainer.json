@@ -4,7 +4,7 @@
     "dockerfile": "../../rust/Dockerfile",
     "args": {
       // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
-      "DEBIAN_TAG": "trixie-20260720@sha256:7e3d1c1e5b1aa522383ecd861889823500025dbb205351b1397be91d4f686e7a",
+      "DEBIAN_TAG": "trixie-20260722@sha256:c64d24faad7b0a1297b4ca7e0ee5af174d8f1f4a6945737ee894eb1a6d181409",
       // renovate: datasource=github-releases depName=rust-lang/rustup versioning=semver
       "RUSTUP_VERSION": "1.29.0"
     }
