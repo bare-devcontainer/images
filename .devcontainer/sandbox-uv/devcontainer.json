@@ -4,7 +4,7 @@
     "dockerfile": "../../uv/Dockerfile",
     "args": {
       // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
-      "DEBIAN_TAG": "trixie-20260722@sha256:c64d24faad7b0a1297b4ca7e0ee5af174d8f1f4a6945737ee894eb1a6d181409",
+      "DEBIAN_TAG": "trixie-20260723@sha256:b372ef12505e3efe7910c36902bddd1bba5bf1010450570260eeae9337879d15",
       // renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
       "UV_VERSION": "0.11.31",
       // renovate: datasource=deb registryUrl=https://cli.github.com/packages?suite=stable&components=main&binaryArch=amd64 depName=gh versioning=deb
