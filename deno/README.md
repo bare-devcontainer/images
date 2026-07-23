@@ -5,12 +5,9 @@ runtime installed, built on the [debian](../debian) base image.
 
 `deno` is downloaded directly from [GitHub Releases](https://github.com/denoland/deno/releases).
 Deno publishes no signature for its release archives, so each archive is verified against a
-SHA-256 checksum file committed to this repository (`deno/deno-<arch>.sha256`). The committed
-checksum files are fetched from [dl.deno.land](https://dl.deno.land/) — the official download
-host used by Deno's install script — while the binary comes from GitHub Releases, so a
-successful build requires both distribution channels to agree. The checksum files are kept in
-sync with the pinned `DENO_VERSION` by an automated workflow and reviewed like any other
-change, so later tampering with either download channel cannot affect builds.
+SHA-256 checksum file committed to this repository (`deno/deno-<arch>.sha256`). The checksum files are kept in sync with the pinned `DENO_VERSION` by an automated workflow
+and reviewed like any other change, so later tampering with the download channel cannot affect
+builds.
 
 Bash completions are generated at build time with `deno completions bash` and installed for the
 `bash-completion` support already present in the [debian](../debian) base image.
