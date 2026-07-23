@@ -6,7 +6,7 @@
       // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
       "DEBIAN_TAG": "trixie-20260723@sha256:b372ef12505e3efe7910c36902bddd1bba5bf1010450570260eeae9337879d15",
       // renovate: datasource=github-releases depName=denoland/deno versioning=semver extractVersion=^v(?<version>.+)
-      "DENO_VERSION": "2.9.3"
+      "DENO_VERSION": "2.9.4"
     }
   },
   "runArgs": [
