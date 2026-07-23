@@ -26,3 +26,9 @@ vulnerabilities:
       The upstream development branch was upgraded to Go 1.26.4, but it is till affected.
       Terraform Language Server 0.38.8 was built with Go 1.25.11, which is affected by this CVE.
       The upstream development branch has not yet been updated to a Go version that is not affected by this CVE.
+  - id: GHSA-hrxh-6v49-42gf
+    paths:
+      - "usr/local/bin/terraform"
+    expired_at: 2026-10-31
+    statement: |
+      Terraform repository currently uses google.golang.org/grp v1.80.0, so no fix is available yet.
