@@ -27,10 +27,10 @@ volume mounts that persist cache directories for faster rebuilds.
 <!-- tags:begin -->
 | Tags | Debian variant |
 |------|----------------|
-| `0.11.30-trixie`, `0.11.30`, `trixie` | trixie |
-| `0.11.30-bookworm`, `bookworm` | bookworm |
+| `0.11.31-trixie`, `0.11.31`, `trixie` | trixie |
+| `0.11.31-bookworm`, `bookworm` | bookworm |
 
-Tags are also published with a date suffix on each build (e.g., `0.11.30-trixie-<YYYYMMDD>`).
+Tags are also published with a date suffix on each build (e.g., `0.11.31-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
 ## Installed software
