@@ -21,7 +21,7 @@ variants:
       # renovate: datasource=github-releases depName=hashicorp/terraform versioning=semver extractVersion=^v(?<version>.+)
       TERRAFORM_VERSION: "1.15.8"
       # renovate: datasource=github-releases depName=hashicorp/terraform-ls versioning=semver extractVersion=^v(?<version>.+)
-      TERRAFORM_LS_VERSION: "0.38.8"
+      TERRAFORM_LS_VERSION: "0.39.0"
 
   - variant: "1-bookworm"
     tags:
@@ -34,4 +34,4 @@ variants:
       # renovate: datasource=github-releases depName=hashicorp/terraform versioning=semver extractVersion=^v(?<version>.+)
       TERRAFORM_VERSION: "1.15.8"
       # renovate: datasource=github-releases depName=hashicorp/terraform-ls versioning=semver extractVersion=^v(?<version>.+)
-      TERRAFORM_LS_VERSION: "0.38.8"
+      TERRAFORM_LS_VERSION: "0.39.0"
