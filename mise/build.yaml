@@ -9,14 +9,14 @@ variants:
   - variant: "latest-trixie"
     tags:
       # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
-      - "2026.7.11-trixie"
+      - "2026.7.12-trixie"
       # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
-      - "2026.7.11"
+      - "2026.7.12"
       - "trixie"
     debian_variant: "trixie"
     build_args:
       # renovate: datasource=github-releases depName=jdx/mise versioning=semver extractVersion=^v?(?<version>.+)
-      MISE_VERSION: "2026.7.11"
+      MISE_VERSION: "2026.7.12"
 
 # No bookworm variant: mise >= 2026.7.0 requires a newer glibc than bookworm
 # provides, and mise uses calendar versioning, so no future release can ever

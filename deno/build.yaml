@@ -3,18 +3,18 @@ description: "Dev Container image with the Deno JavaScript/TypeScript runtime, b
 # version_key; commit_to_pr files are pushed onto version-bump PRs.
 materials:
   - path: deno-amd64.sha256
-    url: https://dl.deno.land/release/vVERSION/deno-x86_64-unknown-linux-gnu.zip.sha256sum
+    url: https://github.com/denoland/deno/releases/download/vVERSION/deno-x86_64-unknown-linux-gnu.zip.sha256sum
     version_key: DENO_VERSION
     commit_to_pr: true
     description: >-
-      Checksum for deno (amd64) from dl.deno.land (the official download host
-      used by Deno's install script), matching the pinned DENO_VERSION. Deno
-      publishes no signature for its release archives, so this committed file
-      is the trust anchor the Dockerfile verifies the downloaded archive
-      against. The archive itself is fetched from GitHub Releases, so the
-      binary and its checksum come from two independent distribution channels.
+      Checksum for deno (amd64) from GitHub Releases, matching the pinned
+      DENO_VERSION. Deno publishes no signature for its release archives, so
+      this committed file is the trust anchor the Dockerfile verifies the
+      downloaded archive against. dl.deno.land is not used here: it serves the
+      LTS channel, whose archives differ from the mainline GitHub Releases the
+      Dockerfile downloads, so its checksums would not match.
   - path: deno-arm64.sha256
-    url: https://dl.deno.land/release/vVERSION/deno-aarch64-unknown-linux-gnu.zip.sha256sum
+    url: https://github.com/denoland/deno/releases/download/vVERSION/deno-aarch64-unknown-linux-gnu.zip.sha256sum
     version_key: DENO_VERSION
     commit_to_pr: true
     description: >-
