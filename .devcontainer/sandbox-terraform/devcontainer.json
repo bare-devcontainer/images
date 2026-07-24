@@ -13,12 +13,7 @@
   },
   "runArgs": [
     "--cap-drop=ALL",
-    "--security-opt=no-new-privileges",
-    "--read-only",
-    "--tmpfs=/tmp:exec,mode=1777",
-    // Terraform writes its plugin cache and CLI checkpoint state under
-    // ~/.terraform.d; keep it writable under the read-only root filesystem.
-    "--tmpfs=/home/dev/.terraform.d:exec,mode=1777"
+    "--security-opt=no-new-privileges"
   ],
   "remoteUser": "dev"
 }

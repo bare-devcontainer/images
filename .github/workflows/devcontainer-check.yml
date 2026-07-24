@@ -3,8 +3,8 @@ name: Devcontainer Checks
 on:
   schedule:
     # Nightly, after the 00:00 UTC release publishes fresh images. Rebuilds every
-    # sandbox (with its Dev Container Features) on amd64 and arm64 under the full
-    # hardened runtime, catching image/feature drift and arch-specific breakage.
+    # sandbox (with its Dev Container Features) on amd64 and arm64, catching
+    # image/feature drift and architecture-specific breakage.
     - cron: '0 3 * * *'
   pull_request:
     paths:

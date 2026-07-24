@@ -13,13 +13,7 @@
   },
   "runArgs": [
     "--cap-drop=ALL",
-    "--security-opt=no-new-privileges",
-    "--read-only",
-    "--tmpfs=/tmp:exec,mode=1777",
-    // uv installs managed Python interpreters into ~/.local/share/uv and writes
-    // its cache under ~/.cache; keep both writable under the read-only root.
-    "--tmpfs=/home/dev/.cache:exec,mode=1777",
-    "--tmpfs=/home/dev/.local/share/uv:exec,mode=1777"
+    "--security-opt=no-new-privileges"
   ],
   "remoteUser": "dev"
 }
