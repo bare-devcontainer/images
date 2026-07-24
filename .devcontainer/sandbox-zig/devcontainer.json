@@ -15,7 +15,12 @@
   },
   "runArgs": [
     "--cap-drop=ALL",
-    "--security-opt=no-new-privileges"
+    "--security-opt=no-new-privileges",
+    "--read-only",
+    "--tmpfs=/tmp:exec,mode=1777",
+    // Zig writes its global build cache under ~/.cache/zig; keep it writable
+    // under the read-only root filesystem.
+    "--tmpfs=/home/dev/.cache:exec,mode=1777"
   ],
   "remoteUser": "dev"
 }

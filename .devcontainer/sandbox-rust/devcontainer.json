@@ -9,9 +9,27 @@
       "RUSTUP_VERSION": "1.29.0"
     }
   },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "username": "dev",
+      "upgradePackages": false
+    }
+  },
+  "containerEnv": {
+    // rustup and cargo write into their home directories at runtime (toolchain
+    // installs, the cargo package-cache lock directly under CARGO_HOME). Under
+    // the read-only root filesystem the image's ~/.rustup and ~/.cargo are not
+    // writable, and ~/.cargo cannot be replaced by a tmpfs without masking the
+    // preinstalled rustup proxies in ~/.cargo/bin. Relocate both homes onto the
+    // writable /tmp tmpfs instead; the PATH proxies honour these variables.
+    "RUSTUP_HOME": "/tmp/rustup",
+    "CARGO_HOME": "/tmp/cargo"
+  },
   "runArgs": [
     "--cap-drop=ALL",
-    "--security-opt=no-new-privileges"
+    "--security-opt=no-new-privileges",
+    "--read-only",
+    "--tmpfs=/tmp:exec,mode=1777"
   ],
   "remoteUser": "dev"
 }

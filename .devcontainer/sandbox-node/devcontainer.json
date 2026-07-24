@@ -13,7 +13,9 @@
   },
   "runArgs": [
     "--cap-drop=ALL",
-    "--security-opt=no-new-privileges"
+    "--security-opt=no-new-privileges",
+    "--read-only",
+    "--tmpfs=/tmp:exec,mode=1777"
   ],
   "remoteUser": "dev"
 }

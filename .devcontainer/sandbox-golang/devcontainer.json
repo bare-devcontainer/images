@@ -11,9 +11,21 @@
       "GOPLS_VERSION": "v0.23.0"
     }
   },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "username": "dev",
+      "upgradePackages": false
+    }
+  },
   "runArgs": [
     "--cap-drop=ALL",
-    "--security-opt=no-new-privileges"
+    "--security-opt=no-new-privileges",
+    "--read-only",
+    "--tmpfs=/tmp:exec,mode=1777",
+    // The module cache (GOPATH) and build cache must stay writable under the
+    // read-only root filesystem; they are the "cache" in workspace/cache-only.
+    "--tmpfs=/home/dev/go:exec,mode=1777",
+    "--tmpfs=/home/dev/.cache:exec,mode=1777"
   ],
   "remoteUser": "dev"
 }

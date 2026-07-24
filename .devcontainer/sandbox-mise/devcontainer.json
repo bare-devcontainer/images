@@ -9,9 +9,20 @@
       "MISE_VERSION": "2026.7.12"
     }
   },
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
   "runArgs": [
     "--cap-drop=ALL",
-    "--security-opt=no-new-privileges"
+    "--security-opt=no-new-privileges",
+    "--read-only",
+    "--tmpfs=/tmp:exec,mode=1777",
+    // mise installs and runs runtimes from its data directory and writes cache,
+    // config and state at runtime; keep those dirs writable under read-only root.
+    "--tmpfs=/home/dev/.cache:exec,mode=1777",
+    "--tmpfs=/home/dev/.config/mise:exec,mode=1777",
+    "--tmpfs=/home/dev/.local/share/mise:exec,mode=1777",
+    "--tmpfs=/home/dev/.local/state/mise:exec,mode=1777"
   ],
   "remoteUser": "dev"
 }

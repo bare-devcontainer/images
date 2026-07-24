@@ -16,6 +16,14 @@
     ],
     "minimumReleaseAge": null
   },
+  // Renovate's built-in devcontainer manager only inspects the canonical
+  // .devcontainer/devcontainer.json by default. Point it at the per-image
+  // sandbox configs so the Dev Container Feature references they pin get updated.
+  "devcontainer": {
+    "managerFilePatterns": [
+      "/^\\.devcontainer/[^/]+/devcontainer\\.json$/"
+    ]
+  },
   "customManagers": [
     {
       "customType": "regex",
