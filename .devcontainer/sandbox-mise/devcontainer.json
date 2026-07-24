@@ -9,6 +9,9 @@
       "MISE_VERSION": "2026.7.12"
     }
   },
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
   "runArgs": [
     "--cap-drop=ALL",
     "--security-opt=no-new-privileges"

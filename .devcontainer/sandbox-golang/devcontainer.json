@@ -11,6 +11,12 @@
       "GOPLS_VERSION": "v0.23.0"
     }
   },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "username": "dev",
+      "upgradePackages": false
+    }
+  },
   "runArgs": [
     "--cap-drop=ALL",
     "--security-opt=no-new-privileges"
