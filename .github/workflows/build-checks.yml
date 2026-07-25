@@ -46,7 +46,6 @@ jobs:
     outputs:
       base_matrix: ${{ steps.build.outputs.base_matrix }}
       matrix: ${{ steps.build.outputs.matrix }}
-      sandbox_matrix: ${{ steps.build.outputs.sandbox_matrix }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -84,19 +83,43 @@ jobs:
           echo "$REPORT" | jq -r '.[] |
             "[" + (if .selected then "RUN " else "SKIP" end) + "] " + .image + ": " + .reason,
             (.files[] | "         " + .)'
-      - name: Verify sandbox coverage
-        # The sandbox matrix below is derived from the image list rather than
-        # from the sandbox directories, so a sandbox belonging to no image
-        # would never be built. Fail instead of skipping it silently.
+      - name: Verify sandbox configurations
+        # The build jobs export the build args of the variant they build so the
+        # sandbox configuration picks them up through ${localEnv:...}. That only
+        # holds while every image has a sandbox and every sandbox declares
+        # exactly the args of its image; otherwise an argument silently resolves
+        # to the empty string. Neither is tied to a changed image, so both are
+        # checked for the whole repository here.
         run: |
-          IMAGES=$(bash scripts/build-config.sh images | jq -r '.[]' | sort)
+          IMAGES=$(bash scripts/build-config.sh images | jq -r '.[]')
           SANDBOXES=$(find .devcontainer -maxdepth 1 -type d -name 'sandbox-*' -printf '%f\n' \
             | sed 's/^sandbox-//' | sort)
-          if [ "$IMAGES" != "$SANDBOXES" ]; then
+          if [ "$(echo "$IMAGES" | sort)" != "$SANDBOXES" ]; then
             echo "ERROR: sandbox dev containers do not match the image list" >&2
-            diff <(echo "$IMAGES") <(echo "$SANDBOXES") >&2 || true
+            diff <(echo "$IMAGES" | sort) <(echo "$SANDBOXES") >&2 || true
             exit 1
           fi
+
+          STATUS=0
+          for IMAGE in $IMAGES; do
+            CONFIG=".devcontainer/sandbox-${IMAGE}/devcontainer.json"
+            DECLARED=$(grep -o '\${localEnv:[A-Z_]\+}' "$CONFIG" \
+              | sed 's/^\${localEnv:\(.*\)}$/\1/' | sort -u)
+            for VARIANT in $(bash scripts/build-config.sh variants "$IMAGE" | jq -r '.[]'); do
+              # DEBIAN_TAG is a build arg of the debian image and the base
+              # selector of every other one, so only the latter add it here.
+              EXPECTED=$({
+                bash scripts/build-config.sh build-args "$IMAGE" "$VARIANT" | cut -d= -f1
+                [ "$IMAGE" = "debian" ] || echo "DEBIAN_TAG"
+              } | sort -u)
+              if [ "$DECLARED" != "$EXPECTED" ]; then
+                echo "ERROR: ${CONFIG} does not declare the build args of ${IMAGE}/${VARIANT}" >&2
+                diff <(echo "$EXPECTED") <(echo "$DECLARED") >&2 || true
+                STATUS=1
+              fi
+            done
+          done
+          exit "$STATUS"
       - name: Build matrix
         id: build
         # Expand each entry across both architectures so images are
@@ -117,10 +140,6 @@ jobs:
 
           echo "base_matrix=${BASE_MATRIX}" >> "$GITHUB_OUTPUT"
           echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
-          # One sandbox dev container per image, so this matrix is not expanded
-          # across variants or architectures: the configuration pins its own
-          # build args and does not vary with either.
-          echo "sandbox_matrix=${SELECTED}" >> "$GITHUB_OUTPUT"
 
   check-base:
     needs: setup
@@ -174,6 +193,22 @@ jobs:
             --mount "type=bind,source=${{ github.workspace }}/debian/smoke-test.sh,target=/smoke-test.sh,readonly" \
             "debian:${{ matrix.variant }}" \
             bash /smoke-test.sh
+      - name: Verify sandbox dev container
+        # Built with the same args as the build step above, so the Dev Container
+        # CLI reuses those layers rather than rebuilding the image. The image
+        # contents are already covered by the smoke test, so this asserts only
+        # what the configuration adds: the CLI resolves it and applies remoteUser.
+        if: matrix.arch == 'amd64'
+        uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
+        env:
+          DEBIAN_TAG: ${{ steps.read.outputs.debian_tag }}
+        with:
+          configFile: .devcontainer/sandbox-debian/devcontainer.json
+          push: never
+          runCmd: |
+            set -e
+            [ "$(id -un)" = "dev" ] \
+              || { echo "ERROR: expected user dev, got $(id -un)" >&2; exit 1; }
       - name: Run Trivy vulnerability scanner
         # Vulnerability findings are identical across architectures; scan once.
         if: matrix.arch == 'amd64'
@@ -228,6 +263,13 @@ jobs:
             echo "DEBIAN_TAG=${DEBIAN_VARIANT}"
             echo "${DELIM}"
           } >> "$GITHUB_OUTPUT"
+          # The sandbox configuration reads the same values through
+          # ${localEnv:...}. Exported rather than set per step because the keys
+          # differ per image.
+          {
+            bash scripts/build-config.sh build-args "${{ matrix.image }}" "${{ matrix.variant }}"
+            echo "DEBIAN_TAG=${DEBIAN_VARIANT}"
+          } >> "$GITHUB_ENV"
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
       - name: Build language image
@@ -259,6 +301,20 @@ jobs:
             --mount "type=bind,source=${{ github.workspace }}/${{ matrix.image }}/smoke-test.sh,target=/smoke-test.sh,readonly" \
             "${{ matrix.image }}:${{ matrix.variant }}" \
             bash -c "bash /smoke-test-debian.sh && bash /smoke-test.sh"
+      - name: Verify sandbox dev container
+        # Built with the same args as the build step above, so the Dev Container
+        # CLI reuses those layers rather than rebuilding the image. The image
+        # contents are already covered by the smoke test, so this asserts only
+        # what the configuration adds: the CLI resolves it and applies remoteUser.
+        if: matrix.arch == 'amd64'
+        uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
+        with:
+          configFile: .devcontainer/sandbox-${{ matrix.image }}/devcontainer.json
+          push: never
+          runCmd: |
+            set -e
+            [ "$(id -un)" = "dev" ] \
+              || { echo "ERROR: expected user dev, got $(id -un)" >&2; exit 1; }
       - name: Run Trivy vulnerability scanner
         # Vulnerability findings are identical across architectures; scan once.
         if: matrix.arch == 'amd64'
@@ -271,39 +327,3 @@ jobs:
           ignore-unfixed: true
           trivyignores: .trivyignore.yaml
           exit-code: '1'
-
-  # Builds the sandbox dev container of each changed image through the Dev
-  # Container CLI. The jobs above build the same Dockerfiles directly, so what
-  # this adds is that the sandbox configurations themselves still resolve: the
-  # build args they pin, and the dev container the CLI produces from them.
-  check-sandbox:
-    needs: setup
-    if: needs.setup.outputs.sandbox_matrix != '[]'
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        image: ${{ fromJson(needs.setup.outputs.sandbox_matrix) }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          persist-credentials: false
-      - name: Build and run smoke tests
-        uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
-        env:
-          MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}
-        with:
-          configFile: .devcontainer/sandbox-${{ matrix.image }}/devcontainer.json
-          push: never
-          env: |
-            MISE_GITHUB_TOKEN
-          runCmd: |
-            set -e
-            bash debian/smoke-test.sh
-            if [ "${{ matrix.image }}" != "debian" ]; then
-              bash ${{ matrix.image }}/smoke-test.sh
-            fi

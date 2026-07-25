@@ -1,16 +1,16 @@
 {
+  // Build args are read from the environment without defaults, so build-checks.yml
+  // supplies the values it just built the image with and the Dev Container CLI
+  // reuses those layers. A missing value fails the build instead of silently
+  // selecting a different version; AGENTS.md documents how to export them by hand.
   "name": "sandbox-zig",
   "build": {
     "dockerfile": "../../zig/Dockerfile",
     "args": {
-      // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
-      "DEBIAN_TAG": "trixie-20260725@sha256:709adc59c1bd061e416d33119aad002fd361b4058a845543d9ddc4fac762dd48",
-      // renovate: datasource=gitea-tags registryUrl=https://codeberg.org depName=ziglang/zig versioning=semver
-      "ZIG_VERSION": "0.16.0",
-      // renovate: datasource=github-tags depName=zigtools/zls versioning=semver
-      "ZLS_VERSION": "0.16.0",
-      // renovate: datasource=gitea-commits registryUrl=https://codeberg.org depName=ziglang/shell-completions
-      "SHELL_COMPLETIONS_COMMIT": "c2983a75dcbcaf3a1df74ab563a9bd3c8e7f448e"
+      "DEBIAN_TAG": "${localEnv:DEBIAN_TAG}",
+      "ZIG_VERSION": "${localEnv:ZIG_VERSION}",
+      "ZLS_VERSION": "${localEnv:ZLS_VERSION}",
+      "SHELL_COMPLETIONS_COMMIT": "${localEnv:SHELL_COMPLETIONS_COMMIT}"
     }
   },
   "runArgs": [

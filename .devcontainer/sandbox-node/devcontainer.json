@@ -1,14 +1,15 @@
 {
+  // Build args are read from the environment without defaults, so build-checks.yml
+  // supplies the values it just built the image with and the Dev Container CLI
+  // reuses those layers. A missing value fails the build instead of silently
+  // selecting a different version; AGENTS.md documents how to export them by hand.
   "name": "sandbox-node",
   "build": {
     "dockerfile": "../../node/Dockerfile",
     "args": {
-      // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
-      "DEBIAN_TAG": "trixie-20260725@sha256:709adc59c1bd061e416d33119aad002fd361b4058a845543d9ddc4fac762dd48",
-      // renovate: datasource=node-version depName=node versioning=node
-      "NODE_VERSION": "26.5.0",
-      // renovate: datasource=npm depName=corepack versioning=semver
-      "COREPACK_VERSION": "0.35.0"
+      "DEBIAN_TAG": "${localEnv:DEBIAN_TAG}",
+      "NODE_VERSION": "${localEnv:NODE_VERSION}",
+      "COREPACK_VERSION": "${localEnv:COREPACK_VERSION}"
     }
   },
   "runArgs": [

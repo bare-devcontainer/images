@@ -1,10 +1,13 @@
 {
+  // Build args are read from the environment without defaults, so build-checks.yml
+  // supplies the values it just built the image with and the Dev Container CLI
+  // reuses those layers. A missing value fails the build instead of silently
+  // selecting a different version; AGENTS.md documents how to export them by hand.
   "name": "sandbox-debian",
   "build": {
     "dockerfile": "../../debian/Dockerfile",
     "args": {
-      // renovate: datasource=docker depName=debian versioning=debian
-      "DEBIAN_TAG": "trixie-20260713@sha256:fac46bff2e02f51425b6e33b0e1169f55dfb053d83511ca28aa50c09fd5ed7a4"
+      "DEBIAN_TAG": "${localEnv:DEBIAN_TAG}"
     }
   },
   "runArgs": [

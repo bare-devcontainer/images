@@ -1,12 +1,14 @@
 {
+  // Build args are read from the environment without defaults, so build-checks.yml
+  // supplies the values it just built the image with and the Dev Container CLI
+  // reuses those layers. A missing value fails the build instead of silently
+  // selecting a different version; AGENTS.md documents how to export them by hand.
   "name": "sandbox-deno",
   "build": {
     "dockerfile": "../../deno/Dockerfile",
     "args": {
-      // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
-      "DEBIAN_TAG": "trixie-20260725@sha256:709adc59c1bd061e416d33119aad002fd361b4058a845543d9ddc4fac762dd48",
-      // renovate: datasource=github-releases depName=denoland/deno versioning=semver extractVersion=^v(?<version>.+)
-      "DENO_VERSION": "2.9.4"
+      "DEBIAN_TAG": "${localEnv:DEBIAN_TAG}",
+      "DENO_VERSION": "${localEnv:DENO_VERSION}"
     }
   },
   "runArgs": [
