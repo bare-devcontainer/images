@@ -1,9 +1,8 @@
 name: Devcontainer Checks
 
-# Builds the sandbox dev containers used for working on this repository and runs
-# the image smoke tests inside them, so those configurations keep working. The
-# images themselves are verified per architecture by build-checks.yml, so there
-# is nothing to gain from repeating these on a second architecture.
+# Builds the sandbox dev containers and runs the image smoke tests inside them.
+# One architecture is enough here: build-checks.yml verifies the images
+# themselves on every architecture they are published for.
 on:
   pull_request:
     paths:
@@ -38,8 +37,6 @@ jobs:
       - name: Build sandbox matrix
         id: matrix
         run: |
-          # Every sandbox runs the base image's smoke test, and the sandboxes
-          # built on top of it add the smoke test of the image they build.
           MATRIX=$(find .devcontainer -maxdepth 1 -type d -name 'sandbox-*' -printf '%f\n' \
             | sed 's/^sandbox-//' | sort \
             | jq -R -s -c '[
@@ -76,8 +73,8 @@ jobs:
           env: |
             MISE_GITHUB_TOKEN
           runCmd: |
-            # The commands run through a single `bash -c`, whose exit status is
-            # that of the last one, so a failure has to stop the sequence here.
+            # runCmd is a single `bash -c`, which reports the status of its last
+            # command only.
             set -e
             for test in ${{ matrix.tests }}; do
               bash "$test"

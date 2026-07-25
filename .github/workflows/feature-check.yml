@@ -1,20 +1,10 @@
 name: Feature Checks
 
-# Verifies that the official Dev Container Features can supply tooling the
-# images deliberately omit, so that tooling does not have to be baked in. This
-# exercises the images themselves rather than a configuration used for
-# development work, so it runs on every architecture the images are published
-# for, as build-checks.yml does.
-#
-# It is separate from build-checks.yml because the procedure differs: the
+# Confirms the images work with the Dev Container Features that supply tooling
+# the images deliberately omit. Kept separate from build-checks.yml because the
 # Features are installed by the Dev Container CLI while it builds the container,
-# which `docker run` against a built image cannot do. The image is built from
-# this repository, so a pull request is checked against its own changes.
+# which cannot be reproduced by running an already built image.
 on:
-  schedule:
-    # Nightly, because the Features are referenced by major version and can
-    # therefore change without a commit here.
-    - cron: '0 3 * * *'
   pull_request:
     paths:
       - .github/workflows/feature-check.yml
@@ -36,8 +26,8 @@ jobs:
   test:
     permissions:
       contents: read
-    # Several Features resolve architecture-specific artifacts, so the container
-    # is built and started on a native runner of each architecture.
+    # Features resolve architecture-specific artifacts, so every architecture
+    # the images are published for needs a native run of its own.
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     timeout-minutes: 20
     strategy:
@@ -57,10 +47,8 @@ jobs:
           configFile: .devcontainer/feature-debian/devcontainer.json
           push: never
           runCmd: |
-            # The commands run through a single `bash -c`, whose exit status is
-            # that of the last one, so a failure has to stop the sequence here.
-            # The image smoke test runs with the Features layered on, so it
-            # doubles as the check that they did not regress the image.
+            # runCmd is a single `bash -c`, which reports the status of its last
+            # command only.
             set -e
             bash debian/smoke-test.sh
             bash .devcontainer/feature-debian/test.sh

@@ -1,7 +1,5 @@
 {
-  // Verifies that the official Dev Container Features stay usable on top of the
-  // images, so tooling the images deliberately omit can be added through
-  // Features. Every image extends debian, so covering the base covers them all.
+  // Every image extends debian, so the Features are verified on the base alone.
   "name": "feature-debian",
   "build": {
     "dockerfile": "../../debian/Dockerfile",
@@ -12,9 +10,8 @@
   },
   "features": {
     // Options stay at their upstream defaults so the check reflects what a
-    // consumer gets. common-utils keeps `username` at "automatic" in
-    // particular, which is what exercises its detection of the image's
-    // existing dev user.
+    // consumer gets. common-utils depends on this: its default "automatic"
+    // username is what makes it detect the image's existing dev user.
     "ghcr.io/devcontainers/features/common-utils:2": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/git-lfs:1": {},
