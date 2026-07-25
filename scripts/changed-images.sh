@@ -20,6 +20,8 @@
 #   - Files under <image>/ affect that image.
 #   - Files under .devcontainer/feature-<image>/ affect that image, since that
 #     configuration layers the Dev Container Features onto it.
+#   - Files under .devcontainer/sandbox-<image>/ affect that image, since that
+#     configuration builds it as a dev container.
 #   - The files listed in CROSS_IMAGE_PATHS affect every image even though they
 #     live in one image's directory. Note that debian/Dockerfile is NOT one of
 #     them: build-checks.yml builds each derived image FROM the *published*
@@ -40,12 +42,8 @@ CROSS_IMAGE_PATHS='["debian/smoke-test.sh"]'
 # Paths that cannot reach any build the caller performs, matched as a regular
 # expression against each changed path. Without this they would fall through to
 # the repository-wide catch-all below and rebuild every image on both
-# architectures:
-#   - Markdown is documentation only; no Dockerfile copies one in.
-#   - The sandbox dev containers are built and smoke-tested by
-#     devcontainer-check.yml, which selects them on its own; build-checks.yml
-#     never reads them.
-IGNORED_PATTERN='\.md$|^\.devcontainer/sandbox-'
+# architectures. Markdown is documentation only; no Dockerfile copies one in.
+IGNORED_PATTERN='\.md$'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -63,7 +61,8 @@ jq -n -c --argjson images "$IMAGES" --argjson cross_image "$CROSS_IMAGE_PATHS" \
   # Directory of the image a path belongs to, or null when it belongs to none.
   def owner($path):
     ($images | map(select(. as $dir | $path | startswith($dir + "/"))) | first)
-    // ($images | map(select(. as $dir | $path | startswith(".devcontainer/feature-" + $dir + "/"))) | first);
+    // ($images | map(select(. as $dir | $path | startswith(".devcontainer/feature-" + $dir + "/"))) | first)
+    // ($images | map(select(. as $dir | $path | startswith(".devcontainer/sandbox-" + $dir + "/"))) | first);
 
   ($changed | split("\n") | map(select(length > 0 and (test($ignored) | not)))) as $files
   | ($files | map(select(IN($cross_image[])))) as $cross_image_changed
