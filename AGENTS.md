@@ -16,11 +16,11 @@ scripts/
 .github/workflows/
   release.yml                # builds and pushes images to GHCR
   devcontainer-check.yml     # builds each sandbox dev container and runs its smoke tests
-  feature-check.yml          # nightly; verifies Dev Container Features compose with the published images
+  feature-check.yml          # nightly; verifies Dev Container Features compose with the images
 .devcontainer/
   default/                   # dev container for working in this repo
   sandbox-<image>/           # one per image; for manually testing each published image. Kept free of Features so it mirrors the published image
-  feature-debian/            # the published debian image with every verified Dev Container Feature layered on; exercised by feature-check.yml
+  feature-debian/            # the debian image with every verified Dev Container Feature layered on; exercised by feature-check.yml
   features/<feature>.sh      # one check per Feature layered by feature-debian
 renovate.jsonc               # Renovate config
 ```

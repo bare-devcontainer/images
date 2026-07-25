@@ -162,21 +162,6 @@
       "enabled": false
     },
     {
-      "description": "The feature check must exercise whatever the release workflow published most recently, so it references our own image by a moving tag. Pinning that reference by digest would freeze the check on a stale image and raise a bump every day.",
-      "matchFileNames": [
-        ".devcontainer/feature-*/devcontainer.json"
-      ],
-      "matchPackageNames": [
-        "ghcr.io/bare-devcontainer/**"
-      ],
-      "matchUpdateTypes": [
-        "pin",
-        "pinDigest",
-        "digest"
-      ],
-      "enabled": false
-    },
-    {
       "groupName": "Dev Container",
       "matchFileNames": [
         ".devcontainer/**/*"

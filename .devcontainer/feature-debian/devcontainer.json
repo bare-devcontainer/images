@@ -1,12 +1,15 @@
 {
   // Verifies that the official Dev Container Features stay usable on top of the
-  // published images, so tooling the images deliberately omit can be added
-  // through Features. Every image extends debian, so covering the base covers
-  // them all.
+  // images, so tooling the images deliberately omit can be added through
+  // Features. Every image extends debian, so covering the base covers them all.
   "name": "feature-debian",
-  // Deliberately a moving tag: this check exists to catch drift between the
-  // latest published image and the Features, which a pinned digest would hide.
-  "image": "ghcr.io/bare-devcontainer/debian:trixie",
+  "build": {
+    "dockerfile": "../../debian/Dockerfile",
+    "args": {
+      // renovate: datasource=docker depName=debian versioning=debian
+      "DEBIAN_TAG": "trixie-20260713@sha256:fac46bff2e02f51425b6e33b0e1169f55dfb053d83511ca28aa50c09fd5ed7a4"
+    }
+  },
   "features": {
     // Options stay at their upstream defaults so the check reflects what a
     // consumer gets. common-utils keeps `username` at "automatic" in

@@ -1,14 +1,14 @@
 name: Feature Checks
 
-# Verifies that official Dev Container Features compose with the published
-# images, so tooling the images deliberately omit can be added through Features
-# instead of being baked in. The Features are layered onto debian, which every
-# image extends, and each one is checked by its own script under
+# Verifies that official Dev Container Features compose with the images, so
+# tooling the images deliberately omit can be added through Features instead of
+# being baked in. The Features are layered onto debian, which every image
+# extends, and each one is checked by its own script under
 # .devcontainer/features.
 on:
   schedule:
-    # Nightly, after the 00:00 UTC release publishes fresh images, so drift
-    # between the images and the Features is caught within a day.
+    # Nightly, because the Features are referenced by major version and can
+    # therefore change without any commit here.
     - cron: '0 3 * * *'
   pull_request:
     paths:
@@ -16,6 +16,7 @@ on:
       - .devcontainer/feature-debian/**
       - .devcontainer/features/**
       - scripts/check-container-invariants.sh
+      - debian/Dockerfile
       - debian/smoke-test.sh
   push:
     branches:
@@ -24,6 +25,7 @@ on:
       - .devcontainer/feature-debian/**
       - .devcontainer/features/**
       - scripts/check-container-invariants.sh
+      - debian/Dockerfile
       - debian/smoke-test.sh
   workflow_dispatch:
 

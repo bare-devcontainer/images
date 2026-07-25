@@ -7,13 +7,5 @@
     "reproducibility": "error",
     "security": "error",
     "style": "error"
-  },
-  "rules": {
-    // The feature check references the published base image by a moving tag on
-    // purpose, so that it runs against whatever the release workflow published
-    // most recently. Pinning that reference by digest would hide exactly the
-    // drift the check exists to catch. Images consumed by a build stay pinned
-    // through their build args, which this rule does not cover.
-    "pin-image-digest": "off"
   }
 }
