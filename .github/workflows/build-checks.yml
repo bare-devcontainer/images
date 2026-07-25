@@ -127,6 +127,8 @@ jobs:
             bash scripts/build-config.sh build-args debian "${{ matrix.variant }}"
             echo "${DELIM}"
           } >> "$GITHUB_OUTPUT"
+          bash scripts/build-config.sh build-args debian "${{ matrix.variant }}" \
+            | sed -n 's/^DEBIAN_TAG=/debian_tag=/p' >> "$GITHUB_OUTPUT"
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
       - name: Build debian image
@@ -165,10 +167,11 @@ jobs:
           trivyignores: .trivyignore.yaml
           exit-code: '1'
       - name: Run Dev Container feature tests
-        # The configuration pins its own base, so it does not vary with the
-        # variant built above.
-        if: matrix.variant == 'trixie'
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
+        env:
+          # Read by the configuration through ${localEnv:DEBIAN_TAG}, so the
+          # Features are layered onto the variant this job builds.
+          DEBIAN_TAG: ${{ steps.read.outputs.debian_tag }}
         with:
           configFile: .devcontainer/feature-debian/devcontainer.json
           push: never
