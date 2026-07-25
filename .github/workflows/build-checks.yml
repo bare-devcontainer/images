@@ -11,6 +11,7 @@ on:
       - '*/rustup-init-*.sha256'
       - '*/uv-*.sha256'
       - .devcontainer/feature-**
+      - .devcontainer/sandbox-**
       - scripts/build-config.sh
       - scripts/changed-images.sh
       - .trivyignore.yaml
@@ -25,6 +26,7 @@ on:
       - '*/rustup-init-*.sha256'
       - '*/uv-*.sha256'
       - .devcontainer/feature-**
+      - .devcontainer/sandbox-**
       - scripts/build-config.sh
       - scripts/changed-images.sh
 
@@ -81,6 +83,43 @@ jobs:
           echo "$REPORT" | jq -r '.[] |
             "[" + (if .selected then "RUN " else "SKIP" end) + "] " + .image + ": " + .reason,
             (.files[] | "         " + .)'
+      - name: Verify sandbox configurations
+        # The build jobs export the build args of the variant they build so the
+        # sandbox configuration picks them up through ${localEnv:...}. That only
+        # holds while every image has a sandbox and every sandbox declares
+        # exactly the args of its image; otherwise an argument silently resolves
+        # to the empty string. Neither is tied to a changed image, so both are
+        # checked for the whole repository here.
+        run: |
+          IMAGES=$(bash scripts/build-config.sh images | jq -r '.[]')
+          SANDBOXES=$(find .devcontainer -maxdepth 1 -type d -name 'sandbox-*' -printf '%f\n' \
+            | sed 's/^sandbox-//' | sort)
+          if [ "$(echo "$IMAGES" | sort)" != "$SANDBOXES" ]; then
+            echo "ERROR: sandbox dev containers do not match the image list" >&2
+            diff <(echo "$IMAGES" | sort) <(echo "$SANDBOXES") >&2 || true
+            exit 1
+          fi
+
+          STATUS=0
+          for IMAGE in $IMAGES; do
+            CONFIG=".devcontainer/sandbox-${IMAGE}/devcontainer.json"
+            DECLARED=$(grep -o '\${localEnv:[A-Z_]\+}' "$CONFIG" \
+              | sed 's/^\${localEnv:\(.*\)}$/\1/' | sort -u)
+            for VARIANT in $(bash scripts/build-config.sh variants "$IMAGE" | jq -r '.[]'); do
+              # DEBIAN_TAG is a build arg of the debian image and the base
+              # selector of every other one, so only the latter add it here.
+              EXPECTED=$({
+                bash scripts/build-config.sh build-args "$IMAGE" "$VARIANT" | cut -d= -f1
+                [ "$IMAGE" = "debian" ] || echo "DEBIAN_TAG"
+              } | sort -u)
+              if [ "$DECLARED" != "$EXPECTED" ]; then
+                echo "ERROR: ${CONFIG} does not declare the build args of ${IMAGE}/${VARIANT}" >&2
+                diff <(echo "$EXPECTED") <(echo "$DECLARED") >&2 || true
+                STATUS=1
+              fi
+            done
+          done
+          exit "$STATUS"
       - name: Build matrix
         id: build
         # Expand each entry across both architectures so images are
@@ -154,6 +193,21 @@ jobs:
             --mount "type=bind,source=${{ github.workspace }}/debian/smoke-test.sh,target=/smoke-test.sh,readonly" \
             "debian:${{ matrix.variant }}" \
             bash /smoke-test.sh
+      - name: Verify sandbox dev container
+        # Built with the same args as the build step above, so the Dev Container
+        # CLI reuses those layers rather than rebuilding the image. The image
+        # contents are already covered by the smoke test, so this asserts only
+        # what the configuration adds: the CLI resolves it and applies remoteUser.
+        uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
+        env:
+          DEBIAN_TAG: ${{ steps.read.outputs.debian_tag }}
+        with:
+          configFile: .devcontainer/sandbox-debian/devcontainer.json
+          push: never
+          runCmd: |
+            set -e
+            [ "$(id -un)" = "dev" ] \
+              || { echo "ERROR: expected user dev, got $(id -un)" >&2; exit 1; }
       - name: Run Trivy vulnerability scanner
         # Vulnerability findings are identical across architectures; scan once.
         if: matrix.arch == 'amd64'
@@ -208,6 +262,13 @@ jobs:
             echo "DEBIAN_TAG=${DEBIAN_VARIANT}"
             echo "${DELIM}"
           } >> "$GITHUB_OUTPUT"
+          # The sandbox configuration reads the same values through
+          # ${localEnv:...}. Exported rather than set per step because the keys
+          # differ per image.
+          {
+            bash scripts/build-config.sh build-args "${{ matrix.image }}" "${{ matrix.variant }}"
+            echo "DEBIAN_TAG=${DEBIAN_VARIANT}"
+          } >> "$GITHUB_ENV"
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
       - name: Build language image
@@ -239,6 +300,19 @@ jobs:
             --mount "type=bind,source=${{ github.workspace }}/${{ matrix.image }}/smoke-test.sh,target=/smoke-test.sh,readonly" \
             "${{ matrix.image }}:${{ matrix.variant }}" \
             bash -c "bash /smoke-test-debian.sh && bash /smoke-test.sh"
+      - name: Verify sandbox dev container
+        # Built with the same args as the build step above, so the Dev Container
+        # CLI reuses those layers rather than rebuilding the image. The image
+        # contents are already covered by the smoke test, so this asserts only
+        # what the configuration adds: the CLI resolves it and applies remoteUser.
+        uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
+        with:
+          configFile: .devcontainer/sandbox-${{ matrix.image }}/devcontainer.json
+          push: never
+          runCmd: |
+            set -e
+            [ "$(id -un)" = "dev" ] \
+              || { echo "ERROR: expected user dev, got $(id -un)" >&2; exit 1; }
       - name: Run Trivy vulnerability scanner
         # Vulnerability findings are identical across architectures; scan once.
         if: matrix.arch == 'amd64'

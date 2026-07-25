@@ -103,13 +103,6 @@
       "minimumReleaseAge": null
     },
     {
-      "description": "Sandbox dev containers pin the same versions as the image build.yaml files (updated without delay above) and must stay in sync with the committed trust material those updates refresh, so apply their updates without delay as well.",
-      "matchFileNames": [
-        ".devcontainer/sandbox-*/devcontainer.json"
-      ],
-      "minimumReleaseAge": null
-    },
-    {
       "description": "Keep Debian image tags in the <codename>-<yyyymmdd> format and pinned to the same release line (e.g., bookworm, trixie). Renovate's built-in debian versioning rewrites dated codename tags to bare numeric release tags (e.g. trixie-20260713 -> 13) in getNewValue, so override it (including the per-line versioning=debian annotations) with a regex versioning that treats the codename as the compatibility layer.",
       "matchDatasources": [
         "docker"
@@ -132,8 +125,7 @@
     },
     {
       "matchFileNames": [
-        "golang/build.yaml",
-        ".devcontainer/sandbox-golang/devcontainer.json"
+        "golang/build.yaml"
       ],
       "matchPackageNames": [
         "golang"
@@ -146,8 +138,7 @@
     },
     {
       "matchFileNames": [
-        "zig/build.yaml",
-        ".devcontainer/sandbox-zig/devcontainer.json"
+        "zig/build.yaml"
       ],
       "matchPackageNames": [
         "ziglang/zig",

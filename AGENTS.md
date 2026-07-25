@@ -15,11 +15,10 @@ scripts/
   verify-image.sh            # confirms image verification steps succeed for a published image; run by attest-check.yml
 .github/workflows/
   release.yml                # builds and pushes images to GHCR
-  build-checks.yml           # builds each changed image, smoke-tests it, and runs the Dev Container Feature tests on the base
-  devcontainer-check.yml     # builds each sandbox dev container and runs its smoke tests
+  build-checks.yml           # for each changed image: builds and smoke-tests it, builds its sandbox dev container, and runs the Dev Container Feature tests on the base
 .devcontainer/
   default/                   # dev container for working in this repo
-  sandbox-<image>/           # one per image; for manually testing each published image. Kept free of Features so it mirrors the published image
+  sandbox-<image>/           # one per image; for manually testing each image. Kept free of Features so it mirrors the published image
   feature-<image>/           # an image with every verified Dev Container Feature layered on, plus the test.sh covering them
 renovate.jsonc               # Renovate config
 ```
@@ -34,6 +33,17 @@ renovate.jsonc               # Renovate config
   - Verify against `debian` alone, since every image extends it. Add the Feature to the single `.devcontainer/feature-debian` configuration rather than introducing another one.
   - Leave Feature options at their upstream defaults, so the check reflects what a consumer gets. Record the reason in a comment whenever a default has to be overridden.
   - Assert only what the Feature and the image are jointly responsible for. The container's runtime flags are Docker's behaviour, not this repository's, so leave them unasserted; the image's own `smoke-test.sh` runs first and covers what the image ships, so never repeat it in `test.sh`.
+- The sandbox dev containers take their build args from the environment with no defaults, so `build-checks.yml` can build them with the arguments it just built the image with and reuse those layers. Export the arguments of the variant you want before opening one by hand:
+
+  ```sh
+  set -a
+  . <(scripts/build-config.sh build-args node 26-trixie)
+  DEBIAN_TAG=$(scripts/build-config.sh get-field node 26-trixie debian_variant)
+  set +a
+  code .
+  ```
+
+  `debian` is the exception: its `build-args` already carry `DEBIAN_TAG`, so the second line is unnecessary.
 - Use English for all documentation and comments.
 - Comments should follow either of the following types:
   - Documentation comments: describe the purpose/signature of a file, function, or block of code. 

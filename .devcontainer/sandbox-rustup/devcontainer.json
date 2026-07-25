@@ -1,12 +1,14 @@
 {
+  // Build args are read from the environment without defaults, so build-checks.yml
+  // supplies the values it just built the image with and the Dev Container CLI
+  // reuses those layers. A missing value fails the build instead of silently
+  // selecting a different version; AGENTS.md documents how to export them by hand.
   "name": "sandbox-rustup",
   "build": {
     "dockerfile": "../../rustup/Dockerfile",
     "args": {
-      // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
-      "DEBIAN_TAG": "trixie-20260725@sha256:709adc59c1bd061e416d33119aad002fd361b4058a845543d9ddc4fac762dd48",
-      // renovate: datasource=github-releases depName=rust-lang/rustup versioning=semver
-      "RUSTUP_VERSION": "1.29.0"
+      "DEBIAN_TAG": "${localEnv:DEBIAN_TAG}",
+      "RUSTUP_VERSION": "${localEnv:RUSTUP_VERSION}"
     }
   },
   "runArgs": [
