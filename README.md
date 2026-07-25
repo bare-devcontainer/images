@@ -29,7 +29,7 @@ Dev Container base images are available from Microsoft ([link](https://github.co
 | [golang](golang/README.md) | `ghcr.io/bare-devcontainer/golang` | Go toolchain on Debian |
 | [mise](mise/README.md) | `ghcr.io/bare-devcontainer/mise` | mise runtime manager on Debian |
 | [node](node/README.md) | `ghcr.io/bare-devcontainer/node` | Node.js on Debian |
-| [rust](rust/README.md) | `ghcr.io/bare-devcontainer/rust` | Rust (via rustup) on Debian |
+| [rustup](rustup/README.md) | `ghcr.io/bare-devcontainer/rustup` | Rust (via rustup) on Debian |
 | [terraform](terraform/README.md) | `ghcr.io/bare-devcontainer/terraform` | Terraform CLI on Debian |
 | [uv](uv/README.md) | `ghcr.io/bare-devcontainer/uv` | Python (via uv) on Debian |
 | [zig](zig/README.md) | `ghcr.io/bare-devcontainer/zig` | Zig toolchain on Debian |

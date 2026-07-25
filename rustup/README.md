@@ -1,13 +1,13 @@
-# rust
+# rustup
 
 Dev container image with Rust installed via `rustup`, built on the [debian](../debian) base image.
 
-`rustup` is downloaded directly from the official [rustup release archive](https://static.rust-lang.org/rustup/). rustup publishes no signature for `rustup-init`, so it is verified against a SHA-256 checksum file committed to this repository (`rust/rustup-init-<arch>.sha256`) rather than one fetched from the same server as the binary. The committed checksum files are kept in sync with the pinned `RUSTUP_VERSION` by an automated workflow and reviewed like any other change, so later tampering with the download channel cannot affect builds. Rust toolchains are managed by `rustup` and stored in `~/.cargo`.
+`rustup` is downloaded directly from the official [rustup release archive](https://static.rust-lang.org/rustup/). rustup publishes no signature for `rustup-init`, so it is verified against a SHA-256 checksum file committed to this repository (`rustup/rustup-init-<arch>.sha256`) rather than one fetched from the same server as the binary. The committed checksum files are kept in sync with the pinned `RUSTUP_VERSION` by an automated workflow and reviewed like any other change, so later tampering with the download channel cannot affect builds. Rust toolchains are managed by `rustup` and stored in `~/.cargo`.
 
 ## Image
 
 ```
-ghcr.io/bare-devcontainer/rust:<tag>
+ghcr.io/bare-devcontainer/rustup:<tag>
 ```
 
 ## Dev Container Template

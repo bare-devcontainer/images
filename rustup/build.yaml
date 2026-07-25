@@ -1,4 +1,4 @@
-description: "Dev Container image with Rust installed via rustup, built on Debian"
+description: "Dev Container image for Rust development with rustup, built on Debian"
 # VERSION in each url is replaced with the build_args value named by
 # version_key; commit_to_pr files are pushed onto version-bump PRs.
 materials:
