@@ -20,8 +20,8 @@ scripts/
 .devcontainer/
   default/                   # dev container for working in this repo
   sandbox-<image>/           # one per image; for manually testing each published image. Kept free of Features so it mirrors the published image
-  feature-<image>-<feature>/ # one published image plus one Dev Container Feature; the directory name selects the smoke test and Feature check to run
-  features/<feature>.sh      # per-Feature check, shared by every config that layers that Feature
+  feature-debian/            # the published debian image with every verified Dev Container Feature layered on; exercised by feature-check.yml
+  features/<feature>.sh      # one check per Feature layered by feature-debian
 renovate.jsonc               # Renovate config
 ```
 
@@ -31,9 +31,10 @@ renovate.jsonc               # Renovate config
 - All images are built on Debian base images, and target multi-arch (linux/amd64 + linux/arm64) builds.
 - Dev Container Feature checks exist to guarantee that Features can supply tooling the images deliberately omit. When adding one:
   - Cover a Feature when it exercises an install mechanism that no already-covered Feature exercises (user and shell provisioning, a third-party apt repository, a release binary download, an upstream install script). Do not add a second Feature that only repeats a covered mechanism.
-  - Pair every covered Feature with `debian`, since every image extends it. Pair a Feature with a child image only when the Feature complements a capability that image lacks; a Feature that would replace what an image already provides is out of scope.
+  - Cover a Feature only when it complements the images by supplying something they do not provide. A Feature that would replace what an image already ships is out of scope.
+  - Verify against `debian` alone, since every image extends it. Add the Feature to the single `.devcontainer/feature-debian` configuration rather than introducing another one.
   - Leave Feature options at their upstream defaults, so the check reflects what a consumer gets. Record the reason in a comment whenever a default has to be overridden.
-  - Keep assertions layered: shared container properties belong in `scripts/check-container-invariants.sh`, the image's own `smoke-test.sh` serves as the non-regression check, and `.devcontainer/features/<feature>.sh` covers the Feature itself. Never duplicate a check across per-image files.
+  - Keep assertions layered: shared container properties belong in `scripts/check-container-invariants.sh`, `debian/smoke-test.sh` serves as the non-regression check, and `.devcontainer/features/<feature>.sh` covers the Feature itself. Never duplicate a check between them.
 - Use English for all documentation and comments.
 - Comments should follow either of the following types:
   - Documentation comments: describe the purpose/signature of a file, function, or block of code. 

@@ -1,0 +1,25 @@
+{
+  // Verifies that the official Dev Container Features stay usable on top of the
+  // published images, so tooling the images deliberately omit can be added
+  // through Features. Every image extends debian, so covering the base covers
+  // them all.
+  "name": "feature-debian",
+  // Deliberately a moving tag: this check exists to catch drift between the
+  // latest published image and the Features, which a pinned digest would hide.
+  "image": "ghcr.io/bare-devcontainer/debian:trixie",
+  "features": {
+    // Options stay at their upstream defaults so the check reflects what a
+    // consumer gets. common-utils keeps `username` at "automatic" in
+    // particular, which is what exercises its detection of the image's
+    // existing dev user.
+    "ghcr.io/devcontainers/features/common-utils:2": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/git-lfs:1": {},
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges"
+  ],
+  "remoteUser": "dev"
+}

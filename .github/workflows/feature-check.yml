@@ -1,10 +1,10 @@
 name: Feature Checks
 
 # Verifies that official Dev Container Features compose with the published
-# images, so extra tooling can be added through Features instead of being baked
-# into the images. Each .devcontainer/feature-<image>-<feature> directory pairs
-# one published image with one Feature; the directory name selects both the
-# image smoke test and the per-Feature check to run.
+# images, so tooling the images deliberately omit can be added through Features
+# instead of being baked in. The Features are layered onto debian, which every
+# image extends, and each one is checked by its own script under
+# .devcontainer/features.
 on:
   schedule:
     # Nightly, after the 00:00 UTC release publishes fresh images, so drift
@@ -13,60 +13,36 @@ on:
   pull_request:
     paths:
       - .github/workflows/feature-check.yml
-      - .devcontainer/feature-**
+      - .devcontainer/feature-debian/**
+      - .devcontainer/features/**
       - scripts/check-container-invariants.sh
-      - '*/smoke-test.sh'
+      - debian/smoke-test.sh
   push:
     branches:
       - main
     paths:
-      - .devcontainer/feature-**
+      - .devcontainer/feature-debian/**
+      - .devcontainer/features/**
       - scripts/check-container-invariants.sh
-      - '*/smoke-test.sh'
+      - debian/smoke-test.sh
   workflow_dispatch:
 
 permissions: {}
 
 jobs:
-  setup:
-    permissions:
-      contents: read
-    runs-on: ubuntu-slim
-    timeout-minutes: 5
-    outputs:
-      matrix: ${{ steps.matrix.outputs.matrix }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          persist-credentials: false
-      - name: Build feature matrix
-        id: matrix
-        run: |
-          # Directories are named feature-<image>-<feature>; image names carry no
-          # hyphen, so the first segment is the image and the rest is the
-          # Feature. Each combination runs on a native amd64 and arm64 runner,
-          # since several Features resolve architecture-specific artifacts.
-          MATRIX=$(find .devcontainer -maxdepth 1 -type d -name 'feature-*' -printf '%f\n' \
-            | sed 's/^feature-//' | sort \
-            | jq -R -s -c '[
-                split("\n")[:-1][] as $combo
-                | ($combo | split("-")) as $parts
-                | ("amd64", "arm64")
-                | {combo: $combo, image: $parts[0], feature: ($parts[1:] | join("-")), arch: .}
-              ]')
-          echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
-
   test:
-    needs: setup
     permissions:
       contents: read
+    # Several Features resolve architecture-specific artifacts, so the container
+    # is started on a native runner of each architecture.
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJson(needs.setup.outputs.matrix) }}
+        arch:
+          - amd64
+          - arm64
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -74,19 +50,14 @@ jobs:
           persist-credentials: false
       - name: Start the container and run the checks
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
-        env:
-          MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}
         with:
-          configFile: .devcontainer/feature-${{ matrix.combo }}/devcontainer.json
+          configFile: .devcontainer/feature-debian/devcontainer.json
           push: never
-          env: |
-            MISE_GITHUB_TOKEN
-          # The image smoke tests run with the Feature layered on, so they double
-          # as the check that the Feature did not regress the image's own tooling.
+          # The image smoke test runs with the Features layered on, so it doubles
+          # as the check that they did not regress the image's own tooling.
           runCmd: |
             bash scripts/check-container-invariants.sh
             bash debian/smoke-test.sh
-            if [ "${{ matrix.image }}" != "debian" ]; then
-              bash ${{ matrix.image }}/smoke-test.sh
-            fi
-            bash .devcontainer/features/${{ matrix.feature }}.sh
+            for check in .devcontainer/features/*.sh; do
+              bash "$check"
+            done
