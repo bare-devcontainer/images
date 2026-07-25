@@ -9,6 +9,7 @@ This repository builds and publishes minimal Debian-based Docker images for use 
   README.md     # image docs; the Tags table between <!-- tags:begin/end --> markers is generated
 scripts/
   build-config.sh            # CLI for querying build.yaml; used by CI to generate matrices and build args
+  changed-images.sh          # maps changed files to the images they affect; used by build-checks.yml to skip untouched images
   update-material.sh         # refreshes the trust material declared in build.yaml (materials); called by update-material.yml
   update-readme.sh           # regenerates the README Tags tables from build.yaml; run by CI after each release
   verify-image.sh            # confirms image verification steps succeed for a published image; run by attest-check.yml
