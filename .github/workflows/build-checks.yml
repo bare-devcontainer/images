@@ -198,7 +198,6 @@ jobs:
         # CLI reuses those layers rather than rebuilding the image. The image
         # contents are already covered by the smoke test, so this asserts only
         # what the configuration adds: the CLI resolves it and applies remoteUser.
-        if: matrix.arch == 'amd64'
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
           DEBIAN_TAG: ${{ steps.read.outputs.debian_tag }}
@@ -306,7 +305,6 @@ jobs:
         # CLI reuses those layers rather than rebuilding the image. The image
         # contents are already covered by the smoke test, so this asserts only
         # what the configuration adds: the CLI resolves it and applies remoteUser.
-        if: matrix.arch == 'amd64'
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         with:
           configFile: .devcontainer/sandbox-${{ matrix.image }}/devcontainer.json
