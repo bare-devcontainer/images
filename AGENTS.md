@@ -9,18 +9,17 @@ This repository builds and publishes minimal Debian-based Docker images for use 
   README.md     # image docs; the Tags table between <!-- tags:begin/end --> markers is generated
 scripts/
   build-config.sh            # CLI for querying build.yaml; used by CI to generate matrices and build args
-  check-container-invariants.sh # asserts the identity and hardening properties every dev container must hold; run inside the container by devcontainer-check.yml and feature-check.yml
+  check-container-invariants.sh # asserts the identity and hardening properties every dev container must hold; run inside the container by devcontainer-check.yml
   update-material.sh         # refreshes the trust material declared in build.yaml (materials); called by update-material.yml
   update-readme.sh           # regenerates the README Tags tables from build.yaml; run by CI after each release
   verify-image.sh            # confirms image verification steps succeed for a published image; run by attest-check.yml
 .github/workflows/
   release.yml                # builds and pushes images to GHCR
-  devcontainer-check.yml     # builds each sandbox dev container and runs its smoke tests
-  feature-check.yml          # nightly; verifies Dev Container Features compose with the images
+  devcontainer-check.yml     # builds each dev container configuration and runs its checks
 .devcontainer/
   default/                   # dev container for working in this repo
   sandbox-<image>/           # one per image; for manually testing each published image. Kept free of Features so it mirrors the published image
-  feature-debian/            # the debian image with every verified Dev Container Feature layered on; exercised by feature-check.yml
+  feature-debian/            # the debian image with every verified Dev Container Feature layered on
   features/<feature>.sh      # one check per Feature layered by feature-debian
 renovate.jsonc               # Renovate config
 ```

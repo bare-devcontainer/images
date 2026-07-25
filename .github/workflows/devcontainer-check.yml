@@ -1,10 +1,16 @@
 name: Devcontainer Checks
 
+# Builds every dev container configuration in .devcontainer and runs its checks
+# inside the container. The sandbox-<image> configurations mirror the published
+# images, while feature-<image> layers the official Dev Container Features that
+# supply tooling the images deliberately omit.
 on:
   pull_request:
     paths:
       - .github/workflows/devcontainer-check.yml
       - .devcontainer/sandbox-**
+      - .devcontainer/feature-**
+      - .devcontainer/features/**
       - scripts/check-container-invariants.sh
       - '*/Dockerfile'
       - '*/smoke-test.sh'
@@ -13,6 +19,8 @@ on:
       - main
     paths:
       - .devcontainer/sandbox-**
+      - .devcontainer/feature-**
+      - .devcontainer/features/**
       - scripts/check-container-invariants.sh
       - '*/Dockerfile'
       - '*/smoke-test.sh'
@@ -33,14 +41,21 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - name: Build sandbox matrix
+      - name: Build configuration matrix
         id: matrix
         run: |
-          # One entry per sandbox per architecture, so each dev container is
-          # started on a native amd64 and arm64 runner.
-          MATRIX=$(find .devcontainer -maxdepth 1 -type d -name 'sandbox-*' -printf '%f\n' \
-            | sed 's/^sandbox-//' | sort \
-            | jq -R -s -c '[split("\n")[:-1][] as $i | ("amd64", "arm64") | {image: $i, arch: .}]')
+          # One entry per configuration per architecture, so each dev container
+          # is started on a native amd64 and arm64 runner. The directory name
+          # carries the image it builds after its prefix; `features` holds the
+          # per-Feature checks and is skipped, as it lacks the trailing hyphen.
+          MATRIX=$(find .devcontainer -maxdepth 1 -type d \
+              \( -name 'sandbox-*' -o -name 'feature-*' \) -printf '%f\n' \
+            | sort \
+            | jq -R -s -c '[
+                split("\n")[:-1][] as $config
+                | ("amd64", "arm64")
+                | {config: $config, image: ($config | sub("^(sandbox|feature)-"; "")), arch: .}
+              ]')
           echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
 
   test:
@@ -63,7 +78,7 @@ jobs:
         env:
           MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}
         with:
-          configFile: .devcontainer/sandbox-${{ matrix.image }}/devcontainer.json
+          configFile: .devcontainer/${{ matrix.config }}/devcontainer.json
           push: never
           env: |
             MISE_GITHUB_TOKEN
@@ -76,3 +91,12 @@ jobs:
             if [ "${{ matrix.image }}" != "debian" ]; then
               bash ${{ matrix.image }}/smoke-test.sh
             fi
+            # Where Features are layered on, the image smoke test above doubles
+            # as the check that they did not regress the image's own tooling.
+            case "${{ matrix.config }}" in
+              feature-*)
+                for check in .devcontainer/features/*.sh; do
+                  bash "$check"
+                done
+                ;;
+            esac
