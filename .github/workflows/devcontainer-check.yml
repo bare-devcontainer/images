@@ -68,6 +68,9 @@ jobs:
           env: |
             MISE_GITHUB_TOKEN
           runCmd: |
+            # The commands run through a single `bash -c`, whose exit status is
+            # that of the last one, so a failure has to stop the sequence here.
+            set -e
             bash scripts/check-container-invariants.sh
             bash debian/smoke-test.sh
             if [ "${{ matrix.image }}" != "debian" ]; then

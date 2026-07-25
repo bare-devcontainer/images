@@ -56,6 +56,9 @@ jobs:
           # The image smoke test runs with the Features layered on, so it doubles
           # as the check that they did not regress the image's own tooling.
           runCmd: |
+            # The commands run through a single `bash -c`, whose exit status is
+            # that of the last one, so a failure has to stop the sequence here.
+            set -e
             bash scripts/check-container-invariants.sh
             bash debian/smoke-test.sh
             for check in .devcontainer/features/*.sh; do

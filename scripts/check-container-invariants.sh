@@ -13,20 +13,19 @@
 set -euo pipefail
 
 EXPECTED_USER="dev"
-EXPECTED_UID="1000"
 
-echo "=== Verifying the container runs as ${EXPECTED_USER} (uid ${EXPECTED_UID}) ==="
+echo "=== Verifying the container runs as ${EXPECTED_USER} ==="
+# The uid itself is not asserted: the Dev Container CLI remaps the container
+# user to the host user's id, so the value depends on where the container runs.
 [ "$(id -u)" -ne 0 ] || { echo "ERROR: running as root" >&2; exit 1; }
 [ "$(id -un)" = "$EXPECTED_USER" ] \
   || { echo "ERROR: expected user ${EXPECTED_USER}, got $(id -un)" >&2; exit 1; }
-[ "$(id -u)" -eq "$EXPECTED_UID" ] \
-  || { echo "ERROR: expected uid ${EXPECTED_UID}, got $(id -u)" >&2; exit 1; }
 [ "$HOME" = "/home/${EXPECTED_USER}" ] \
   || { echo "ERROR: expected home /home/${EXPECTED_USER}, got ${HOME}" >&2; exit 1; }
 
 echo "=== Verifying no additional unprivileged user was provisioned ==="
 # Features that set up a user (common-utils) must adopt the image's existing
-# uid 1000 user instead of adding one of their own. 65534 is nobody.
+# user instead of adding one of their own. 65534 is nobody.
 mapfile -t users < <(awk -F: '$3 >= 1000 && $3 < 65534 { print $1 }' /etc/passwd | sort)
 if [ "${#users[@]}" -ne 1 ] || [ "${users[0]}" != "$EXPECTED_USER" ]; then
   echo "ERROR: expected only ${EXPECTED_USER}, found: ${users[*]}" >&2
