@@ -11,6 +11,7 @@ on:
       - '*/rustup-init-*.sha256'
       - '*/uv-*.sha256'
       - scripts/build-config.sh
+      - scripts/changed-images.sh
       - .trivyignore.yaml
   push:
     branches:
@@ -23,6 +24,7 @@ on:
       - '*/rustup-init-*.sha256'
       - '*/uv-*.sha256'
       - scripts/build-config.sh
+      - scripts/changed-images.sh
 
 permissions: {}
 
@@ -44,19 +46,63 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
+          # Full history so the diff against the base commit can be resolved.
+          fetch-depth: 0
           persist-credentials: false
+      - name: Detect changed images
+        id: changed
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+          CHANGED_FILES: ${{ runner.temp }}/changed-files.txt
+        run: |
+          # Diffing from the merge base keeps commits that only landed on the
+          # base branch out of the change set, on both pull_request and push.
+          # Whenever that base commit cannot be resolved (first push to a
+          # branch, force push, deleted commit), fall back to treating every
+          # tracked file as changed so no image is skipped by accident.
+          if [ -n "$BASE_SHA" ] && git cat-file -e "${BASE_SHA}^{commit}" 2> /dev/null; then
+            echo "=== Changed files (${BASE_SHA}...${HEAD_SHA}) ==="
+            git diff --name-only "${BASE_SHA}...${HEAD_SHA}" | tee "$CHANGED_FILES"
+          else
+            echo "=== Changed files ==="
+            echo "Base commit ${BASE_SHA:-<unknown>} is unavailable; treating every tracked file as changed."
+            git ls-files > "$CHANGED_FILES"
+          fi
+
+          REPORT=$(bash scripts/changed-images.sh "$CHANGED_FILES")
+          echo "report=${REPORT}" >> "$GITHUB_OUTPUT"
+
+          # Report every image, selected or not, together with the changes it
+          # was selected for, so a skipped image can be verified from the log.
+          echo "=== Test targets ==="
+          echo "$REPORT" | jq -r '.[] |
+            "[" + (if .selected then "RUN " else "SKIP" end) + "] " + .image + ": " + .reason,
+            (.files[] | "         " + .)'
       - name: Build matrix
         id: build
         # Expand each entry across both architectures so images are
         # smoke-tested on the same platforms they are published for.
+        env:
+          REPORT: ${{ steps.changed.outputs.report }}
         run: |
-          echo "base_matrix=$(bash scripts/build-config.sh variants debian \
-            | jq -c '[.[] as $v | ("amd64", "arm64") | {variant: $v, arch: .}]')" >> "$GITHUB_OUTPUT"
-          echo "matrix=$(bash scripts/build-config.sh all-matrix \
-            | jq -c '[.[] as $m | ("amd64", "arm64") | $m + {arch: .}]')" >> "$GITHUB_OUTPUT"
+          SELECTED=$(echo "$REPORT" | jq -c '[.[] | select(.selected) | .image]')
+
+          BASE_MATRIX='[]'
+          if echo "$SELECTED" | jq -e 'any(. == "debian")' > /dev/null; then
+            BASE_MATRIX=$(bash scripts/build-config.sh variants debian \
+              | jq -c '[.[] as $v | ("amd64", "arm64") | {variant: $v, arch: .}]')
+          fi
+          MATRIX=$(bash scripts/build-config.sh all-matrix \
+            | jq -c --argjson selected "$SELECTED" \
+              '[.[] | select(.image | IN($selected[])) as $m | ("amd64", "arm64") | $m + {arch: .}]')
+
+          echo "base_matrix=${BASE_MATRIX}" >> "$GITHUB_OUTPUT"
+          echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
 
   check-base:
     needs: setup
+    if: needs.setup.outputs.base_matrix != '[]'
     permissions:
       contents: read
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
@@ -119,6 +165,7 @@ jobs:
 
   check-image:
     needs: setup
+    if: needs.setup.outputs.matrix != '[]'
     permissions:
       contents: read
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
