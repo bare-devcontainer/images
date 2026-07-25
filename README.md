@@ -63,10 +63,11 @@ Reference an image directly in `.devcontainer/devcontainer.json`:
 Create a `Dockerfile` that extends one of the images, then reference it from `.devcontainer/devcontainer.json`:
 
 ```dockerfile
-FROM ghcr.io/bare-devcontainer/rust:1@sha256:<digest>
+FROM ghcr.io/bare-devcontainer/rustup:1@sha256:<digest>
 
-# Add your project-specific setup here
-RUN cargo install cargo-watch
+# Add your project-specific setup here.
+# The image ships no Rust toolchain, so install one before invoking cargo.
+RUN rustup toolchain install stable && cargo install cargo-watch
 ```
 
 ```json
