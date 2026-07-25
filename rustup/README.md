@@ -21,14 +21,6 @@ tampering with the download channel cannot affect builds.
 ghcr.io/bare-devcontainer/rustup:<tag>
 ```
 
-> [!NOTE]
-> This image was previously published as `ghcr.io/bare-devcontainer/rust`. Its version tags
-> track `rustup`, not Rust, which the `rust` name made easy to misread — `rust:1` looks like
-> Rust 1.x but means rustup 1.x. Naming the image after the tool it ships also matches the
-> other images here, such as [uv](../uv), which ships no Python interpreter. Tags already
-> published under `rust` remain available on GHCR but will not be updated; switch to `rustup`
-> to keep receiving updates.
-
 ## Dev Container Template
 
 A ready-to-use Dev Container template for this image is available at
