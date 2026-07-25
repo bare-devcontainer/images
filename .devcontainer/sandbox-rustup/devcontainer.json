@@ -1,7 +1,7 @@
 {
-  "name": "sandbox-rust",
+  "name": "sandbox-rustup",
   "build": {
-    "dockerfile": "../../rust/Dockerfile",
+    "dockerfile": "../../rustup/Dockerfile",
     "args": {
       // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
       "DEBIAN_TAG": "trixie-20260725@sha256:709adc59c1bd061e416d33119aad002fd361b4058a845543d9ddc4fac762dd48",

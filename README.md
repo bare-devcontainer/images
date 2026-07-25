@@ -29,7 +29,7 @@ Dev Container base images are available from Microsoft ([link](https://github.co
 | [golang](golang/README.md) | `ghcr.io/bare-devcontainer/golang` | Go toolchain on Debian |
 | [mise](mise/README.md) | `ghcr.io/bare-devcontainer/mise` | mise runtime manager on Debian |
 | [node](node/README.md) | `ghcr.io/bare-devcontainer/node` | Node.js on Debian |
-| [rust](rust/README.md) | `ghcr.io/bare-devcontainer/rust` | Rust (via rustup) on Debian |
+| [rustup](rustup/README.md) | `ghcr.io/bare-devcontainer/rustup` | Rust (via rustup) on Debian |
 | [terraform](terraform/README.md) | `ghcr.io/bare-devcontainer/terraform` | Terraform CLI on Debian |
 | [uv](uv/README.md) | `ghcr.io/bare-devcontainer/uv` | Python (via uv) on Debian |
 | [zig](zig/README.md) | `ghcr.io/bare-devcontainer/zig` | Zig toolchain on Debian |
@@ -63,10 +63,11 @@ Reference an image directly in `.devcontainer/devcontainer.json`:
 Create a `Dockerfile` that extends one of the images, then reference it from `.devcontainer/devcontainer.json`:
 
 ```dockerfile
-FROM ghcr.io/bare-devcontainer/rust:1@sha256:<digest>
+FROM ghcr.io/bare-devcontainer/rustup:1@sha256:<digest>
 
-# Add your project-specific setup here
-RUN cargo install cargo-watch
+# Add your project-specific setup here.
+# The image ships no Rust toolchain, so install one before invoking cargo.
+RUN rustup toolchain install stable && cargo install cargo-watch
 ```
 
 ```json
