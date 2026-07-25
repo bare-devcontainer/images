@@ -15,8 +15,8 @@ scripts/
   verify-image.sh            # confirms image verification steps succeed for a published image; run by attest-check.yml
 .github/workflows/
   release.yml                # builds and pushes images to GHCR
-  devcontainer-check.yml     # builds each dev container configuration and runs its checks
-  feature-check.yml          # verifies the images work with the Dev Container Features, on every published architecture
+  build-checks.yml           # builds each changed image, smoke-tests it, and runs the Dev Container Feature tests on the base
+  devcontainer-check.yml     # builds each sandbox dev container and runs its smoke tests
 .devcontainer/
   default/                   # dev container for working in this repo
   sandbox-<image>/           # one per image; for manually testing each published image. Kept free of Features so it mirrors the published image

@@ -10,6 +10,7 @@ on:
       - '*/node-keyring.kbx'
       - '*/rustup-init-*.sha256'
       - '*/uv-*.sha256'
+      - .devcontainer/feature-**
       - scripts/build-config.sh
       - scripts/changed-images.sh
       - .trivyignore.yaml
@@ -23,6 +24,7 @@ on:
       - '*/node-keyring.kbx'
       - '*/rustup-init-*.sha256'
       - '*/uv-*.sha256'
+      - .devcontainer/feature-**
       - scripts/build-config.sh
       - scripts/changed-images.sh
 
@@ -162,6 +164,21 @@ jobs:
           ignore-unfixed: true
           trivyignores: .trivyignore.yaml
           exit-code: '1'
+      - name: Run Dev Container feature tests
+        # Confirms the Features that supply tooling the images deliberately omit
+        # still install and run. The configuration pins its own base, so it does
+        # not vary with the variant built above; run it once per architecture.
+        if: matrix.variant == 'trixie'
+        uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
+        with:
+          configFile: .devcontainer/feature-debian/devcontainer.json
+          push: never
+          runCmd: |
+            # runCmd is a single `bash -c`, which reports the status of its last
+            # command only.
+            set -e
+            bash debian/smoke-test.sh
+            bash .devcontainer/feature-debian/test.sh
 
   check-image:
     needs: setup
