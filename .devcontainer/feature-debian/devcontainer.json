@@ -9,9 +9,8 @@
     }
   },
   "features": {
-    // Options stay at their upstream defaults so the check reflects what a
-    // consumer gets. common-utils depends on this: its default "automatic"
-    // username is what makes it detect the image's existing dev user.
+    // Options stay at their upstream defaults: common-utils only detects the
+    // image's existing dev user while its username option is "automatic".
     "ghcr.io/devcontainers/features/common-utils:2": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/git-lfs:1": {},

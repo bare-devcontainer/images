@@ -62,8 +62,6 @@ jobs:
           env: |
             MISE_GITHUB_TOKEN
           runCmd: |
-            # runCmd is a single `bash -c`, which reports the status of its last
-            # command only.
             set -e
             bash debian/smoke-test.sh
             if [ "${{ matrix.image }}" != "debian" ]; then
