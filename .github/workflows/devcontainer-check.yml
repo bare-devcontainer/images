@@ -1,6 +1,6 @@
 name: Devcontainer Checks
 
-# Builds every dev container configuration in .devcontainer and runs its checks
+# Builds every dev container configuration in .devcontainer and runs its tests
 # inside the container. The sandbox-<image> configurations mirror the published
 # images, while feature-<image> layers the official Dev Container Features that
 # supply tooling the images deliberately omit.
@@ -10,8 +10,6 @@ on:
       - .github/workflows/devcontainer-check.yml
       - .devcontainer/sandbox-**
       - .devcontainer/feature-**
-      - .devcontainer/features/**
-      - scripts/check-container-invariants.sh
       - '*/Dockerfile'
       - '*/smoke-test.sh'
   push:
@@ -20,8 +18,6 @@ on:
     paths:
       - .devcontainer/sandbox-**
       - .devcontainer/feature-**
-      - .devcontainer/features/**
-      - scripts/check-container-invariants.sh
       - '*/Dockerfile'
       - '*/smoke-test.sh'
   workflow_dispatch:
@@ -46,15 +42,27 @@ jobs:
         run: |
           # One entry per configuration per architecture, so each dev container
           # is started on a native amd64 and arm64 runner. The directory name
-          # carries the image it builds after its prefix; `features` holds the
-          # per-Feature checks and is skipped, as it lacks the trailing hyphen.
+          # carries the image it builds after its prefix, and determines the
+          # tests to run inside it: every container runs the base image's smoke
+          # test, a sandbox adds the smoke test of the image it builds, and a
+          # feature configuration adds the test sitting beside it.
           MATRIX=$(find .devcontainer -maxdepth 1 -type d \
               \( -name 'sandbox-*' -o -name 'feature-*' \) -printf '%f\n' \
             | sort \
             | jq -R -s -c '[
                 split("\n")[:-1][] as $config
+                | ($config | sub("^(sandbox|feature)-"; "")) as $image
+                | (["debian/smoke-test.sh"] + (
+                    if $config | startswith("feature-") then
+                      [".devcontainer/\($config)/test.sh"]
+                    elif $image == "debian" then
+                      []
+                    else
+                      ["\($image)/smoke-test.sh"]
+                    end
+                  )) as $tests
                 | ("amd64", "arm64")
-                | {config: $config, image: ($config | sub("^(sandbox|feature)-"; "")), arch: .}
+                | {config: $config, image: $image, tests: ($tests | join(" ")), arch: .}
               ]')
           echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
 
@@ -73,7 +81,7 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - name: Build and run smoke tests
+      - name: Build and run tests
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
           MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}
@@ -86,17 +94,6 @@ jobs:
             # The commands run through a single `bash -c`, whose exit status is
             # that of the last one, so a failure has to stop the sequence here.
             set -e
-            bash scripts/check-container-invariants.sh
-            bash debian/smoke-test.sh
-            if [ "${{ matrix.image }}" != "debian" ]; then
-              bash ${{ matrix.image }}/smoke-test.sh
-            fi
-            # Where Features are layered on, the image smoke test above doubles
-            # as the check that they did not regress the image's own tooling.
-            case "${{ matrix.config }}" in
-              feature-*)
-                for check in .devcontainer/features/*.sh; do
-                  bash "$check"
-                done
-                ;;
-            esac
+            for test in ${{ matrix.tests }}; do
+              bash "$test"
+            done

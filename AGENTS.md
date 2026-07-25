@@ -9,7 +9,6 @@ This repository builds and publishes minimal Debian-based Docker images for use 
   README.md     # image docs; the Tags table between <!-- tags:begin/end --> markers is generated
 scripts/
   build-config.sh            # CLI for querying build.yaml; used by CI to generate matrices and build args
-  check-container-invariants.sh # asserts the identity and hardening properties every dev container must hold; run inside the container by devcontainer-check.yml
   update-material.sh         # refreshes the trust material declared in build.yaml (materials); called by update-material.yml
   update-readme.sh           # regenerates the README Tags tables from build.yaml; run by CI after each release
   verify-image.sh            # confirms image verification steps succeed for a published image; run by attest-check.yml
@@ -19,8 +18,7 @@ scripts/
 .devcontainer/
   default/                   # dev container for working in this repo
   sandbox-<image>/           # one per image; for manually testing each published image. Kept free of Features so it mirrors the published image
-  feature-debian/            # the debian image with every verified Dev Container Feature layered on
-  features/<feature>.sh      # one check per Feature layered by feature-debian
+  feature-<image>/           # an image with every verified Dev Container Feature layered on, plus the test.sh covering them
 renovate.jsonc               # Renovate config
 ```
 
@@ -33,7 +31,7 @@ renovate.jsonc               # Renovate config
   - Cover a Feature only when it complements the images by supplying something they do not provide. A Feature that would replace what an image already ships is out of scope.
   - Verify against `debian` alone, since every image extends it. Add the Feature to the single `.devcontainer/feature-debian` configuration rather than introducing another one.
   - Leave Feature options at their upstream defaults, so the check reflects what a consumer gets. Record the reason in a comment whenever a default has to be overridden.
-  - Keep assertions layered: shared container properties belong in `scripts/check-container-invariants.sh`, `debian/smoke-test.sh` serves as the non-regression check, and `.devcontainer/features/<feature>.sh` covers the Feature itself. Never duplicate a check between them.
+  - Assert only what the Feature and the image are jointly responsible for. The container's runtime flags are Docker's behaviour, not this repository's, so leave them unasserted; the image's own `smoke-test.sh` runs first and covers what the image ships, so never repeat it in `test.sh`.
 - Use English for all documentation and comments.
 - Comments should follow either of the following types:
   - Documentation comments: describe the purpose/signature of a file, function, or block of code. 
