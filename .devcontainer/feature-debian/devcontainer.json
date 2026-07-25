@@ -1,0 +1,25 @@
+{
+  // Every image extends debian, so the Features are verified on the base alone.
+  "name": "feature-debian",
+  "build": {
+    "dockerfile": "../../debian/Dockerfile",
+    "args": {
+      // Supplied by build-checks.yml from the variant it is building, and left
+      // without a default so a build never silently picks the wrong base.
+      "DEBIAN_TAG": "${localEnv:DEBIAN_TAG}"
+    }
+  },
+  "features": {
+    // Options stay at their upstream defaults: common-utils only detects the
+    // image's existing dev user while its username option is "automatic".
+    "ghcr.io/devcontainers/features/common-utils:2": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/git-lfs:1": {},
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges"
+  ],
+  "remoteUser": "dev"
+}

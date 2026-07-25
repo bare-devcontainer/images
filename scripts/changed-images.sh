@@ -17,6 +17,8 @@
 #
 # Selection rules, from the most specific to the most general:
 #   - Files under <image>/ affect that image.
+#   - Files under .devcontainer/feature-<image>/ affect that image, since that
+#     configuration layers the Dev Container Features onto it.
 #   - The files listed in CROSS_IMAGE_PATHS affect every image even though they
 #     live in one image's directory. Note that debian/Dockerfile is NOT one of
 #     them: build-checks.yml builds each derived image FROM the *published*
@@ -47,7 +49,9 @@ IMAGES=$(bash "${SCRIPT_DIR}/build-config.sh" images)
 
 jq -n -c --argjson images "$IMAGES" --argjson cross_image "$CROSS_IMAGE_PATHS" --arg changed "$CHANGED" '
   # Directory of the image a path belongs to, or null when it belongs to none.
-  def owner($path): $images | map(select(. as $dir | $path | startswith($dir + "/"))) | first;
+  def owner($path):
+    ($images | map(select(. as $dir | $path | startswith($dir + "/"))) | first)
+    // ($images | map(select(. as $dir | $path | startswith(".devcontainer/feature-" + $dir + "/"))) | first);
 
   ($changed | split("\n") | map(select(length > 0))) as $files
   | ($files | map(select(IN($cross_image[])))) as $cross_image_changed
