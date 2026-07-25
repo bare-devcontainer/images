@@ -1,8 +1,5 @@
 name: Devcontainer Checks
 
-# Builds the sandbox dev containers and runs the image smoke tests inside them.
-# One architecture is enough here: build-checks.yml verifies the images
-# themselves on every architecture they are published for.
 on:
   pull_request:
     paths:
@@ -17,7 +14,6 @@ on:
       - .devcontainer/sandbox-**
       - '*/Dockerfile'
       - '*/smoke-test.sh'
-  workflow_dispatch:
 
 permissions: {}
 
@@ -38,14 +34,7 @@ jobs:
         id: matrix
         run: |
           MATRIX=$(find .devcontainer -maxdepth 1 -type d -name 'sandbox-*' -printf '%f\n' \
-            | sed 's/^sandbox-//' | sort \
-            | jq -R -s -c '[
-                split("\n")[:-1][] as $image
-                | (["debian/smoke-test.sh"] + (
-                    if $image == "debian" then [] else ["\($image)/smoke-test.sh"] end
-                  )) as $tests
-                | {image: $image, tests: ($tests | join(" "))}
-              ]')
+            | sed 's/^sandbox-//' | sort | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
 
   test:
@@ -57,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJson(needs.setup.outputs.matrix) }}
+        image: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -76,6 +65,7 @@ jobs:
             # runCmd is a single `bash -c`, which reports the status of its last
             # command only.
             set -e
-            for test in ${{ matrix.tests }}; do
-              bash "$test"
-            done
+            bash debian/smoke-test.sh
+            if [ "${{ matrix.image }}" != "debian" ]; then
+              bash ${{ matrix.image }}/smoke-test.sh
+            fi
