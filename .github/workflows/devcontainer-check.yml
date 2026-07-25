@@ -1,15 +1,14 @@
 name: Devcontainer Checks
 
-# Builds every dev container configuration in .devcontainer and runs its tests
-# inside the container. The sandbox-<image> configurations mirror the published
-# images, while feature-<image> layers the official Dev Container Features that
-# supply tooling the images deliberately omit.
+# Builds the sandbox dev containers used for working on this repository and runs
+# the image smoke tests inside them, so those configurations keep working. The
+# images themselves are verified per architecture by build-checks.yml, so there
+# is nothing to gain from repeating these on a second architecture.
 on:
   pull_request:
     paths:
       - .github/workflows/devcontainer-check.yml
       - .devcontainer/sandbox-**
-      - .devcontainer/feature-**
       - '*/Dockerfile'
       - '*/smoke-test.sh'
   push:
@@ -17,7 +16,6 @@ on:
       - main
     paths:
       - .devcontainer/sandbox-**
-      - .devcontainer/feature-**
       - '*/Dockerfile'
       - '*/smoke-test.sh'
   workflow_dispatch:
@@ -37,32 +35,19 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - name: Build configuration matrix
+      - name: Build sandbox matrix
         id: matrix
         run: |
-          # One entry per configuration per architecture, so each dev container
-          # is started on a native amd64 and arm64 runner. The directory name
-          # carries the image it builds after its prefix, and determines the
-          # tests to run inside it: every container runs the base image's smoke
-          # test, a sandbox adds the smoke test of the image it builds, and a
-          # feature configuration adds the test sitting beside it.
-          MATRIX=$(find .devcontainer -maxdepth 1 -type d \
-              \( -name 'sandbox-*' -o -name 'feature-*' \) -printf '%f\n' \
-            | sort \
+          # Every sandbox runs the base image's smoke test, and the sandboxes
+          # built on top of it add the smoke test of the image they build.
+          MATRIX=$(find .devcontainer -maxdepth 1 -type d -name 'sandbox-*' -printf '%f\n' \
+            | sed 's/^sandbox-//' | sort \
             | jq -R -s -c '[
-                split("\n")[:-1][] as $config
-                | ($config | sub("^(sandbox|feature)-"; "")) as $image
+                split("\n")[:-1][] as $image
                 | (["debian/smoke-test.sh"] + (
-                    if $config | startswith("feature-") then
-                      [".devcontainer/\($config)/test.sh"]
-                    elif $image == "debian" then
-                      []
-                    else
-                      ["\($image)/smoke-test.sh"]
-                    end
+                    if $image == "debian" then [] else ["\($image)/smoke-test.sh"] end
                   )) as $tests
-                | ("amd64", "arm64")
-                | {config: $config, image: $image, tests: ($tests | join(" ")), arch: .}
+                | {image: $image, tests: ($tests | join(" "))}
               ]')
           echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
 
@@ -70,7 +55,7 @@ jobs:
     needs: setup
     permissions:
       contents: read
-    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -81,12 +66,12 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - name: Build and run tests
+      - name: Build and run smoke tests
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
           MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}
         with:
-          configFile: .devcontainer/${{ matrix.config }}/devcontainer.json
+          configFile: .devcontainer/sandbox-${{ matrix.image }}/devcontainer.json
           push: never
           env: |
             MISE_GITHUB_TOKEN

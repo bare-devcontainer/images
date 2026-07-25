@@ -1,0 +1,66 @@
+name: Feature Checks
+
+# Verifies that the official Dev Container Features can supply tooling the
+# images deliberately omit, so that tooling does not have to be baked in. This
+# exercises the images themselves rather than a configuration used for
+# development work, so it runs on every architecture the images are published
+# for, as build-checks.yml does.
+#
+# It is separate from build-checks.yml because the procedure differs: the
+# Features are installed by the Dev Container CLI while it builds the container,
+# which `docker run` against a built image cannot do. The image is built from
+# this repository, so a pull request is checked against its own changes.
+on:
+  schedule:
+    # Nightly, because the Features are referenced by major version and can
+    # therefore change without a commit here.
+    - cron: '0 3 * * *'
+  pull_request:
+    paths:
+      - .github/workflows/feature-check.yml
+      - .devcontainer/feature-**
+      - debian/Dockerfile
+      - debian/smoke-test.sh
+  push:
+    branches:
+      - main
+    paths:
+      - .devcontainer/feature-**
+      - debian/Dockerfile
+      - debian/smoke-test.sh
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  test:
+    permissions:
+      contents: read
+    # Several Features resolve architecture-specific artifacts, so the container
+    # is built and started on a native runner of each architecture.
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - amd64
+          - arm64
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Build and run the feature tests
+        uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
+        with:
+          configFile: .devcontainer/feature-debian/devcontainer.json
+          push: never
+          runCmd: |
+            # The commands run through a single `bash -c`, whose exit status is
+            # that of the last one, so a failure has to stop the sequence here.
+            # The image smoke test runs with the Features layered on, so it
+            # doubles as the check that they did not regress the image.
+            set -e
+            bash debian/smoke-test.sh
+            bash .devcontainer/feature-debian/test.sh
