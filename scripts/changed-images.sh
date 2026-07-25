@@ -16,6 +16,7 @@
 # named by "reason" instead, so the report does not repeat them for every image.
 #
 # Selection rules, from the most specific to the most general:
+#   - Paths matching IGNORED_PATTERN are dropped before any other rule applies.
 #   - Files under <image>/ affect that image.
 #   - Files under .devcontainer/feature-<image>/ affect that image, since that
 #     configuration layers the Dev Container Features onto it.
@@ -36,6 +37,16 @@ set -euo pipefail
 # smoke test into each image and runs it before the image's own smoke test.
 CROSS_IMAGE_PATHS='["debian/smoke-test.sh"]'
 
+# Paths that cannot reach any build the caller performs, matched as a regular
+# expression against each changed path. Without this they would fall through to
+# the repository-wide catch-all below and rebuild every image on both
+# architectures:
+#   - Markdown is documentation only; no Dockerfile copies one in.
+#   - The sandbox dev containers are built and smoke-tested by
+#     devcontainer-check.yml, which selects them on its own; build-checks.yml
+#     never reads them.
+IGNORED_PATTERN='\.md$|^\.devcontainer/sandbox-'
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 INPUT="${1:--}"
@@ -47,13 +58,14 @@ fi
 
 IMAGES=$(bash "${SCRIPT_DIR}/build-config.sh" images)
 
-jq -n -c --argjson images "$IMAGES" --argjson cross_image "$CROSS_IMAGE_PATHS" --arg changed "$CHANGED" '
+jq -n -c --argjson images "$IMAGES" --argjson cross_image "$CROSS_IMAGE_PATHS" \
+  --arg ignored "$IGNORED_PATTERN" --arg changed "$CHANGED" '
   # Directory of the image a path belongs to, or null when it belongs to none.
   def owner($path):
     ($images | map(select(. as $dir | $path | startswith($dir + "/"))) | first)
     // ($images | map(select(. as $dir | $path | startswith(".devcontainer/feature-" + $dir + "/"))) | first);
 
-  ($changed | split("\n") | map(select(length > 0))) as $files
+  ($changed | split("\n") | map(select(length > 0 and (test($ignored) | not)))) as $files
   | ($files | map(select(IN($cross_image[])))) as $cross_image_changed
   | ($files | map(select(owner(.) == null))) as $repo_wide
   | $images | map(
