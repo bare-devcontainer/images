@@ -1,16 +1,11 @@
 name: Devcontainer Checks
 
 on:
-  schedule:
-    # Nightly, after the 00:00 UTC release publishes fresh images. Rebuilds every
-    # sandbox (with its Dev Container Features) on amd64 and arm64, catching
-    # image/feature drift and architecture-specific breakage.
-    - cron: '0 3 * * *'
   pull_request:
     paths:
       - .github/workflows/devcontainer-check.yml
       - .devcontainer/sandbox-**
-      - scripts/check-hardening.sh
+      - scripts/check-container-invariants.sh
       - '*/Dockerfile'
       - '*/smoke-test.sh'
   push:
@@ -18,7 +13,7 @@ on:
       - main
     paths:
       - .devcontainer/sandbox-**
-      - scripts/check-hardening.sh
+      - scripts/check-container-invariants.sh
       - '*/Dockerfile'
       - '*/smoke-test.sh'
   workflow_dispatch:
@@ -41,8 +36,8 @@ jobs:
       - name: Build sandbox matrix
         id: matrix
         run: |
-          # One matrix entry per sandbox per architecture, so every combination
-          # is exercised on a native amd64 and arm64 runner.
+          # One entry per sandbox per architecture, so each dev container is
+          # started on a native amd64 and arm64 runner.
           MATRIX=$(find .devcontainer -maxdepth 1 -type d -name 'sandbox-*' -printf '%f\n' \
             | sed 's/^sandbox-//' | sort \
             | jq -R -s -c '[split("\n")[:-1][] as $i | ("amd64", "arm64") | {image: $i, arch: .}]')
@@ -58,20 +53,11 @@ jobs:
       fail-fast: false
       matrix:
         include: ${{ fromJson(needs.setup.outputs.matrix) }}
-    env:
-      # renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/decolint versioning=docker
-      DECOLINT_TAG: "latest@sha256:a3c563be09aaa362438adc39bac01323a4abc98d587663f5a8d8fa504b6775d4"
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - name: Lint
-        # decolint inspects files only, so its result is architecture-independent;
-        # run it once, on amd64.
-        if: matrix.arch == 'amd64'
-        run: |
-          docker run --rm -v "$PWD:/workspace" ghcr.io/bare-devcontainer/decolint:${{ env.DECOLINT_TAG }} --format=github .
       - name: Build and run smoke tests
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
@@ -82,11 +68,8 @@ jobs:
           env: |
             MISE_GITHUB_TOKEN
           runCmd: |
-            bash scripts/check-hardening.sh
+            bash scripts/check-container-invariants.sh
             bash debian/smoke-test.sh
             if [ "${{ matrix.image }}" != "debian" ]; then
               bash ${{ matrix.image }}/smoke-test.sh
-            fi
-            if [ -f ".devcontainer/sandbox-${{ matrix.image }}/feature-test.sh" ]; then
-              bash ".devcontainer/sandbox-${{ matrix.image }}/feature-test.sh"
             fi

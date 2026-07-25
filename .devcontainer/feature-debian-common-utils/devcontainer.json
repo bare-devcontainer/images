@@ -1,0 +1,19 @@
+{
+  // Baseline check: every image extends debian, so a feature that works here is
+  // expected to work everywhere unless a child image overlaps with it.
+  "name": "feature-debian-common-utils",
+  // Features are verified against the published image, which is what consumers
+  // layer them onto. The moving tag keeps the nightly on the latest publish.
+  "image": "ghcr.io/bare-devcontainer/debian:trixie",
+  "features": {
+    // Options are left at their upstream defaults so the check exercises what a
+    // consumer gets. In particular `username` stays "automatic", which is what
+    // makes this a test of the feature adopting the image's existing dev user.
+    "ghcr.io/devcontainers/features/common-utils:2": {}
+  },
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges"
+  ],
+  "remoteUser": "dev"
+}

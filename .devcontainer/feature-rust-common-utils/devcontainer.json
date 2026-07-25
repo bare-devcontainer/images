@@ -1,0 +1,15 @@
+{
+  // Child-image check: the rust toolchain lives entirely under $HOME
+  // (~/.cargo/bin), and common-utils chowns the user's home and rewrites its rc
+  // files, so this pair verifies the two compose without breaking the image.
+  "name": "feature-rust-common-utils",
+  "image": "ghcr.io/bare-devcontainer/rust:trixie",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {}
+  },
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges"
+  ],
+  "remoteUser": "dev"
+}

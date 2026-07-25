@@ -1,0 +1,16 @@
+{
+  // Baseline check: every image extends debian, so a feature that works here is
+  // expected to work everywhere unless a child image overlaps with it.
+  "name": "feature-debian-github-cli",
+  "image": "ghcr.io/bare-devcontainer/debian:trixie",
+  "features": {
+    // Defaults install a GitHub release .deb chosen by Debian architecture,
+    // which is the path most consumers get and the one worth checking per arch.
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges"
+  ],
+  "remoteUser": "dev"
+}

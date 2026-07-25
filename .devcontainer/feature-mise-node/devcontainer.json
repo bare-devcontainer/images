@@ -1,0 +1,15 @@
+{
+  // Child-image check: the mise image ships a runtime manager but no runtimes,
+  // so the node feature complements it by supplying Node.js directly. This pair
+  // verifies the feature's PATH entry and mise itself coexist.
+  "name": "feature-mise-node",
+  "image": "ghcr.io/bare-devcontainer/mise:trixie",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges"
+  ],
+  "remoteUser": "dev"
+}

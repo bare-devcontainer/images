@@ -18,7 +18,7 @@
   },
   // Renovate's built-in devcontainer manager only inspects the canonical
   // .devcontainer/devcontainer.json by default. Point it at the per-image
-  // sandbox configs so the Dev Container Feature references they pin get updated.
+  // configs so the Dev Container Feature references they pin get updated.
   "devcontainer": {
     "managerFilePatterns": [
       "/^\\.devcontainer/[^/]+/devcontainer\\.json$/"
@@ -158,6 +158,21 @@
         "minor",
         "pin",
         "pinDigest"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "The feature checks must exercise whatever the release workflow published most recently, so they track the moving tags of our own images. Pinning a digest here would freeze the nightly on a stale image and produce a digest bump every day.",
+      "matchFileNames": [
+        ".devcontainer/feature-*/devcontainer.json"
+      ],
+      "matchPackageNames": [
+        "ghcr.io/bare-devcontainer/**"
+      ],
+      "matchUpdateTypes": [
+        "pin",
+        "pinDigest",
+        "digest"
       ],
       "enabled": false
     },
