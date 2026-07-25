@@ -4,7 +4,7 @@
     "dockerfile": "../../node/Dockerfile",
     "args": {
       // renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/debian versioning=debian
-      "DEBIAN_TAG": "trixie-20260724@sha256:59330d8e1029120a21a450341f209bb066310a57799e79e5ca70c9bc6235bd03",
+      "DEBIAN_TAG": "trixie-20260725@sha256:709adc59c1bd061e416d33119aad002fd361b4058a845543d9ddc4fac762dd48",
       // renovate: datasource=node-version depName=node versioning=node
       "NODE_VERSION": "26.5.0",
       // renovate: datasource=npm depName=corepack versioning=semver
