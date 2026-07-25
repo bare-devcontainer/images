@@ -3,7 +3,7 @@
   // so the node feature complements it by supplying Node.js directly. This pair
   // verifies the feature's PATH entry and mise itself coexist.
   "name": "feature-mise-node",
-  "image": "ghcr.io/bare-devcontainer/mise:trixie",
+  "image": "ghcr.io/bare-devcontainer/mise:trixie@sha256:7dd9221988eaad8686c6531086f57d26573c6b7430441ba2dadfbf292ccf7d1a",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {}
   },

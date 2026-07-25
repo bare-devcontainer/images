@@ -3,8 +3,8 @@
   // expected to work everywhere unless a child image overlaps with it.
   "name": "feature-debian-common-utils",
   // Features are verified against the published image, which is what consumers
-  // layer them onto. The moving tag keeps the nightly on the latest publish.
-  "image": "ghcr.io/bare-devcontainer/debian:trixie",
+  // layer them onto. Renovate refreshes the digest as images are published.
+  "image": "ghcr.io/bare-devcontainer/debian:trixie@sha256:709adc59c1bd061e416d33119aad002fd361b4058a845543d9ddc4fac762dd48",
   "features": {
     // Options are left at their upstream defaults so the check exercises what a
     // consumer gets. In particular `username` stays "automatic", which is what

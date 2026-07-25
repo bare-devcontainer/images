@@ -3,7 +3,7 @@
   // (~/.cargo/bin), and common-utils chowns the user's home and rewrites its rc
   // files, so this pair verifies the two compose without breaking the image.
   "name": "feature-rust-common-utils",
-  "image": "ghcr.io/bare-devcontainer/rust:trixie",
+  "image": "ghcr.io/bare-devcontainer/rust:trixie@sha256:2dc58a339b991a7b0b1f433e3cdcfa1982c2ed9083abc39035951361eb4f19b1",
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {}
   },

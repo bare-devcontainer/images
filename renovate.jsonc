@@ -162,19 +162,11 @@
       "enabled": false
     },
     {
-      "description": "The feature checks must exercise whatever the release workflow published most recently, so they track the moving tags of our own images. Pinning a digest here would freeze the nightly on a stale image and produce a digest bump every day.",
+      "description": "Feature checks pin the published images they run against, and must follow each new publish to stay meaningful, so apply their updates without delay for the same reason the sandbox configs do.",
       "matchFileNames": [
         ".devcontainer/feature-*/devcontainer.json"
       ],
-      "matchPackageNames": [
-        "ghcr.io/bare-devcontainer/**"
-      ],
-      "matchUpdateTypes": [
-        "pin",
-        "pinDigest",
-        "digest"
-      ],
-      "enabled": false
+      "minimumReleaseAge": null
     },
     {
       "groupName": "Dev Container",
