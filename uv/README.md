@@ -9,10 +9,6 @@ The checksum is sourced from [releases.astral.sh](https://releases.astral.sh/) a
 kept in sync with the pinned version by `.github/workflows/update-material.yml`, so it
 is reviewed like any other change rather than fetched alongside the binary at build time.
 
-Bash completions are generated at build time with `uv generate-shell-completion bash` and
-`uvx --generate-shell-completion bash`, and installed for the `bash-completion` support already
-present in the [debian](../debian) base image.
-
 ## Image
 
 ```
