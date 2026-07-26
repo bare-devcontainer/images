@@ -51,3 +51,5 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 COPY --from=builder /usr/local /usr/local
 
 USER dev
+
+RUN mkdir -p /home/dev/.cache/node/corepack
