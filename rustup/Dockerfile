@@ -42,10 +42,3 @@ RUN --mount=type=bind,source=rustup-init-amd64.sha256,target=/tmp/rustup-init-am
     && mkdir -p \
         /home/dev/.cargo/registry \
         /home/dev/.cargo/git
-
-USER root
-
-RUN rustup completions bash > /usr/share/bash-completion/completions/rustup \
-    && rm -rf /root/.rustup
-
-USER dev

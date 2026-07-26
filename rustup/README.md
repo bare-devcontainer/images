@@ -43,7 +43,7 @@ Tags are also published with a date suffix on each build (e.g., `1.29.0-trixie-<
 
 Everything from the [debian](../debian) base image, plus:
 
-- [rustup](https://rustup.rs/), with bash completions installed
+- [rustup](https://rustup.rs/)
 
 ## Working with toolchains
 
