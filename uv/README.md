@@ -37,7 +37,7 @@ Tags are also published with a date suffix on each build (e.g., `0.11.32-trixie-
 
 Everything from the [debian](../debian) base image, plus:
 
-- [uv](https://docs.astral.sh/uv/) (`uv`, `uvx`)
+- [uv](https://docs.astral.sh/uv/) (`uv`, `uvx`), with bash completions installed
 
 Note that Python itself is not installed by default since most projects will specify a
 version in a `.python-version` file or their `pyproject.toml`'s `requires-python`. `uv`

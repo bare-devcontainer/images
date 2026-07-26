@@ -33,11 +33,14 @@ RUN --mount=type=bind,source=uv-amd64.sha256,target=/tmp/uv-amd64.sha256,ro \
     # Install uv
     && tar xzf "${TMPDIR}/${UV_TARBALL}" -C "${TMPDIR}" \
     && mv "${TMPDIR}/uv-${UV_ARCH}-unknown-linux-gnu/uv" "${TMPDIR}/uv-${UV_ARCH}-unknown-linux-gnu/uvx" /usr/local/bin/ \
-    && rm -rf "${TMPDIR}"
+    && rm -rf "${TMPDIR}" \
+    && /usr/local/bin/uv generate-shell-completion bash > /usr/share/bash-completion/completions/uv \
+    && /usr/local/bin/uvx --generate-shell-completion bash > /usr/share/bash-completion/completions/uvx
 
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 COPY --from=builder /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
+COPY --from=builder /usr/share/bash-completion/completions/uv /usr/share/bash-completion/completions/uvx /usr/share/bash-completion/completions/
 
 ENV PATH=/home/dev/.local/bin:${PATH}
 RUN mkdir -p \
