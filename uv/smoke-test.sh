@@ -5,6 +5,10 @@ echo "=== Verifying tool installations ==="
 echo "uv: $(uv --version)"
 echo "uvx: $(uvx --version)"
 
+echo "=== Verifying shell completions ==="
+test -s /usr/share/bash-completion/completions/uv
+test -s /usr/share/bash-completion/completions/uvx
+
 echo "=== Verifying on-demand Python installation ==="
 uv python install 3.13
 uv run --python 3.13 python3 --version

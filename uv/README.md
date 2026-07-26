@@ -9,6 +9,10 @@ The checksum is sourced from [releases.astral.sh](https://releases.astral.sh/) a
 kept in sync with the pinned version by `.github/workflows/update-material.yml`, so it
 is reviewed like any other change rather than fetched alongside the binary at build time.
 
+Bash completions are generated at build time with `uv generate-shell-completion bash` and
+`uvx --generate-shell-completion bash`, and installed for the `bash-completion` support already
+present in the [debian](../debian) base image.
+
 ## Image
 
 ```
@@ -37,7 +41,7 @@ Tags are also published with a date suffix on each build (e.g., `0.11.32-trixie-
 
 Everything from the [debian](../debian) base image, plus:
 
-- [uv](https://docs.astral.sh/uv/) (`uv`, `uvx`)
+- [uv](https://docs.astral.sh/uv/) (`uv`, `uvx`), with bash completions installed
 
 Note that Python itself is not installed by default since most projects will specify a
 version in a `.python-version` file or their `pyproject.toml`'s `requires-python`. `uv`

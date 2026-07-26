@@ -15,6 +15,11 @@ from the same server as the binary. The committed checksum files are kept in syn
 pinned `RUSTUP_VERSION` by an automated workflow and reviewed like any other change, so later
 tampering with the download channel cannot affect builds.
 
+Bash completions for `rustup` are generated at build time with `rustup completions bash` and
+installed for the `bash-completion` support already present in the [debian](../debian) base
+image. Completions for `cargo` are not installed: `rustup completions bash cargo` reads them
+from an installed toolchain, and this image ships none.
+
 ## Image
 
 ```
@@ -43,7 +48,7 @@ Tags are also published with a date suffix on each build (e.g., `1.29.0-trixie-<
 
 Everything from the [debian](../debian) base image, plus:
 
-- [rustup](https://rustup.rs/)
+- [rustup](https://rustup.rs/), with bash completions installed
 
 ## Working with toolchains
 

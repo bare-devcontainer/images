@@ -6,6 +6,13 @@ mise is a polyglot runtime manager that can install and manage multiple language
 
 The mise binary is downloaded from GitHub Releases and verified with a minisign signature before installation.
 
+Bash completions are not installed. Unlike the completion scripts of the other images, the one
+`mise completion bash` emits is not self-contained: it shells out to the separate
+[`usage`](https://usage.jdx.dev) CLI on every completion and aborts with an error when that
+binary is missing. Shipping it would mean adding a second upstream to an image whose purpose is
+to carry mise alone, so completions are left to users who install `usage` themselves
+(`mise use -g usage`, then write the script to `~/.local/share/bash-completion/completions/mise`).
+
 ## Image
 
 ```

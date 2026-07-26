@@ -4,6 +4,9 @@ set -euo pipefail
 echo "=== Verifying tool installations ==="
 echo "rustup: $(rustup --version)"
 
+echo "=== Verifying shell completions ==="
+test -s /usr/share/bash-completion/completions/rustup
+
 echo "=== Verifying toolchain and component installation ==="
 rustup toolchain install stable
 rustup component add rust-analyzer clippy rustfmt
