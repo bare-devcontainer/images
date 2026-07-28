@@ -10,6 +10,8 @@ mise is a polyglot runtime manager that can install and manage multiple language
 ghcr.io/bare-devcontainer/mise:<tag>
 ```
 
+Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well as the tag:
+
 ```json
 {
   "image": "ghcr.io/bare-devcontainer/mise:trixie@sha256:<digest>"

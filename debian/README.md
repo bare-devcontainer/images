@@ -8,6 +8,8 @@ Minimal Debian base image for dev containers. All other images in this repositor
 ghcr.io/bare-devcontainer/debian:<tag>
 ```
 
+Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well as the tag:
+
 ```json
 {
   "image": "ghcr.io/bare-devcontainer/debian:trixie@sha256:<digest>"

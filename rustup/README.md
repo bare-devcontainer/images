@@ -9,6 +9,8 @@ built on the [debian](../debian) base image.
 ghcr.io/bare-devcontainer/rustup:<tag>
 ```
 
+Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well as the tag:
+
 ```json
 {
   "image": "ghcr.io/bare-devcontainer/rustup:1@sha256:<digest>"

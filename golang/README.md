@@ -8,6 +8,8 @@ Dev container image with Go installed, built on the [debian](../debian) base ima
 ghcr.io/bare-devcontainer/golang:<tag>
 ```
 
+Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well as the tag:
+
 ```json
 {
   "image": "ghcr.io/bare-devcontainer/golang:1.26@sha256:<digest>"

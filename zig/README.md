@@ -8,6 +8,8 @@ Dev container image with the Zig compiler installed, built on the [debian](../de
 ghcr.io/bare-devcontainer/zig:<tag>
 ```
 
+Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well as the tag:
+
 ```json
 {
   "image": "ghcr.io/bare-devcontainer/zig:0.16@sha256:<digest>"

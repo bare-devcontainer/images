@@ -10,6 +10,8 @@ CLI and [terraform-ls](https://github.com/hashicorp/terraform-ls) language serve
 ghcr.io/bare-devcontainer/terraform:<tag>
 ```
 
+Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well as the tag:
+
 ```json
 {
   "image": "ghcr.io/bare-devcontainer/terraform:1@sha256:<digest>"

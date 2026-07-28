@@ -5,9 +5,10 @@
 [![Trivy Scan](https://github.com/bare-devcontainer/images/actions/workflows/trivy.yml/badge.svg)](https://github.com/bare-devcontainer/images/actions/workflows/trivy.yml)
 [![Attestation Checks](https://github.com/bare-devcontainer/images/actions/workflows/attest-check.yml/badge.svg?branch=main)](https://github.com/bare-devcontainer/images/actions/workflows/attest-check.yml)
 
-Minimal, multi-arch Debian base images for Dev Containers. Each image carries only what its
-target stack needs, is built from a small set of verified upstreams, and ships with SLSA
-provenance, a GitHub artifact attestation, and an SBOM.
+Minimal, multi-arch Dev Container images: a small Debian base, plus one image per stack for
+Go, Node.js, Deno, Bun, Python, Rust, Zig, and Terraform, and one with mise for polyglot
+projects. Each carries only what its target stack needs, is built from a small set of verified
+upstreams, and ships with SLSA provenance, a GitHub artifact attestation, and an SBOM.
 
 ## Quick start
 
@@ -22,15 +23,17 @@ container:
 
 The container runs as the non-root user `dev` and starts in `/workspaces`. For anything
 beyond a trial, pin the digest as well — see [Tags and pinning](#tags-and-pinning) — and
-consider starting from a [template](#using-a-dev-container-template-recommended), which adds
-the recommended security hardening and cache mounts.
+consider starting from the matching template in
+[bare-devcontainer/templates](https://github.com/bare-devcontainer/templates), a companion
+repository to this one, which adds the recommended security hardening and cache mounts.
 
 ## Why these images
 
-Development environments routinely download and execute software from many upstream sources.
-When those sources, versions, and build inputs are not tightly controlled and verifiable, the
-environment itself becomes a software supply-chain risk. These images are built to keep those
-dependencies explicit, reproducible, and auditable:
+A dev container downloads and executes software from a long list of upstream servers: package
+archives, release CDNs, GitHub Releases, install scripts piped into a shell. Each one is a
+place where a compromise lands directly on a developer's machine, and unpinned versions and
+unverified downloads make it hard to tell afterwards what was actually installed. These
+images are built to keep that surface small and the contents auditable:
 
 - **Dev Container ready** — Each image comes with standard Dev Container configuration pre-applied, so it works out of the box.
 - **Minimal attack surface** — Each image includes only the packages and configuration required for its target stack. Keeping installed software to a minimum helps reduce the potential vulnerability surface of each development environment.
@@ -59,15 +62,27 @@ README says otherwise:
   the version the project declares rather than one baked into the image. The `Not installed`
   section of each image's README states exactly what is left out.
 
-To add what is missing, in increasing order of effort:
+There are two ways to add what a project needs on top:
 
 1. **[Dev Container Features](https://containers.dev/features)** — the usual way to layer in
-   tooling such as the GitHub CLI or Git LFS. CI verifies a representative set of Features
-   against the `debian` base, covering the install mechanisms Features generally rely on, so
-   they can be expected to work across all of these images.
-2. **[A template](https://github.com/bare-devcontainer/templates)** — a ready-made
-   `devcontainer.json` per image, with hardening and cache mounts already configured.
-3. **Your own `Dockerfile`** — for project-specific setup, extend an image with `FROM`.
+   ready-made tooling such as the GitHub CLI or Git LFS, configured in `devcontainer.json`
+   without writing a `Dockerfile`. CI verifies a representative set of Features against the
+   `debian` base, covering the install mechanisms Features generally rely on, so they can be
+   expected to work across all of these images.
+2. **Your own `Dockerfile`, using one of these images as its base** — for anything
+   project-specific, or anything that needs root. `FROM` an image here and install on top of
+   it:
+
+   ```dockerfile
+   FROM ghcr.io/bare-devcontainer/node:26@sha256:<digest>
+
+   USER root
+   RUN corepack enable
+   USER dev
+   ```
+
+   See [Using with a Dockerfile](#using-with-a-dockerfile) for how to wire that into
+   `devcontainer.json`.
 
 ## Images
 

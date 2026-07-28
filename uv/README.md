@@ -9,6 +9,8 @@ installed, built on the [debian](../debian) base image.
 ghcr.io/bare-devcontainer/uv:<tag>
 ```
 
+Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well as the tag:
+
 ```json
 {
   "image": "ghcr.io/bare-devcontainer/uv:0.11.32@sha256:<digest>"

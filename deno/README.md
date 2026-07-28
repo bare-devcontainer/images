@@ -9,6 +9,8 @@ runtime installed, built on the [debian](../debian) base image.
 ghcr.io/bare-devcontainer/deno:<tag>
 ```
 
+Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well as the tag:
+
 ```json
 {
   "image": "ghcr.io/bare-devcontainer/deno:2@sha256:<digest>"

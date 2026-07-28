@@ -8,6 +8,8 @@ Dev container image with Node.js installed, built on the [debian](../debian) bas
 ghcr.io/bare-devcontainer/node:<tag>
 ```
 
+Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well as the tag:
+
 ```json
 {
   "image": "ghcr.io/bare-devcontainer/node:26@sha256:<digest>"
