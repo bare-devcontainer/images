@@ -3,19 +3,18 @@
 Dev container image for JavaScript/TypeScript development, with the [Deno](https://deno.com/)
 runtime installed, built on the [debian](../debian) base image.
 
-`deno` is downloaded directly from [GitHub Releases](https://github.com/denoland/deno/releases).
-Deno publishes no signature for its release archives, so each archive is verified against a
-SHA-256 checksum file committed to this repository (`deno/deno-<arch>.sha256`). The checksum files are kept in sync with the pinned `DENO_VERSION` by an automated workflow
-and reviewed like any other change, so later tampering with the download channel cannot affect
-builds.
-
-Bash completions are generated at build time with `deno completions bash` and installed for the
-`bash-completion` support already present in the [debian](../debian) base image.
-
 ## Image
 
 ```
 ghcr.io/bare-devcontainer/deno:<tag>
+```
+
+Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well as the tag:
+
+```json
+{
+  "image": "ghcr.io/bare-devcontainer/deno:2@sha256:<digest>"
+}
 ```
 
 ## Dev Container Template
@@ -41,3 +40,24 @@ Tags are also published with a date suffix on each build (e.g., `2.9.4-trixie-<Y
 Everything from the [debian](../debian) base image, plus:
 
 - [Deno](https://deno.com/) (`deno`), with bash completions installed
+
+Completions are generated at build time with `deno completions bash` and installed for the
+`bash-completion` support already present in the [debian](../debian) base image.
+
+## Not installed
+
+- **No Node.js, `npm`, or `npx`.** Deno resolves `npm:` specifiers itself. A project that
+  needs the Node.js runtime is better served by the [node](../node) image.
+- **No C/C++ build toolchain.** npm dependencies with native addons that have to be compiled
+  from source will not build until one is added.
+- **No global JavaScript tooling.** Deno's built-in formatter, linter, type checker, and test
+  runner cover most of it; anything else is left to the project.
+
+## Supply chain
+
+`deno` is downloaded directly from [GitHub Releases](https://github.com/denoland/deno/releases).
+Deno publishes no signature for its release archives, so each archive is verified against a
+SHA-256 checksum file committed to this repository (`deno/deno-<arch>.sha256`) rather than one
+fetched from the same server as the binary. The checksum files are kept in sync with the pinned
+`DENO_VERSION` by an automated workflow and reviewed like any other change, so later tampering
+with the download channel cannot affect builds.
