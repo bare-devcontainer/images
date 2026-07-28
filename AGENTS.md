@@ -21,7 +21,6 @@ scripts/
   sandbox-<image>/           # one per image; for manually testing each image. Kept free of Features so it mirrors the published image
   feature-<image>/           # an image with every verified Dev Container Feature layered on, plus the test.sh covering them
 renovate.jsonc               # Renovate config
-CONTRIBUTING.md              # human-facing contributor guide; summarizes this file, so keep the two in sync
 ```
 
 - Images are organized in two layers:

@@ -217,8 +217,8 @@ To report a vulnerability, see [SECURITY.md](SECURITY.md).
 
 ## Contributing
 
-Bug reports, image requests, and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md)
-for how the repository is laid out and how to build and test an image locally.
+Bug reports, image requests, and pull requests are welcome. [AGENTS.md](AGENTS.md) describes
+how the repository is laid out and the conventions a change is expected to follow.
 
 ## License
 
