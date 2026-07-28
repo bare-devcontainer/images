@@ -55,10 +55,6 @@ across container rebuilds.
 - **No adjacent Zig tooling.** `zig fmt` and ZLS are the whole toolbox here; anything else is
   left to the project.
 
-Unlike the version-manager images, the Zig version is fixed by the image tag. Zig is
-pre-1.0 and its language and standard library still change between minor releases, so pin at
-least the minor version (`0.16`) rather than `0`.
-
 ## Supply chain
 
 The Zig tarball is downloaded from a [community mirror](https://ziglang.org/download/community-mirrors.txt)
