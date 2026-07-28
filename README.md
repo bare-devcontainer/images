@@ -32,11 +32,9 @@ repository to this one, which adds the recommended security hardening and cache 
 
 ## Why these images
 
-A dev container downloads and executes software from a long list of upstream servers: package
-archives, release CDNs, GitHub Releases, install scripts piped into a shell. Each one is a
-place where a compromise lands directly on a developer's machine, and unpinned versions and
-unverified downloads make it hard to tell afterwards what was actually installed. These
-images are built to keep that surface small and the contents auditable:
+A dev environment installs a lot of software from a lot of upstreams, which makes its supply
+chain hard to keep trustworthy. These images are built to keep that surface small and the
+contents auditable:
 
 - **Dev Container ready** — Each image comes with standard Dev Container configuration pre-applied, so it works out of the box.
 - **Minimal attack surface** — Each image includes only the packages and configuration required for its target stack. Keeping installed software to a minimum helps reduce the potential vulnerability surface of each development environment.
