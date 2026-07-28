@@ -4,12 +4,16 @@ Dev container image with [mise](https://mise.jdx.dev/) installed, built on the [
 
 mise is a polyglot runtime manager that can install and manage multiple language toolchains (Node.js, Python, Ruby, Go, etc.) per project.
 
-The mise binary is downloaded from GitHub Releases and verified with a minisign signature before installation.
-
 ## Image
 
 ```
 ghcr.io/bare-devcontainer/mise:<tag>
+```
+
+```json
+{
+  "image": "ghcr.io/bare-devcontainer/mise:trixie@sha256:<digest>"
+}
 ```
 
 ## Dev Container Template
@@ -42,3 +46,37 @@ Tags are also published with a date suffix on each build (e.g., `2026.7.15-trixi
 Everything from the [debian](../debian) base image, plus:
 
 - [mise](https://mise.jdx.dev/)
+
+The shims directory `~/.local/share/mise/shims` is on `PATH`, so tools resolve as soon as mise
+installs them.
+
+## Not installed
+
+- **No language runtime.** Nothing is installed until the project asks for it — that is the
+  point of this image. mise resolves the versions declared in `mise.toml` (and the idiomatic
+  per-language files such as `.node-version` or `.python-version`).
+- **No C/C++ build toolchain.** mise backends that download prebuilt binaries work as-is;
+  those that compile from source need a toolchain added first.
+
+## Working with tools
+
+`mise install` installs everything the project declares; `mise exec <tool>@<version> -- <cmd>`
+runs a one-off without declaring anything. To install the project's tools when the container is
+created rather than on first use, run `mise install` from a `postCreateCommand`.
+
+Two directories are worth persisting across container rebuilds as volumes:
+
+- `~/.local/share/mise` — the installed tools. Everything is re-downloaded on every rebuild
+  unless this directory survives.
+- `~/.cache/mise` — the download cache.
+
+## Supply chain
+
+The mise binary is downloaded from [GitHub Releases](https://github.com/jdx/mise/releases). Its
+checksum is verified against `SHASUMS256.txt`, whose minisign signature is verified against
+mise's public key (`mise/mise-minisign.pub`) before installation. The key is committed to this
+repository, so signatures are checked against a key reviewed here rather than one fetched at
+build time.
+
+Note that this covers the mise binary only. Tools that mise installs at runtime are fetched
+from their own upstreams under mise's own verification, outside this image's build pipeline.

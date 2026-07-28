@@ -5,11 +5,32 @@
 [![Trivy Scan](https://github.com/bare-devcontainer/images/actions/workflows/trivy.yml/badge.svg)](https://github.com/bare-devcontainer/images/actions/workflows/trivy.yml)
 [![Attestation Checks](https://github.com/bare-devcontainer/images/actions/workflows/attest-check.yml/badge.svg?branch=main)](https://github.com/bare-devcontainer/images/actions/workflows/attest-check.yml)
 
-Development environments routinely download and execute software from many upstream sources. When those sources, versions, and build inputs are not tightly controlled and verifiable, the environment itself becomes a software supply-chain risk.
+Minimal, multi-arch Debian base images for Dev Containers. Each image carries only what its
+target stack needs, is built from a small set of verified upstreams, and ships with SLSA
+provenance, a GitHub artifact attestation, and an SBOM.
 
-Bare Dev Container Images provides minimal, purpose-built foundations designed to keep those dependencies explicit, reproducible, and auditable. The following goals define how that principle is applied.
+## Quick start
 
-## Goals
+Reference an image from `.devcontainer/devcontainer.json` and reopen the project in a
+container:
+
+```json
+{
+  "image": "ghcr.io/bare-devcontainer/debian:trixie"
+}
+```
+
+The container runs as the non-root user `dev` and starts in `/workspaces`. For anything
+beyond a trial, pin the digest as well — see [Tags and pinning](#tags-and-pinning) — and
+consider starting from a [template](#using-a-dev-container-template-recommended), which adds
+the recommended security hardening and cache mounts.
+
+## Why these images
+
+Development environments routinely download and execute software from many upstream sources.
+When those sources, versions, and build inputs are not tightly controlled and verifiable, the
+environment itself becomes a software supply-chain risk. These images are built to keep those
+dependencies explicit, reproducible, and auditable:
 
 - **Dev Container ready** — Each image comes with standard Dev Container configuration pre-applied, so it works out of the box.
 - **Minimal attack surface** — Each image includes only the packages and configuration required for its target stack. Keeping installed software to a minimum helps reduce the potential vulnerability surface of each development environment.
@@ -17,32 +38,83 @@ Bare Dev Container Images provides minimal, purpose-built foundations designed t
 - **Secure build pipeline** — All dependencies are pinned to specific versions and content digests. Published images include SLSA provenance attestations, making the build process verifiable.
 - **Regular base updates** — Debian base images are updated regularly with Renovate so upstream security patches can be incorporated promptly.
 
-Dev Container base images are available from Microsoft ([link](https://github.com/devcontainers/images)), but they are often larger than necessary and include many packages that may not be needed for a given development environment. These images are intended to provide a more minimal alternative.
+Dev Container base images are also available from Microsoft ([devcontainers/images](https://github.com/devcontainers/images)),
+but they are often larger than necessary and include many packages that may not be needed for
+a given development environment. These images are intended to provide a more minimal
+alternative: start from a small, auditable base and add exactly what the project needs.
 
-## Available Images
+## What's not included
 
-| Image | Registry | Description |
-|-------|----------|-------------|
-| [bun](bun/README.md) | `ghcr.io/bare-devcontainer/bun` | Bun runtime on Debian |
-| [debian](debian/README.md) | `ghcr.io/bare-devcontainer/debian` | Debian base image |
-| [deno](deno/README.md) | `ghcr.io/bare-devcontainer/deno` | Deno runtime on Debian |
-| [golang](golang/README.md) | `ghcr.io/bare-devcontainer/golang` | Go toolchain on Debian |
-| [mise](mise/README.md) | `ghcr.io/bare-devcontainer/mise` | mise runtime manager on Debian |
-| [node](node/README.md) | `ghcr.io/bare-devcontainer/node` | Node.js on Debian |
-| [rustup](rustup/README.md) | `ghcr.io/bare-devcontainer/rustup` | Rust (via rustup) on Debian |
-| [terraform](terraform/README.md) | `ghcr.io/bare-devcontainer/terraform` | Terraform CLI on Debian |
-| [uv](uv/README.md) | `ghcr.io/bare-devcontainer/uv` | Python (via uv) on Debian |
-| [zig](zig/README.md) | `ghcr.io/bare-devcontainer/zig` | Zig toolchain on Debian |
+These images are deliberately bare. Expect the following to be absent unless an image's own
+README says otherwise:
 
-See the individual image directories for more details on each image, including available tags and usage instructions.
+- **No `sudo`, and no root shell.** The image runs as the non-root user `dev` (UID/GID 1000).
+  Anything that needs root has to happen at build time in your own `Dockerfile`, or through a
+  Dev Container Feature.
+- **No build toolchain unless the stack needs one.** Compilers and headers are installed only
+  in the images whose ecosystem requires them.
+- **No editors, shells, or CLI tooling beyond the basics.** `bash` and `vim-tiny` are present;
+  editors, alternative shells, cloud CLIs, and linters are not.
+- **No language toolchain in the version-manager images.** `mise`, `rustup`, and `uv` install
+  the version the project declares rather than one baked into the image. The `Not installed`
+  section of each image's README states exactly what is left out.
 
-## Getting Started
+To add what is missing, in increasing order of effort:
+
+1. **[Dev Container Features](https://containers.dev/features)** — the usual way to layer in
+   tooling such as the GitHub CLI or Git LFS. CI verifies a representative set of Features
+   against the `debian` base, covering the install mechanisms Features generally rely on, so
+   they can be expected to work across all of these images.
+2. **[A template](https://github.com/bare-devcontainer/templates)** — a ready-made
+   `devcontainer.json` per image, with hardening and cache mounts already configured.
+3. **Your own `Dockerfile`** — for project-specific setup, extend an image with `FROM`.
+
+## Images
+
+| Image | Registry | Use it for |
+|-------|----------|------------|
+| [bun](bun/README.md) | `ghcr.io/bare-devcontainer/bun` | JavaScript/TypeScript with the Bun runtime |
+| [debian](debian/README.md) | `ghcr.io/bare-devcontainer/debian` | The base for every other image; language-agnostic projects |
+| [deno](deno/README.md) | `ghcr.io/bare-devcontainer/deno` | JavaScript/TypeScript with the Deno runtime |
+| [golang](golang/README.md) | `ghcr.io/bare-devcontainer/golang` | Go, with the toolchain version pinned by tag |
+| [mise](mise/README.md) | `ghcr.io/bare-devcontainer/mise` | Polyglot projects that pin their own runtimes |
+| [node](node/README.md) | `ghcr.io/bare-devcontainer/node` | Node.js, with Corepack instead of npm |
+| [rustup](rustup/README.md) | `ghcr.io/bare-devcontainer/rustup` | Rust, with the toolchain chosen by the project |
+| [terraform](terraform/README.md) | `ghcr.io/bare-devcontainer/terraform` | Infrastructure as code with Terraform |
+| [uv](uv/README.md) | `ghcr.io/bare-devcontainer/uv` | Python, with the interpreter managed by uv |
+| [zig](zig/README.md) | `ghcr.io/bare-devcontainer/zig` | Zig, with the compiler version pinned by tag |
+
+Every image is published for `linux/amd64` and `linux/arm64`. See each image's README for its
+available tags, the software it ships, and how its upstreams are verified.
+
+## Tags and pinning
+
+Each image publishes several tags per build. Using `golang` as an example:
+
+| Tag | Points at | Moves when |
+|-----|-----------|------------|
+| `1.26.5-trixie` | An exact version on an exact Debian release | The image is rebuilt (base updates, security patches) |
+| `1.26-trixie`, `1-trixie` | The newest matching version on that Debian release | A new patch or minor version is published |
+| `trixie` | The newest version on that Debian release | Any release |
+| `1.26.5`, `1.26`, `1` | The same as the `-trixie` form; the default Debian release is implied | Same as the `-trixie` form |
+| `1.26.5-trixie-20260727` | One specific build, by date | Never |
+
+Because the base image and its packages are refreshed on every build, **every tag except the
+date-suffixed ones is mutable**: the same tag resolves to different content over time. That is
+what makes security patches arrive automatically, and also why a tag alone is not a
+reproducible reference.
 
 > [!TIP]
-> Pinning images to a specific digest (e.g. `image:tag@sha256:...`) is strongly recommended. You can find the digest for a published image on the [GitHub Container Registry](https://github.com/orgs/bare-devcontainer/packages) page, or by running:
+> Pin the digest as well as the tag (`image:tag@sha256:...`). The tag stays readable, the
+> digest makes the reference exact, and [Renovate](https://docs.renovatebot.com/) or
+> Dependabot can raise a reviewable pull request whenever a new build is published. Find the
+> digest on the [GitHub Container Registry](https://github.com/orgs/bare-devcontainer/packages)
+> page, or with:
 > ```sh
 > docker buildx imagetools inspect ghcr.io/bare-devcontainer/<image>:<tag>
 > ```
+
+## Usage
 
 ### Using a Dev Container Template (Recommended)
 
@@ -138,6 +210,15 @@ A Software Bill of Materials (SBOM) in [SPDX](https://spdx.dev/) format is embed
 docker buildx imagetools inspect ghcr.io/bare-devcontainer/<image>:<tag>@sha256:<digest> \
   --format '{{json .SBOM}}'
 ```
+
+## Security
+
+To report a vulnerability, see [SECURITY.md](SECURITY.md).
+
+## Contributing
+
+Bug reports, image requests, and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md)
+for how the repository is laid out and how to build and test an image locally.
 
 ## License
 

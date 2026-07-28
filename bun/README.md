@@ -3,14 +3,16 @@
 Dev container image for JavaScript/TypeScript development, with the [Bun](https://bun.com/)
 runtime installed, built on the [debian](../debian) base image.
 
-`bun` is downloaded directly from [GitHub Releases](https://github.com/oven-sh/bun/releases).
-Its checksum is verified against `SHASUMS256.txt`, whose GPG signature (`SHASUMS256.txt.asc`) is
-verified against Bun's release signing key before installation.
-
 ## Image
 
 ```
 ghcr.io/bare-devcontainer/bun:<tag>
+```
+
+```json
+{
+  "image": "ghcr.io/bare-devcontainer/bun:1@sha256:<digest>"
+}
 ```
 
 ## Dev Container Template
@@ -36,3 +38,20 @@ Tags are also published with a date suffix on each build (e.g., `1.3.14-trixie-<
 Everything from the [debian](../debian) base image, plus:
 
 - [Bun](https://bun.com/) (`bun`, `bunx`)
+
+## Not installed
+
+- **No Node.js, `npm`, or `npx`.** Bun runs the scripts and installs the packages. A project
+  that also needs the Node.js runtime is better served by the [node](../node) image.
+- **No C/C++ build toolchain.** Dependencies with native addons that have to be compiled from
+  source will not build until one is added.
+- **No global JavaScript tooling.** Linters, formatters, and test runners are left to the
+  project's own dependencies; Bun's built-in test runner and bundler cover part of that ground.
+
+## Supply chain
+
+`bun` is downloaded directly from [GitHub Releases](https://github.com/oven-sh/bun/releases).
+Its checksum is verified against `SHASUMS256.txt`, whose GPG signature (`SHASUMS256.txt.asc`) is
+verified against Bun's release signing key before installation. The key
+(`bun/bun-signing-key.asc`) is committed to this repository, so signatures are checked against
+a key reviewed here rather than one fetched at build time.
