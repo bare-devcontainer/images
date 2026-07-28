@@ -12,14 +12,17 @@ upstreams, and ships with SLSA provenance, a GitHub artifact attestation, and an
 
 ## Quick start
 
-Reference an image from `.devcontainer/devcontainer.json` and reopen the project in a
-container:
+Pick the image for your stack from the [Images](#images) table, reference it from
+`.devcontainer/devcontainer.json`, and reopen the project in a container:
 
 ```json
 {
-  "image": "ghcr.io/bare-devcontainer/debian:trixie"
+  "image": "ghcr.io/bare-devcontainer/golang:1.26"
 }
 ```
+
+Every image is referenced the same way; only the name and tag change — `node:26`,
+`uv:0.11.32`, `rustup:1`, or `debian:trixie` for a project with no particular stack.
 
 The container runs as the non-root user `dev` and starts in `/workspaces`. For anything
 beyond a trial, pin the digest as well — see [Tags and pinning](#tags-and-pinning) — and
