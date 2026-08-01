@@ -42,7 +42,6 @@ The version in these tags is the version of `rustup` itself, not of any Rust too
 Everything from the [debian](../debian) base image, plus:
 
 - [rustup](https://rustup.rs/)
-- `build-essential`, which supplies the linker `cargo` invokes
 
 `~/.cargo/bin` is on `PATH`, so the `rustup`/`cargo` shims resolve once a toolchain is
 installed.

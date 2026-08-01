@@ -45,8 +45,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
     # cgo dependencies
-    && apt-get --no-install-recommends install -y \
-        build-essential pkg-config \
+    && apt-get --no-install-recommends install -y pkg-config \
     # Go's external linker needs the gold linker on arm64
     # https://github.com/golang/go/issues/22040
     && if [ "${TARGETARCH}" = "arm64" ]; then \

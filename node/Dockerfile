@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=bind,source=node-keyring.kbx,target=/tmp/node-keyring.kbx,ro \
     export DEBIAN_FRONTEND=noninteractive \
         && apt-get update \
-        && apt-get --no-install-recommends install -y gpgv build-essential \
+        && apt-get --no-install-recommends install -y gpgv \
     && case "${TARGETARCH}" in \
         amd64) NODE_ARCH="x64" ;; \
         arm64) NODE_ARCH="arm64" ;; \
@@ -38,18 +38,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
-USER root
-
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-# node-gyp dependencies
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    export DEBIAN_FRONTEND=noninteractive \
-        && apt-get update \
-        && apt-get --no-install-recommends install -y build-essential python3
-
 COPY --from=builder /usr/local /usr/local
-
-USER dev
 
 RUN mkdir -p /home/dev/.cache/node/corepack
