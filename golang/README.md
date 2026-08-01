@@ -42,8 +42,8 @@ Everything from the [debian](../debian) base image, plus:
 
 - [Go toolchain](https://go.dev/)
 - [gopls](https://go.dev/gopls/)
-- `build-essential` and `pkg-config`, so cgo works out of the box (plus `binutils-gold` on
-  arm64, which Go's external linker needs there)
+- `pkg-config`, so cgo works out of the box (plus `binutils-gold` on arm64, which Go's
+  external linker needs there)
 
 `GOPATH` is `/home/dev/go`, and both `/usr/local/go/bin` and `${GOPATH}/bin` are on `PATH`.
 

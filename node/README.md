@@ -41,7 +41,6 @@ Everything from the [debian](../debian) base image, plus:
 
 - [Node.js](https://nodejs.org/)
 - [Corepack](https://nodejs.org/api/corepack.html)
-- `build-essential`, which `node-gyp` needs to compile native addons
 
 ## Not installed
 

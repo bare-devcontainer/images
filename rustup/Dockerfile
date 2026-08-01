@@ -8,18 +8,9 @@ FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 ARG RUSTUP_VERSION
 ARG TARGETARCH
 
-USER root
-
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    export DEBIAN_FRONTEND=noninteractive \
-        && apt-get update \
-        && apt-get --no-install-recommends install -y build-essential
 
 ENV PATH=/home/dev/.cargo/bin:${PATH}
-
-USER dev
 
 # rustup publishes no signature for rustup-init, so verify it against a
 # checksum file committed to this repository (kept in sync by
