@@ -48,8 +48,6 @@ Completions are generated at build time with `deno completions bash` and install
 
 - **No Node.js, `npm`, or `npx`.** Deno resolves `npm:` specifiers itself. A project that
   needs the Node.js runtime is better served by the [node](../node) image.
-- **No C/C++ build toolchain.** npm dependencies with native addons that have to be compiled
-  from source will not build until one is added.
 - **No global JavaScript tooling.** Deno's built-in formatter, linter, type checker, and test
   runner cover most of it; anything else is left to the project.
 

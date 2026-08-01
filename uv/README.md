@@ -54,8 +54,10 @@ further setup.
   and is not the interpreter uv builds environments from.
 - **No `pip`, `pipx`, or `virtualenv`.** uv covers those workflows; `uv pip` provides a
   pip-compatible interface against the project's environment.
-- **No C/C++ build toolchain.** uv installs prebuilt wheels where they exist; packages with no
-  wheel for the platform must be compiled and need a toolchain added first.
+- **No development headers beyond libc.** uv installs prebuilt wheels where they exist;
+  packages with no wheel for the platform are compiled with the base image's
+  `build-essential`. Extensions that link against a system library still need its `-dev`
+  package, such as `libpq-dev` for `psycopg2`.
 
 ## Working with interpreters
 

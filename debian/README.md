@@ -41,6 +41,7 @@ Tags are also published with a date suffix on each build (e.g., `trixie-<YYYYMMD
 - **Archive utilities**: `unzip`, `bzip2`, `xz-utils`, `zip`, `zlib1g`
 - **File utilities**: `less`, `jq`, `vim-tiny`
 - **Scripting**: `python3`
+- **C/C++ build toolchain**: `build-essential` (`gcc`, `g++`, `make`, and the libc headers)
 - **Misc**: `bash-completion`, `lsb-release`, `locales` (en_US.UTF-8), `man-db`, `manpages`
 
 The image runs as the non-root user `dev` (UID/GID 1000) and its working directory is
@@ -51,8 +52,9 @@ inherits that label.
 
 ## Not installed
 
-- **No C/C++ build toolchain.** `build-essential`, `gcc`, and `make` are absent. The
-  language images add them only where the ecosystem needs them.
+- **No development headers beyond libc.** `build-essential` covers the compiler, linker, and
+  libc headers, so a self-contained C or C++ source build works. Code that links against a
+  third-party library still needs that library's `-dev` package.
 - **No `sudo`.** Nothing in the container can escalate to root. Install packages at build
   time in your own `Dockerfile` (which runs as root) or through a Dev Container Feature.
 - **No language runtime for development.** `python3` is present so that scripts and tooling

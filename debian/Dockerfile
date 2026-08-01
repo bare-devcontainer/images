@@ -29,6 +29,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
                 git openssh-client gnupg2 \
                 # Scripting
                 python3 \
+                # C/C++ build toolchain, needed by the native extensions that
+                # language ecosystems (node-gyp, cgo, cargo, pip) build from source
+                build-essential \
                 # Network utilities
                 ca-certificates iproute2 curl wget \
                 # System monitoring utilities
