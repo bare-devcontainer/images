@@ -57,8 +57,10 @@ installs them.
 - **No language runtime.** Nothing is installed until the project asks for it — that is the
   point of this image. mise resolves the versions declared in `mise.toml` (and the idiomatic
   per-language files such as `.node-version` or `.python-version`).
-- **No C/C++ build toolchain.** mise backends that download prebuilt binaries work as-is;
-  those that compile from source need a toolchain added first.
+- **No development headers beyond libc.** The base image's `build-essential` covers the
+  compiler and linker, so backends that download prebuilt binaries and simple source builds
+  both work as-is. A backend that builds a language runtime from source additionally needs the
+  `-dev` packages of the libraries it links against, such as `libssl-dev` or `zlib1g-dev`.
 
 ## Working with tools
 

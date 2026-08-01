@@ -45,8 +45,6 @@ Everything from the [debian](../debian) base image, plus:
 
 - **No Node.js, `npm`, or `npx`.** Bun runs the scripts and installs the packages. A project
   that also needs the Node.js runtime is better served by the [node](../node) image.
-- **No C/C++ build toolchain.** Dependencies with native addons that have to be compiled from
-  source will not build until one is added.
 - **No global JavaScript tooling.** Linters, formatters, and test runners are left to the
   project's own dependencies; Bun's built-in test runner and bundler cover part of that ground.
 

@@ -55,6 +55,8 @@ README says otherwise:
 - **No `sudo`, and no root shell.** The image runs as the non-root user `dev` (UID/GID 1000).
   Anything that needs root has to happen at build time in your own `Dockerfile`, or through a
   Dev Container Feature.
+- **No development headers beyond libc.** The base image ships `build-essential`, so native
+  extensions compile, but a library a project links against brings its own `-dev` package.
 - **No editors, shells, or CLI tooling beyond the basics.** `bash` and `vim-tiny` are present;
   editors, alternative shells, cloud CLIs, and linters are not.
 - **No language toolchain in the version-manager images.** `mise`, `rustup`, and `uv` install

@@ -52,6 +52,9 @@ inherits that label.
 
 ## Not installed
 
+- **No development headers beyond libc.** `build-essential` covers the compiler, linker, and
+  libc headers, so a self-contained C or C++ source build works. Code that links against a
+  third-party library still needs that library's `-dev` package.
 - **No `sudo`.** Nothing in the container can escalate to root. Install packages at build
   time in your own `Dockerfile` (which runs as root) or through a Dev Container Feature.
 - **No language runtime for development.** `python3` is present so that scripts and tooling
