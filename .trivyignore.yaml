@@ -1,4 +1,15 @@
 vulnerabilities:
+  # golang.org/x/text, which every Go binary below vendors
+  - id: CVE-2026-56852
+    paths:
+      - "usr/local/bin/gopls"
+      - "usr/local/bin/terraform"
+    expired_at: 2026-10-31
+    statement: |
+      gopls 0.23.0, the latest release, depends on golang.org/x/text v0.38.0,
+      and Terraform 1.15.8 on v0.37.0. The fix is in v0.39.0, so this clears
+      once each upstream releases a build that picks it up.
+
   # terraform
   - id: CVE-2026-27145
     paths:
