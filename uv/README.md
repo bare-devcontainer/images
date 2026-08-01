@@ -69,6 +69,12 @@ Two directories are worth persisting across container rebuilds as volumes:
   every rebuild unless this directory survives.
 - `~/.cache/uv` — the wheel and download cache.
 
+`UV_LINK_MODE=copy` is set in the image. uv installs packages into a project's `.venv` by
+hardlinking them out of its cache, which requires both to be on one filesystem; in a dev
+container the cache is in the container filesystem or a volume while the project is a bind
+mount, so uv would warn and copy on every `uv sync` anyway. Override the variable if your
+setup does keep the two together.
+
 ## Supply chain
 
 `uv` is downloaded directly from [GitHub Releases](https://github.com/astral-sh/uv/releases)

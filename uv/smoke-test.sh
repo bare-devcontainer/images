@@ -5,6 +5,10 @@ echo "=== Verifying tool installations ==="
 echo "uv: $(uv --version)"
 echo "uvx: $(uvx --version)"
 
+echo "=== Verifying link mode ==="
+echo "UV_LINK_MODE: ${UV_LINK_MODE:-unset}"
+test "${UV_LINK_MODE:-unset}" = "copy"
+
 echo "=== Verifying shell completions ==="
 test -s /usr/share/bash-completion/completions/uv
 test -s /usr/share/bash-completion/completions/uvx

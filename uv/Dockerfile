@@ -43,6 +43,11 @@ COPY --from=builder /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
 COPY --from=builder /usr/share/bash-completion/completions/uv /usr/share/bash-completion/completions/uvx /usr/share/bash-completion/completions/
 
 ENV PATH=/home/dev/.local/bin:${PATH}
+# uv hardlinks from its cache into the project's .venv by default. In a dev container
+# the cache lives in the container filesystem (or a named volume) while the project is
+# a bind mount, so the two are never on the same filesystem and every uv sync/add falls
+# back to copying with a warning. Select that fallback up front instead.
+ENV UV_LINK_MODE=copy
 RUN mkdir -p \
       /home/dev/.cache/uv \
       /home/dev/.local/bin \
