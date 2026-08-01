@@ -49,9 +49,6 @@ across container rebuilds.
 
 ## Not installed
 
-- **No `build-essential`.** The Zig bundle ships its own clang, linker, and libc headers, so
-  `zig cc` covers C and C++ without a separate GNU toolchain. Add one only if a project needs
-  `gcc` or `make` specifically.
 - **No adjacent Zig tooling.** `zig fmt` and ZLS are the whole toolbox here; anything else is
   left to the project.
 
