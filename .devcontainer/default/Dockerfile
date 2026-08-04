@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
 # check=error=true
 
-FROM ghcr.io/bare-devcontainer/debian:trixie-20260803@sha256:1b00f7219643a16dba4eb534094e52a95348d3d1f257fd9583c5b4d9a810980f
+FROM ghcr.io/bare-devcontainer/debian:trixie-20260804@sha256:55adf98d26f3c46a97f0595e341a51a7bbbab939ec65ecb12068ee9ac5c37e43
 
 USER root
 
