@@ -5,11 +5,11 @@ variants:
       - "trixie"
     build_args:
       # renovate: datasource=docker depName=debian versioning=debian
-      DEBIAN_TAG: "trixie-20260713@sha256:fac46bff2e02f51425b6e33b0e1169f55dfb053d83511ca28aa50c09fd5ed7a4"
+      DEBIAN_TAG: "trixie-20260803@sha256:34cd9e9fd437c0a095ec39cb2e73422c9f30821b0d0848ed74fd0d43bae4d958"
 
   - variant: "bookworm"
     tags:
       - "bookworm"
     build_args:
       # renovate: datasource=docker depName=debian versioning=debian
-      DEBIAN_TAG: "bookworm-20260713@sha256:9344f8b8992482f80cba753f323adeaf17690076c095ccff6cc9536be98185dc"
+      DEBIAN_TAG: "bookworm-20260803@sha256:813017f3d62be4b5891a7acca6a01bdcd4b8513daa81b1ab99d3a50385b26931"
