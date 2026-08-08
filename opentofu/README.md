@@ -64,6 +64,14 @@ Its checksum is verified against the release's `SHA256SUMS`, whose GPG signature
 (`opentofu/opentofu-signing-key.asc`) is committed to this repository, so signatures are checked
 against a key reviewed here rather than one fetched at build time.
 
+[update-material.yml](../.github/workflows/update-material.yml) refreshes that key from
+<https://get.opentofu.org/opentofu.asc>, the distribution site, rather than from GitHub. The
+archive, its `SHA256SUMS`, and the signature over them all come from GitHub, so taking the key
+from a different origin means tampering with the trust anchor and with what it verifies are not
+the same step. The separation is at the serving layer only — the site is deployed from an
+OpenTofu repository — so the control that actually matters is that a change to the key arrives
+as a reviewable pull request.
+
 `tofu-ls` releases carry no signature, so there is no upstream key to check them against.
 Instead its `checksums.txt` is committed to this repository as
 `opentofu/tofu-ls-checksums.txt` and refreshed by

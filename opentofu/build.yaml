@@ -3,13 +3,13 @@ description: "Dev Container image with the OpenTofu CLI and tofu-ls, built on De
 # version_key; commit_to_pr files are pushed onto version-bump PRs.
 materials:
   - path: opentofu-signing-key.asc
-    url: https://raw.githubusercontent.com/opentofu/get.opentofu.org/main/static/opentofu.asc
+    url: https://get.opentofu.org/opentofu.asc
     description: >-
       OpenTofu Core Team release signing key (fingerprint
       E3E6E43D84CB852EADB0051D0C0AF313E5FD9F80), which signs the
       SHA256SUMS.gpgsig files published alongside OpenTofu release archives.
-      Taken from the repository that serves it as
-      https://get.opentofu.org/opentofu.asc.
+      Fetched from the distribution site rather than from GitHub, so refreshing
+      the key does not travel the same origin as the archives it verifies.
   - path: tofu-ls-checksums.txt
     url: https://github.com/opentofu/tofu-ls/releases/download/vVERSION/tofu-ls_VERSION_checksums.txt
     version_key: TOFU_LS_VERSION
