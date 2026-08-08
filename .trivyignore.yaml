@@ -4,42 +4,172 @@ vulnerabilities:
     paths:
       - "usr/local/bin/gopls"
       - "usr/local/bin/terraform"
+      - "usr/local/bin/tofu"
     expired_at: 2026-10-31
     statement: |
       gopls 0.23.0, the latest release, depends on golang.org/x/text v0.38.0,
-      and Terraform 1.15.8 on v0.37.0. The fix is in v0.39.0, so this clears
-      once each upstream releases a build that picks it up.
+      and Terraform 1.15.8 and OpenTofu 1.12.5 on v0.37.0. The fix is in
+      v0.39.0, so this clears once each upstream releases a build that picks
+      it up.
 
   # terraform
   - id: CVE-2026-27145
     paths:
       - "usr/local/bin/terraform"
+      - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
       Terraform 1.15.7 was built with Go 1.25.10, which is affected by this CVE.
       The upstream development branch already uses Go 1.26.4, so the fix is
       expected in the next Terraform release.
+      OpenTofu Language Server 0.5.3 was built with Go 1.26.0; the fix is in Go 1.26.4.
   - id: CVE-2026-42504
     paths:
       - "usr/local/bin/terraform"
+      - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
       Terraform 1.15.7 was built with Go 1.25.10, which is affected by this CVE.
       The upstream development branch already uses Go 1.26.4, so the fix is
       expected in the next Terraform release.
+      OpenTofu Language Server 0.5.3 was built with Go 1.26.0; the fix is in Go 1.26.4.
   - id: CVE-2026-39822
     paths:
       - "usr/local/bin/terraform"
       - "usr/local/bin/terraform-ls"
+      - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
       Terraform 1.15.7 was built with Go 1.25.10, which is affected by this CVE.
       The upstream development branch was upgraded to Go 1.26.4, but it is till affected.
       Terraform Language Server 0.38.8 was built with Go 1.25.11, which is affected by this CVE.
       The upstream development branch has not yet been updated to a Go version that is not affected by this CVE.
+      OpenTofu Language Server 0.5.3 was built with Go 1.26.0; the fix is in Go 1.26.5.
   - id: GHSA-hrxh-6v49-42gf
     paths:
       - "usr/local/bin/terraform"
+      - "usr/local/bin/tofu"
     expired_at: 2026-10-31
     statement: |
       Terraform repository currently uses google.golang.org/grp v1.80.0, so no fix is available yet.
+      OpenTofu 1.12.5 uses google.golang.org/grpc v1.79.3; the fix is in v1.82.1.
+
+  # opentofu: dependencies vendored into the tofu binary. Each clears once
+  # upstream bumps the dependency and cuts a release.
+  - id: CVE-2026-39883
+    paths:
+      - "usr/local/bin/tofu"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu 1.12.5 depends on go.opentelemetry.io/otel/sdk v1.42.0. The fix is
+      in v1.43.0. The advisory describes PATH hijacking on BSD and Solaris, which
+      these Linux images do not run on.
+  - id: CVE-2026-25681
+    paths:
+      - "usr/local/bin/tofu"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu 1.12.5 depends on golang.org/x/net v0.54.0. The fix is in v0.55.0.
+      The advisory covers the html parser, which the CLI does not expose to
+      untrusted input.
+  - id: CVE-2026-27136
+    paths:
+      - "usr/local/bin/tofu"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu 1.12.5 depends on golang.org/x/net v0.54.0. The fix is in v0.55.0.
+      The advisory covers the html parser, which the CLI does not expose to
+      untrusted input.
+  - id: CVE-2026-39821
+    paths:
+      - "usr/local/bin/tofu"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu 1.12.5 depends on golang.org/x/net v0.54.0. The fix is in v0.55.0.
+  - id: CVE-2026-50151
+    paths:
+      - "usr/local/bin/tofu"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu 1.12.5 depends on oras.land/oras-go/v2 v2.6.0. The fix is in
+      v2.6.1. Reached only when installing providers or modules from an OCI
+      registry.
+  - id: CVE-2026-50163
+    paths:
+      - "usr/local/bin/tofu"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu 1.12.5 depends on oras.land/oras-go/v2 v2.6.0. The fix is in
+      v2.6.2. Reached only when installing providers or modules from an OCI
+      registry.
+
+  # opentofu: Go standard library in tofu-ls 0.5.3, which was built with Go
+  # 1.26.0. The tofu binary itself is built with Go 1.26.5 and is unaffected,
+  # so all of these clear at once when upstream cuts a release built with a
+  # newer toolchain.
+  - id: CVE-2026-25679
+    paths:
+      - "usr/local/bin/tofu-ls"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu Language Server 0.5.3 was built with Go 1.26.0; the fix is in Go 1.26.1.
+  - id: CVE-2026-27137
+    paths:
+      - "usr/local/bin/tofu-ls"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu Language Server 0.5.3 was built with Go 1.26.0; the fix is in Go 1.26.1.
+  - id: CVE-2026-32280
+    paths:
+      - "usr/local/bin/tofu-ls"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu Language Server 0.5.3 was built with Go 1.26.0; the fix is in Go 1.26.2.
+  - id: CVE-2026-32281
+    paths:
+      - "usr/local/bin/tofu-ls"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu Language Server 0.5.3 was built with Go 1.26.0; the fix is in Go 1.26.2.
+  - id: CVE-2026-32283
+    paths:
+      - "usr/local/bin/tofu-ls"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu Language Server 0.5.3 was built with Go 1.26.0; the fix is in Go 1.26.2.
+  - id: CVE-2026-33810
+    paths:
+      - "usr/local/bin/tofu-ls"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu Language Server 0.5.3 was built with Go 1.26.0; the fix is in Go 1.26.2.
+  - id: CVE-2026-33811
+    paths:
+      - "usr/local/bin/tofu-ls"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu Language Server 0.5.3 was built with Go 1.26.0; the fix is in Go 1.26.3.
+  - id: CVE-2026-33814
+    paths:
+      - "usr/local/bin/tofu-ls"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu Language Server 0.5.3 was built with Go 1.26.0; the fix is in Go 1.26.3.
+  - id: CVE-2026-39820
+    paths:
+      - "usr/local/bin/tofu-ls"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu Language Server 0.5.3 was built with Go 1.26.0; the fix is in Go 1.26.3.
+  - id: CVE-2026-39836
+    paths:
+      - "usr/local/bin/tofu-ls"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu Language Server 0.5.3 was built with Go 1.26.0; the fix is in Go 1.26.3.
+  - id: CVE-2026-42499
+    paths:
+      - "usr/local/bin/tofu-ls"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu Language Server 0.5.3 was built with Go 1.26.0; the fix is in Go 1.26.3.
