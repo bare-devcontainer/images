@@ -36,13 +36,9 @@ Everything from the [debian](../debian) base image, plus:
 - [OpenTofu](https://opentofu.org/) (`tofu`)
 - [tofu-ls](https://github.com/opentofu/tofu-ls) (`tofu-ls`)
 
-`TF_PLUGIN_CACHE_DIR` points at `~/.terraform.d/plugin-cache`, the path OpenTofu's own
-documentation uses, so providers are downloaded once and shared across working directories.
-Persisting that directory as a volume keeps them across container rebuilds.
-
-Creating that cache also creates `~/.terraform.d`, which OpenTofu then takes as its CLI
-configuration directory; it only falls back to `$XDG_CONFIG_HOME/opentofu` when `~/.terraform.d`
-is absent. The configuration *file* is unaffected and still resolves to `~/.tofurc` first.
+`TF_PLUGIN_CACHE_DIR` points at `~/.terraform.d/plugin-cache`, so providers are downloaded once
+and shared across working directories. Persisting that directory as a volume keeps them across
+container rebuilds.
 
 ## Not installed
 
@@ -59,10 +55,9 @@ is absent. The configuration *file* is unaffected and still resolves to `~/.tofu
 
 `tofu` is downloaded from the [OpenTofu release page](https://github.com/opentofu/opentofu/releases).
 Its checksum is verified against the release's `SHA256SUMS`, whose GPG signature
-(`SHA256SUMS.gpgsig`) is verified against the OpenTofu Core Team release signing key
-(fingerprint `E3E6E43D84CB852EADB0051D0C0AF313E5FD9F80`) before installation. The key
-(`opentofu/opentofu-signing-key.asc`) is committed to this repository, so signatures are checked
-against a key reviewed here rather than one fetched at build time.
+(`SHA256SUMS.gpgsig`) is verified against the OpenTofu Core Team release signing key before
+installation. The key (`opentofu/opentofu-signing-key.asc`) is committed to this repository, so
+signatures are checked against a key reviewed here rather than one fetched at build time.
 
 [update-material.yml](../.github/workflows/update-material.yml) refreshes that key from
 <https://get.opentofu.org/opentofu.asc>, the distribution site, rather than from GitHub. The
