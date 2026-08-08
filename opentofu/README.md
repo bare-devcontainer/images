@@ -1,8 +1,8 @@
 # opentofu
 
 Dev container image for infrastructure-as-code development, with the [OpenTofu](https://opentofu.org/)
-CLI (`tofu`) and the [tofu-ls](https://github.com/opentofu/tofu-ls) language server installed, built on
-the [debian](../debian) base image.
+CLI and [tofu-ls](https://github.com/opentofu/tofu-ls) language server installed, built on the
+[debian](../debian) base image.
 
 ## Image
 
@@ -42,8 +42,6 @@ container rebuilds.
 
 ## Not installed
 
-- **No Terraform.** `terraform` is absent, and nothing in the image aliases `tofu` to it. Use
-  the [terraform](../terraform) image for projects that need the HashiCorp CLI.
 - **No cloud provider CLIs.** `aws`, `gcloud`, and `az` are absent. Add the one the project
   needs through a Dev Container Feature or your own `Dockerfile`.
 - **No credential helpers or authentication.** Nothing in the image logs in to a cloud
@@ -53,27 +51,17 @@ container rebuilds.
 
 ## Supply chain
 
-`tofu` is downloaded from the [OpenTofu release page](https://github.com/opentofu/opentofu/releases).
-Its checksum is verified against the release's `SHA256SUMS`, whose GPG signature
-(`SHA256SUMS.gpgsig`) is verified against the OpenTofu Core Team release signing key before
-installation. The key (`opentofu/opentofu-signing-key.asc`) is committed to this repository, so
-signatures are checked against a key reviewed here rather than one fetched at build time.
+`tofu` is downloaded directly from the
+[OpenTofu release page](https://github.com/opentofu/opentofu/releases). Its checksum is verified against
+its `SHA256SUMS`, whose GPG signature (`SHA256SUMS.gpgsig`) is verified against OpenTofu's release signing
+key before installation. The key (`opentofu/opentofu-signing-key.asc`) is committed to this
+repository, so signatures are checked against a key reviewed here rather than one fetched at
+build time.
 
-[update-material.yml](../.github/workflows/update-material.yml) refreshes that key from
-<https://get.opentofu.org/opentofu.asc>, the distribution site, rather than from GitHub. The
-archive, its `SHA256SUMS`, and the signature over them all come from GitHub, so taking the key
-from a different origin means tampering with the trust anchor and with what it verifies are not
-the same step. The separation is at the serving layer only — the site is deployed from an
-OpenTofu repository — so the control that actually matters is that a change to the key arrives
-as a reviewable pull request.
+`tofu-ls` publishes no signature, so its `checksums.txt` (`opentofu/tofu-ls-checksums.txt`) is
+committed to this repository instead and refreshed whenever the pinned version changes. The
+archive is verified against that reviewed copy rather than the one served from its own release.
 
-`tofu-ls` releases carry no signature, so there is no upstream key to check them against.
-Instead its `checksums.txt` is committed to this repository as
-`opentofu/tofu-ls-checksums.txt` and refreshed by
-[update-material.yml](../.github/workflows/update-material.yml) whenever the pinned version
-changes, so the checksum the archive is verified against is reviewed in a pull request rather
-than fetched from the same release as the archive.
-
-Note that this covers the CLI and the language server. Providers that `tofu init` downloads at
-runtime come from the OpenTofu Registry under OpenTofu's own checksum and signature
-verification, outside this image's build pipeline.
+Note that this covers the CLI. Providers that `tofu init` downloads at runtime come from the
+OpenTofu Registry under OpenTofu's own checksum and signature verification, outside this
+image's build pipeline.
