@@ -36,13 +36,13 @@ Everything from the [debian](../debian) base image, plus:
 - [OpenTofu](https://opentofu.org/) (`tofu`)
 - [tofu-ls](https://github.com/opentofu/tofu-ls) (`tofu-ls`)
 
-`TF_PLUGIN_CACHE_DIR` points at `~/.cache/opentofu/plugin-cache`, so providers are downloaded
-once and shared across working directories. Persisting that directory as a volume keeps them
-across container rebuilds.
+`TF_PLUGIN_CACHE_DIR` points at `~/.terraform.d/plugin-cache`, the path OpenTofu's own
+documentation uses, so providers are downloaded once and shared across working directories.
+Persisting that directory as a volume keeps them across container rebuilds.
 
-OpenTofu resolves its CLI configuration directory to `~/.terraform.d` as soon as that directory
-exists, and only falls back to `$XDG_CONFIG_HOME/opentofu` otherwise. The image creates neither,
-so which one a project ends up using stays its own choice.
+Creating that cache also creates `~/.terraform.d`, which OpenTofu then takes as its CLI
+configuration directory; it only falls back to `$XDG_CONFIG_HOME/opentofu` when `~/.terraform.d`
+is absent. The configuration *file* is unaffected and still resolves to `~/.tofurc` first.
 
 ## Not installed
 

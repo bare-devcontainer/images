@@ -61,9 +61,5 @@ FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 COPY --from=builder /usr/local/bin/tofu /usr/local/bin/tofu-ls /usr/local/bin/
 
-# OpenTofu resolves its CLI configuration directory to ~/.terraform.d as soon as
-# that directory exists, ignoring XDG_CONFIG_HOME. Keeping the plugin cache
-# somewhere else leaves that resolution to the user instead of pinning it to the
-# Terraform-compatibility path at build time.
-ENV TF_PLUGIN_CACHE_DIR="/home/dev/.cache/opentofu/plugin-cache"
+ENV TF_PLUGIN_CACHE_DIR="/home/dev/.terraform.d/plugin-cache"
 RUN mkdir -p "${TF_PLUGIN_CACHE_DIR}"
