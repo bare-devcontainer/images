@@ -1,0 +1,50 @@
+description: "Dev Container image with the OpenTofu CLI and tofu-ls, built on Debian"
+# VERSION in each url is replaced with the build_args value named by
+# version_key; commit_to_pr files are pushed onto version-bump PRs.
+materials:
+  - path: opentofu-signing-key.asc
+    url: https://raw.githubusercontent.com/opentofu/get.opentofu.org/main/static/opentofu.asc
+    description: >-
+      OpenTofu Core Team release signing key (fingerprint
+      E3E6E43D84CB852EADB0051D0C0AF313E5FD9F80), which signs the
+      SHA256SUMS.gpgsig files published alongside OpenTofu release archives.
+      Taken from the repository that serves it as
+      https://get.opentofu.org/opentofu.asc.
+  - path: tofu-ls-checksums.txt
+    url: https://github.com/opentofu/tofu-ls/releases/download/vVERSION/tofu-ls_VERSION_checksums.txt
+    version_key: TOFU_LS_VERSION
+    commit_to_pr: true
+    description: >-
+      Checksums for the tofu-ls release archives, matching the pinned
+      TOFU_LS_VERSION. tofu-ls publishes no signature for its releases, so this
+      committed file is the trust anchor the Dockerfile verifies the downloaded
+      archive against.
+variants:
+  - variant: "1-trixie"
+    tags:
+      # renovate: datasource=github-releases depName=opentofu/opentofu versioning=semver extractVersion=^v(?<version>.+)
+      - "1.12.5-trixie"
+      - "1-trixie"
+      # renovate: datasource=github-releases depName=opentofu/opentofu versioning=semver extractVersion=^v(?<version>.+)
+      - "1.12.5"
+      - "1"
+      - "trixie"
+    debian_variant: "trixie"
+    build_args:
+      # renovate: datasource=github-releases depName=opentofu/opentofu versioning=semver extractVersion=^v(?<version>.+)
+      OPENTOFU_VERSION: "1.12.5"
+      # renovate: datasource=github-releases depName=opentofu/tofu-ls versioning=semver extractVersion=^v(?<version>.+)
+      TOFU_LS_VERSION: "0.5.3"
+
+  - variant: "1-bookworm"
+    tags:
+      # renovate: datasource=github-releases depName=opentofu/opentofu versioning=semver extractVersion=^v(?<version>.+)
+      - "1.12.5-bookworm"
+      - "1-bookworm"
+      - "bookworm"
+    debian_variant: "bookworm"
+    build_args:
+      # renovate: datasource=github-releases depName=opentofu/opentofu versioning=semver extractVersion=^v(?<version>.+)
+      OPENTOFU_VERSION: "1.12.5"
+      # renovate: datasource=github-releases depName=opentofu/tofu-ls versioning=semver extractVersion=^v(?<version>.+)
+      TOFU_LS_VERSION: "0.5.3"
