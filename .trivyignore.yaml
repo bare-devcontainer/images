@@ -66,9 +66,7 @@ vulnerabilities:
     statement: |
       OpenTofu 1.12.5 depends on go.opentelemetry.io/otel/sdk v1.42.0, and the
       fix is in v1.43.0. The upstream development branch already uses v1.44.0,
-      so the fix is expected in the next OpenTofu release. The advisory
-      describes PATH hijacking on BSD and Solaris, which these Linux images do
-      not run on.
+      so the fix is expected in the next OpenTofu release.
   - id: CVE-2026-25681
     paths:
       - "usr/local/bin/tofu"
@@ -76,8 +74,7 @@ vulnerabilities:
     statement: |
       OpenTofu 1.12.5 depends on golang.org/x/net v0.54.0, and the fix is in
       v0.55.0. The upstream development branch already uses v0.57.0, so the fix
-      is expected in the next OpenTofu release. The advisory covers the html
-      parser, which the CLI does not expose to untrusted input.
+      is expected in the next OpenTofu release.
   - id: CVE-2026-27136
     paths:
       - "usr/local/bin/tofu"
@@ -85,8 +82,7 @@ vulnerabilities:
     statement: |
       OpenTofu 1.12.5 depends on golang.org/x/net v0.54.0, and the fix is in
       v0.55.0. The upstream development branch already uses v0.57.0, so the fix
-      is expected in the next OpenTofu release. The advisory covers the html
-      parser, which the CLI does not expose to untrusted input.
+      is expected in the next OpenTofu release.
   - id: CVE-2026-39821
     paths:
       - "usr/local/bin/tofu"
@@ -102,8 +98,7 @@ vulnerabilities:
     statement: |
       OpenTofu 1.12.5 depends on oras.land/oras-go/v2 v2.6.0, and the fix is in
       v2.6.1. The upstream development branch already uses v2.6.2, so the fix is
-      expected in the next OpenTofu release. Reached only when installing
-      providers or modules from an OCI registry.
+      expected in the next OpenTofu release.
   - id: CVE-2026-50163
     paths:
       - "usr/local/bin/tofu"
@@ -111,8 +106,7 @@ vulnerabilities:
     statement: |
       OpenTofu 1.12.5 depends on oras.land/oras-go/v2 v2.6.0, and the fix is in
       v2.6.2. The upstream development branch already uses v2.6.2, so the fix is
-      expected in the next OpenTofu release. Reached only when installing
-      providers or modules from an OCI registry.
+      expected in the next OpenTofu release.
 
   # opentofu: Go standard library in tofu-ls 0.5.3, which was built with Go
   # 1.26.0. The tofu binary itself is built with Go 1.26.5 and is unaffected.
