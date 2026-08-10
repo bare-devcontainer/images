@@ -15,3 +15,5 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       && apt-get --no-install-recommends install -y skopeo yq-go
 
 USER dev
+
+RUN mkdir -p /home/dev/.claude
