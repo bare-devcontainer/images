@@ -1,0 +1,9 @@
+{
+  "features": {
+    "ghcr.io/bare-devcontainer/features/claude-code:1.1.0": {
+      "version": "1.1.0",
+      "resolved": "ghcr.io/bare-devcontainer/features/claude-code@sha256:df086b892ae57fb7954ad6e8764dd3bf1edf3888d73b386aaca229ac0b4a39ce",
+      "integrity": "sha256:df086b892ae57fb7954ad6e8764dd3bf1edf3888d73b386aaca229ac0b4a39ce"
+    }
+  }
+}

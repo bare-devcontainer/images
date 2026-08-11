@@ -10,13 +10,11 @@ COPY ./debian-backports.sources /etc/apt/sources.list.d/
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    --mount=type=bind,source=claude-code.asc,target=/tmp/claude-code.asc,ro \
     export DEBIAN_FRONTEND=noninteractive \
       && echo "deb [signed-by=/tmp/claude-code.asc] https://downloads.claude.ai/claude-code/apt/stable stable main" \
           | tee /etc/apt/sources.list.d/claude-code.list \
       && apt-get update \
-      && apt-get --no-install-recommends install -y claude-code skopeo yq-go
+      && apt-get --no-install-recommends install -y skopeo yq-go
 
 USER dev
 
-RUN mkdir -p /home/dev/.claude
