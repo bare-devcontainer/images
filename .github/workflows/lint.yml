@@ -48,7 +48,7 @@ jobs:
     timeout-minutes: 5
     env:
       # renovate: datasource=docker registryUrl=https://ghcr.io depName=bare-devcontainer/decolint versioning=docker
-      DECOLINT_TAG: "latest@sha256:316b1ac0191451832ad896241b6e2a1162e8b14a95c6bcee576e58376d5f4334"
+      DECOLINT_TAG: "latest@sha256:8f403aa72208291cc5b19d70590397cb537e2aa85f241447a3e0489a2952f2bd"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
