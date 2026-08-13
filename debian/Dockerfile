@@ -5,6 +5,7 @@
 ARG DEBIAN_TAG
 FROM debian:${DEBIAN_TAG}
 
+# hadolint ignore=DL3064 # "USERNAME" is a login name, not a credential
 ARG USERNAME=dev
 ARG USER_UID=1000
 ARG USER_GID=1000
