@@ -1,3 +1,7 @@
+// The Features are referenced by their major tag so the check keeps verifying
+// whatever a consumer installs today, which is what this configuration exists
+// to prove; pinning them would freeze the check on one released version.
+// decolint-ignore-file pin-feature-exact-version
 {
   // Every image extends debian, so the Features are verified on the base alone.
   "name": "feature-debian",
