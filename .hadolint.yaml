@@ -1,3 +1,4 @@
 failure-threshold: warning
 ignored:
   - DL3008  # apt package pinning handled at image digest level, not package level
+  - DL3066  # images run as the named `dev` user they create themselves
