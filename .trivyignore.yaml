@@ -13,6 +13,17 @@ vulnerabilities:
       it up. OpenTofu's development branch already uses v0.40.0, so the fix is
       expected in the next OpenTofu release.
 
+  # golang.org/x/net, which both binaries below vendor
+  - id: CVE-2026-46600
+    paths:
+      - "usr/local/bin/terraform"
+      - "usr/local/bin/tofu"
+    expired_at: 2026-10-31
+    statement: |
+      Terraform 1.15.8 depends on golang.org/x/net v0.55.0, and OpenTofu 1.12.5
+      on v0.54.0. The fix is in v0.56.0, and both upstream development branches
+      already use v0.57.0, so the fix is expected in the next release of each.
+
   # terraform
   - id: CVE-2026-27145
     paths:
