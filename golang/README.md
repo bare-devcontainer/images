@@ -28,12 +28,12 @@ volume mounts that persist cache directories for faster rebuilds.
 <!-- tags:begin -->
 | Tags | Debian variant |
 |------|----------------|
-| `1.26.5-trixie`, `1.26-trixie`, `1-trixie`, `trixie`, `1.26.5`, `1.26`, `1` | trixie |
-| `1.26.5-bookworm`, `1.26-bookworm`, `1-bookworm`, `bookworm` | bookworm |
-| `1.25.12-trixie`, `1.25-trixie`, `1.25.12`, `1.25` | trixie |
-| `1.25.12-bookworm`, `1.25-bookworm` | bookworm |
+| `1.26.6-trixie`, `1.26-trixie`, `1-trixie`, `trixie`, `1.26.6`, `1.26`, `1` | trixie |
+| `1.26.6-bookworm`, `1.26-bookworm`, `1-bookworm`, `bookworm` | bookworm |
+| `1.25.13-trixie`, `1.25-trixie`, `1.25.13`, `1.25` | trixie |
+| `1.25.13-bookworm`, `1.25-bookworm` | bookworm |
 
-Tags are also published with a date suffix on each build (e.g., `1.26.5-trixie-<YYYYMMDD>`).
+Tags are also published with a date suffix on each build (e.g., `1.26.6-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
 ## Installed software
