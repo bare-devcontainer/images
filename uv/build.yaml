@@ -21,21 +21,21 @@ variants:
   - variant: "trixie"
     tags:
       # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
-      - "0.12.3-trixie"
+      - "0.12.4-trixie"
       # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
-      - "0.12.3"
+      - "0.12.4"
       - "trixie"
     debian_variant: "trixie"
     build_args:
       # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
-      UV_VERSION: "0.12.3"
+      UV_VERSION: "0.12.4"
 
   - variant: "bookworm"
     tags:
       # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
-      - "0.12.3-bookworm"
+      - "0.12.4-bookworm"
       - "bookworm"
     debian_variant: "bookworm"
     build_args:
       # renovate: datasource=github-releases depName=astral-sh/uv versioning=semver
-      UV_VERSION: "0.12.3"
+      UV_VERSION: "0.12.4"
