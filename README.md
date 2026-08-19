@@ -18,7 +18,7 @@ Pick the image for your stack from the [Images](#images) table, reference it fro
 
 ```json
 {
-  "image": "ghcr.io/bare-devcontainer/golang:1.26"
+  "image": "ghcr.io/bare-devcontainer/golang:1.27"
 }
 ```
 
@@ -111,11 +111,11 @@ Each image publishes several tags per build. Using `golang` as an example:
 
 | Tag | Points at | Moves when |
 |-----|-----------|------------|
-| `1.26.5-trixie` | An exact version on an exact Debian release | The image is rebuilt (base updates, security patches) |
-| `1.26-trixie`, `1-trixie` | The newest matching version on that Debian release | A new patch or minor version is published |
+| `1.27.0-trixie` | An exact version on an exact Debian release | The image is rebuilt (base updates, security patches) |
+| `1.27-trixie`, `1-trixie` | The newest matching version on that Debian release | A new patch or minor version is published |
 | `trixie` | The newest version on that Debian release | Any release |
-| `1.26.5`, `1.26`, `1` | The same as the `-trixie` form; the default Debian release is implied | Same as the `-trixie` form |
-| `1.26.5-trixie-20260727` | One specific build, by date | Never |
+| `1.27.0`, `1.27`, `1` | The same as the `-trixie` form; the default Debian release is implied | Same as the `-trixie` form |
+| `1.27.0-trixie-20260727` | One specific build, by date | Never |
 
 Because the base image and its packages are refreshed on every build, **every tag except the
 date-suffixed ones is mutable**: the same tag resolves to different content over time. That is
@@ -175,7 +175,7 @@ Create a `compose.yml` that references the image, then reference it from `.devco
 ```yaml
 services:
   app:
-    image: ghcr.io/bare-devcontainer/golang:1.26@sha256:<digest>
+    image: ghcr.io/bare-devcontainer/golang:1.27@sha256:<digest>
     volumes:
       - ..:/workspaces
     command: sleep infinity
@@ -205,7 +205,7 @@ gh attestation verify oci://ghcr.io/bare-devcontainer/<image>:<tag>@sha256:<dige
 For example:
 
 ```sh
-gh attestation verify oci://ghcr.io/bare-devcontainer/golang:1.26@sha256:<digest> \
+gh attestation verify oci://ghcr.io/bare-devcontainer/golang:1.27@sha256:<digest> \
   --owner bare-devcontainer
 ```
 
