@@ -9,58 +9,58 @@ variants:
   - variant: "1.26-trixie"
     tags:
       # renovate: datasource=golang-version depName=golang versioning=semver
-      - "1.26.6-trixie"
+      - "1.26.7-trixie"
       - "1.26-trixie"
       - "1-trixie"
       - "trixie"
       # renovate: datasource=golang-version depName=golang versioning=semver
-      - "1.26.6"
+      - "1.26.7"
       - "1.26"
       - "1"
     debian_variant: "trixie"
     build_args:
       # renovate: datasource=golang-version depName=golang
-      GOLANG_VERSION: "1.26.6"
+      GOLANG_VERSION: "1.26.7"
       # renovate: datasource=go depName=golang.org/x/tools/gopls
       GOPLS_VERSION: "v0.23.0"
 
   - variant: "1.26-bookworm"
     tags:
       # renovate: datasource=golang-version depName=golang versioning=semver
-      - "1.26.6-bookworm"
+      - "1.26.7-bookworm"
       - "1.26-bookworm"
       - "1-bookworm"
       - "bookworm"
     debian_variant: "bookworm"
     build_args:
       # renovate: datasource=golang-version depName=golang
-      GOLANG_VERSION: "1.26.6"
+      GOLANG_VERSION: "1.26.7"
       # renovate: datasource=go depName=golang.org/x/tools/gopls
       GOPLS_VERSION: "v0.23.0"
 
   - variant: "1.25-trixie"
     tags:
       # renovate: datasource=golang-version depName=golang versioning=semver
-      - "1.25.13-trixie"
+      - "1.25.14-trixie"
       - "1.25-trixie"
       # renovate: datasource=golang-version depName=golang versioning=semver
-      - "1.25.13"
+      - "1.25.14"
       - "1.25"
     debian_variant: "trixie"
     build_args:
       # renovate: datasource=golang-version depName=golang
-      GOLANG_VERSION: "1.25.13"
+      GOLANG_VERSION: "1.25.14"
       # renovate: datasource=go depName=golang.org/x/tools/gopls
       GOPLS_VERSION: "v0.23.0"
 
   - variant: "1.25-bookworm"
     tags:
       # renovate: datasource=golang-version depName=golang versioning=semver
-      - "1.25.13-bookworm"
+      - "1.25.14-bookworm"
       - "1.25-bookworm"
     debian_variant: "bookworm"
     build_args:
       # renovate: datasource=golang-version depName=golang
-      GOLANG_VERSION: "1.25.13"
+      GOLANG_VERSION: "1.25.14"
       # renovate: datasource=go depName=golang.org/x/tools/gopls
       GOPLS_VERSION: "v0.23.0"
