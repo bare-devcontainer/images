@@ -1,5 +1,4 @@
 vulnerabilities:
-  # golang.org/x/text, which every Go binary below vendors
   - id: CVE-2026-56852
     paths:
       - "usr/local/bin/gopls"
@@ -13,8 +12,41 @@ vulnerabilities:
       it up. OpenTofu's development branch already uses v0.40.0, so the fix is
       expected in the next OpenTofu release.
 
-  # golang.org/x/net, vendored by the binaries below or bundled in the Go
-  # standard library they were built with
+  - id: CVE-2026-56864
+    paths:
+      - "usr/local/bin/gopls"
+      - "usr/local/bin/terraform"
+      - "usr/local/bin/terraform-ls"
+      - "usr/local/bin/tofu"
+    expired_at: 2026-10-31
+    statement: |
+      The vulnerable symbol is sumdb.Client.Lookup, reached only when a program
+      verifies modules against a GOSUMDB, and none of the four binaries links
+      that package.
+      gopls 0.23.0, the latest release, depends on golang.org/x/mod v0.37.0,
+      Terraform Language Server 0.39.0 on v0.38.0, and Terraform 1.15.8 and
+      OpenTofu 1.12.6 on v0.35.0. The fix is in v0.40.0, which Terraform 1.15.9
+      already ships, so that path clears on the next Terraform bump. The gopls
+      and OpenTofu development branches use v0.39.0 and the Terraform Language
+      Server one v0.38.0, so none of the other three has a fixed release yet.
+  - id: CVE-2026-56865
+    paths:
+      - "usr/local/bin/gopls"
+      - "usr/local/bin/terraform"
+      - "usr/local/bin/terraform-ls"
+      - "usr/local/bin/tofu"
+    expired_at: 2026-10-31
+    statement: |
+      The vulnerable symbol is tlog.tileHashReader.ReadHashes, reached only
+      when a program fetches checksum database tiles through a GOPROXY, and
+      none of the four binaries links that package.
+      gopls 0.23.0, the latest release, depends on golang.org/x/mod v0.37.0,
+      Terraform Language Server 0.39.0 on v0.38.0, and Terraform 1.15.8 and
+      OpenTofu 1.12.6 on v0.35.0. The fix is in v0.40.0, which Terraform 1.15.9
+      already ships, so that path clears on the next Terraform bump. The gopls
+      and OpenTofu development branches use v0.39.0 and the Terraform Language
+      Server one v0.38.0, so none of the other three has a fixed release yet.
+
   - id: CVE-2026-46600
     paths:
       - "usr/local/bin/terraform"
@@ -49,7 +81,6 @@ vulnerabilities:
       Language Server tracks the Go 1.25 line, so it picks the fix up on its
       next release.
 
-  # Go standard library, which the binaries below were built with
   - id: CVE-2026-33818
     paths:
       - "usr/local/bin/terraform"
