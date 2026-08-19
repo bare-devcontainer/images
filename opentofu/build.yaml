@@ -23,28 +23,28 @@ variants:
   - variant: "1-trixie"
     tags:
       # renovate: datasource=github-releases depName=opentofu/opentofu versioning=semver extractVersion=^v(?<version>.+)
-      - "1.12.5-trixie"
+      - "1.12.6-trixie"
       - "1-trixie"
       # renovate: datasource=github-releases depName=opentofu/opentofu versioning=semver extractVersion=^v(?<version>.+)
-      - "1.12.5"
+      - "1.12.6"
       - "1"
       - "trixie"
     debian_variant: "trixie"
     build_args:
       # renovate: datasource=github-releases depName=opentofu/opentofu versioning=semver extractVersion=^v(?<version>.+)
-      OPENTOFU_VERSION: "1.12.5"
+      OPENTOFU_VERSION: "1.12.6"
       # renovate: datasource=github-releases depName=opentofu/tofu-ls versioning=semver extractVersion=^v(?<version>.+)
       TOFU_LS_VERSION: "0.5.3"
 
   - variant: "1-bookworm"
     tags:
       # renovate: datasource=github-releases depName=opentofu/opentofu versioning=semver extractVersion=^v(?<version>.+)
-      - "1.12.5-bookworm"
+      - "1.12.6-bookworm"
       - "1-bookworm"
       - "bookworm"
     debian_variant: "bookworm"
     build_args:
       # renovate: datasource=github-releases depName=opentofu/opentofu versioning=semver extractVersion=^v(?<version>.+)
-      OPENTOFU_VERSION: "1.12.5"
+      OPENTOFU_VERSION: "1.12.6"
       # renovate: datasource=github-releases depName=opentofu/tofu-ls versioning=semver extractVersion=^v(?<version>.+)
       TOFU_LS_VERSION: "0.5.3"
