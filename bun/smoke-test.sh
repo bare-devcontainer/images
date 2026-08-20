@@ -33,8 +33,9 @@ cat > "$TMPDIR/local-cli/cli.js" <<'EOF'
 #!/usr/bin/env bun
 console.log("Hello from bunx");
 EOF
+chmod +x "$TMPDIR/local-cli/cli.js"
 
 cd "$TMPDIR/project"
 bun init -y >/dev/null
 bun add "file:../local-cli"
-bunx local-cli
+[ "$(bunx --no-install local-cli)" = "Hello from bunx" ]
