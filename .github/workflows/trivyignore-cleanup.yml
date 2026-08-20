@@ -1,0 +1,217 @@
+name: Trivyignore Cleanup
+
+# Keeps .trivyignore.yaml free of entries that no longer suppress anything.
+# Every published image is scanned with no ignore file in play, so the
+# reports contain the findings the entries exist for; prune-trivyignore.sh
+# then drops the vulnerability ids none of them reports any more, along
+# with the individual paths of an entry that upstream has since fixed, and
+# the result goes out as a single housekeeper pull request.
+#
+# Like trivy.yml and attest-check.yml this looks at published images, so an
+# entry added for a change that has not been released yet still matches a
+# reported finding and is kept.
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'
+  pull_request:
+    paths:
+      - .github/workflows/trivyignore-cleanup.yml
+      - scripts/prune-trivyignore.sh
+  workflow_dispatch:
+
+permissions: {}
+
+env:
+  # renovate: datasource=github-releases depName=aquasecurity/trivy
+  TRIVY_VERSION: "v0.73.0"
+  TRIVY_SEVERITY: CRITICAL,HIGH
+
+jobs:
+  setup:
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.build.outputs.matrix }}
+      report_count: ${{ steps.build.outputs.report_count }}
+    steps:
+      # Read the build.yaml files from the latest release tag so that the
+      # image tags always match published images, even if main has moved on.
+      - name: Resolve latest release tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          LATEST_TAG=$(gh api "repos/${REPO}/git/refs/tags/v" \
+            --paginate \
+            --jq '.[] | select(.ref | test("refs/tags/v[0-9]{8}")) | .ref | ltrimstr("refs/tags/")' \
+            2>/dev/null | sort | tail -1 || echo "")
+          echo "Using ref: ${LATEST_TAG:-<default branch>}"
+          echo "latest_tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.tag.outputs.latest_tag }}
+          persist-credentials: false
+      - name: Build image matrix
+        id: build
+        run: |
+          set -eo pipefail
+          # The base image is tagged after its variant, so both halves of the
+          # matrix carry the same fields and scan as one job definition.
+          BASE=$(bash scripts/build-config.sh variants debian \
+            | jq -c '[.[] | {"image": "debian", "variant": ., "primary_tag": .}]')
+          MATRIX=$(jq -c -n \
+            --argjson base "$BASE" \
+            --argjson rest "$(bash scripts/build-config.sh all-matrix)" \
+            '$base + $rest')
+          echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
+          echo "report_count=$(jq 'length' <<< "$MATRIX")" >> "$GITHUB_OUTPUT"
+
+  scan:
+    needs: setup
+    permissions: {}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.setup.outputs.matrix) }}
+    steps:
+      # No checkout on purpose: with no .trivyignore.yaml in the workspace,
+      # Trivy reports the findings the file hides, which is what the entries
+      # have to be checked against. Vulnerability findings are identical
+      # across architectures, so the runner's own architecture is scanned,
+      # as in build-checks.yml.
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: ${{ env.TRIVY_VERSION }}
+          image-ref: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:${{ matrix.primary_tag }}
+          format: json
+          output: report.json
+          severity: ${{ env.TRIVY_SEVERITY }}
+          ignore-unfixed: true
+          exit-code: '0'
+      - name: Upload Trivy report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: trivy-report-${{ matrix.image }}-${{ matrix.variant }}
+          path: report.json
+          if-no-files-found: error
+          retention-days: 1
+
+  prune:
+    # Every scan has to have succeeded: an image missing from the reports
+    # would make the entries covering it look obsolete.
+    needs: [setup, scan]
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download Trivy reports
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: trivy-report-*
+          path: ${{ runner.temp }}/reports
+
+      - name: Prune obsolete entries
+        id: prune
+        env:
+          REPORTS_DIR: ${{ runner.temp }}/reports
+          REPORT_FILE: ${{ runner.temp }}/prune-report.txt
+          REPORT_COUNT: ${{ needs.setup.outputs.report_count }}
+        run: |
+          set -eo pipefail
+          downloaded=$(find "$REPORTS_DIR" -type f -name '*.json' | wc -l)
+          if [ "$downloaded" -ne "$REPORT_COUNT" ]; then
+            echo "Expected ${REPORT_COUNT} Trivy reports but downloaded ${downloaded}." >&2
+            exit 1
+          fi
+
+          changed=$(bash scripts/prune-trivyignore.sh "$REPORTS_DIR" 2> "$REPORT_FILE") || {
+            cat "$REPORT_FILE" >&2
+            exit 1
+          }
+          cat "$REPORT_FILE"
+          echo "changed=${changed}" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## Trivy ignore entries"
+            echo ""
+            if [ -s "$REPORT_FILE" ]; then
+              sed 's/^/- /' "$REPORT_FILE"
+            else
+              echo "_Every entry still covers a reported finding._"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate GitHub App Token
+        id: app-token
+        if: steps.prune.outputs.changed == 'true' && github.event_name != 'pull_request'
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.HOUSEKEEPER_CLIENT_ID }}
+          private-key: ${{ secrets.HOUSEKEEPER_PRIVATE_KEY }}
+
+      - name: Open pull request
+        if: steps.prune.outputs.changed == 'true' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          REPORT_FILE: ${{ runner.temp }}/prune-report.txt
+        run: |
+          set -eo pipefail
+          BRANCH="housekeeper/trivyignore-cleanup"
+          PR_TITLE="ci: drop obsolete Trivy ignore entries"
+
+          if gh api "repos/${REPO}/git/ref/heads/${BRANCH}" > /dev/null 2>&1; then
+            # Left over from an earlier run whose pull request is gone, so
+            # restart it from the commit this run scanned.
+            if [ -z "$(gh pr list --state open --head "${BRANCH}" --json number --jq '.[0]')" ]; then
+              gh api "repos/${REPO}/git/refs/heads/${BRANCH}" \
+                --method PATCH \
+                -f sha="${SHA}" \
+                -F force=true
+            fi
+          else
+            gh api "repos/${REPO}/git/refs" \
+              --method POST \
+              -f ref="refs/heads/${BRANCH}" \
+              -f sha="${SHA}"
+          fi
+
+          # Committed through the contents API, so the commit is created by
+          # the app and comes out verified (same pattern as update-readme in
+          # release.yml).
+          existing_sha=$(gh api "repos/${REPO}/contents/.trivyignore.yaml?ref=${BRANCH}" \
+            --jq '.sha' 2>/dev/null || true)
+          args=(
+            --method PUT
+            -F message="${PR_TITLE}"
+            -F content="$(base64 -w0 .trivyignore.yaml)"
+            -F branch="${BRANCH}"
+          )
+          [ -n "$existing_sha" ] && args+=(-F sha="$existing_sha")
+          gh api "repos/${REPO}/contents/.trivyignore.yaml" "${args[@]}"
+
+          if [ -z "$(gh pr list --state open --head "${BRANCH}" --json number --jq '.[0]')" ]; then
+            body=$(printf '%s\n\n%s\n' \
+              "Scanning the published images left these entries without a finding to suppress." \
+              "$(sed 's/^/- /' "$REPORT_FILE")")
+            gh pr create \
+              --title "${PR_TITLE}" \
+              --body "${body}" \
+              --head "${BRANCH}" \
+              --base main
+          fi

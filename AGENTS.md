@@ -10,12 +10,14 @@ This repository builds and publishes minimal Debian-based Docker images for use 
 scripts/
   build-config.sh            # CLI for querying build.yaml; used by CI to generate matrices and build args
   changed-images.sh          # maps changed files to the images they affect; used by build-checks.yml to skip untouched images
+  prune-trivyignore.sh       # drops the .trivyignore.yaml entries and paths Trivy no longer reports; called by trivyignore-cleanup.yml
   update-material.sh         # refreshes the trust material declared in build.yaml (materials); called by update-material.yml
   update-readme.sh           # regenerates the README Tags tables from build.yaml; run by CI after each release
   verify-image.sh            # confirms image verification steps succeed for a published image; run by attest-check.yml
 .github/workflows/
   release.yml                # builds and pushes images to GHCR
   build-checks.yml           # for each changed image: builds and smoke-tests it, builds its sandbox dev container, and runs the Dev Container Feature tests on the base
+  trivyignore-cleanup.yml    # scans the published images with no ignore file in play and opens a pull request removing the .trivyignore.yaml entries left without a finding
 .devcontainer/
   default/                   # dev container for working in this repo
   sandbox-<image>/           # one per image; for manually testing each image. Kept free of Features so it mirrors the published image
