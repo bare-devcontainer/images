@@ -23,10 +23,10 @@ Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well 
 <!-- tags:begin -->
 | Tags | Debian variant |
 |------|----------------|
-| `1.12.5-trixie`, `1-trixie`, `1.12.5`, `1`, `trixie` | trixie |
-| `1.12.5-bookworm`, `1-bookworm`, `bookworm` | bookworm |
+| `1.12.6-trixie`, `1-trixie`, `1.12.6`, `1`, `trixie` | trixie |
+| `1.12.6-bookworm`, `1-bookworm`, `bookworm` | bookworm |
 
-Tags are also published with a date suffix on each build (e.g., `1.12.5-trixie-<YYYYMMDD>`).
+Tags are also published with a date suffix on each build (e.g., `1.12.6-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
 ## Installed software
