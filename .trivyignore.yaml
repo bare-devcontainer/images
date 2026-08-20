@@ -2,7 +2,6 @@ vulnerabilities:
   - id: CVE-2026-56852
     paths:
       - "usr/local/bin/gopls"
-      - "usr/local/bin/terraform"
       - "usr/local/bin/tofu"
     expired_at: 2026-10-31
     statement: |
@@ -15,7 +14,6 @@ vulnerabilities:
   - id: CVE-2026-56864
     paths:
       - "usr/local/bin/gopls"
-      - "usr/local/bin/terraform"
       - "usr/local/bin/terraform-ls"
       - "usr/local/bin/tofu"
     expired_at: 2026-10-31
@@ -32,7 +30,6 @@ vulnerabilities:
   - id: CVE-2026-56865
     paths:
       - "usr/local/bin/gopls"
-      - "usr/local/bin/terraform"
       - "usr/local/bin/terraform-ls"
       - "usr/local/bin/tofu"
     expired_at: 2026-10-31
@@ -49,7 +46,6 @@ vulnerabilities:
 
   - id: CVE-2026-46600
     paths:
-      - "usr/local/bin/terraform"
       - "usr/local/bin/tofu"
       - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
@@ -85,7 +81,6 @@ vulnerabilities:
     paths:
       - "usr/local/bin/terraform"
       - "usr/local/bin/terraform-ls"
-      - "usr/local/bin/tofu"
       - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
@@ -100,7 +95,6 @@ vulnerabilities:
     paths:
       - "usr/local/bin/terraform"
       - "usr/local/bin/terraform-ls"
-      - "usr/local/bin/tofu"
       - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
@@ -115,7 +109,6 @@ vulnerabilities:
     paths:
       - "usr/local/bin/terraform"
       - "usr/local/bin/terraform-ls"
-      - "usr/local/bin/tofu"
       - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
@@ -130,7 +123,6 @@ vulnerabilities:
     paths:
       - "usr/local/bin/terraform"
       - "usr/local/bin/terraform-ls"
-      - "usr/local/bin/tofu"
       - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
@@ -145,7 +137,6 @@ vulnerabilities:
     paths:
       - "usr/local/bin/terraform"
       - "usr/local/bin/terraform-ls"
-      - "usr/local/bin/tofu"
       - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
@@ -160,7 +151,6 @@ vulnerabilities:
     paths:
       - "usr/local/bin/terraform"
       - "usr/local/bin/terraform-ls"
-      - "usr/local/bin/tofu"
       - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
@@ -200,7 +190,6 @@ vulnerabilities:
   - id: CVE-2026-39822
     paths:
       - "usr/local/bin/terraform"
-      - "usr/local/bin/terraform-ls"
       - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
@@ -213,7 +202,6 @@ vulnerabilities:
       so no fixed release is available yet.
   - id: GHSA-hrxh-6v49-42gf
     paths:
-      - "usr/local/bin/terraform"
       - "usr/local/bin/tofu"
     expired_at: 2026-10-31
     statement: |
@@ -247,14 +235,6 @@ vulnerabilities:
       OpenTofu 1.12.5 depends on golang.org/x/net v0.54.0, and the fix is in
       v0.55.0. The upstream development branch already uses v0.57.0, so the fix
       is expected in the next OpenTofu release.
-  - id: CVE-2026-50151
-    paths:
-      - "usr/local/bin/tofu"
-    expired_at: 2026-10-31
-    statement: |
-      OpenTofu 1.12.5 depends on oras.land/oras-go/v2 v2.6.0, and the fix is in
-      v2.6.1. The upstream development branch already uses v2.6.2, so the fix is
-      expected in the next OpenTofu release.
   - id: CVE-2026-50163
     paths:
       - "usr/local/bin/tofu"
