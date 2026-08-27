@@ -23,24 +23,24 @@ variants:
   - variant: "2-trixie"
     tags:
       # renovate: datasource=github-releases depName=denoland/deno versioning=semver extractVersion=^v(?<version>.+)
-      - "2.9.5-trixie"
+      - "2.9.6-trixie"
       - "2-trixie"
       - "trixie"
       # renovate: datasource=github-releases depName=denoland/deno versioning=semver extractVersion=^v(?<version>.+)
-      - "2.9.5"
+      - "2.9.6"
       - "2"
     debian_variant: "trixie"
     build_args:
       # renovate: datasource=github-releases depName=denoland/deno versioning=semver extractVersion=^v(?<version>.+)
-      DENO_VERSION: "2.9.5"
+      DENO_VERSION: "2.9.6"
 
   - variant: "2-bookworm"
     tags:
       # renovate: datasource=github-releases depName=denoland/deno versioning=semver extractVersion=^v(?<version>.+)
-      - "2.9.5-bookworm"
+      - "2.9.6-bookworm"
       - "2-bookworm"
       - "bookworm"
     debian_variant: "bookworm"
     build_args:
       # renovate: datasource=github-releases depName=denoland/deno versioning=semver extractVersion=^v(?<version>.+)
-      DENO_VERSION: "2.9.5"
+      DENO_VERSION: "2.9.6"
