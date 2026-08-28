@@ -20,7 +20,7 @@ variants:
       # renovate: datasource=node-version depName=node versioning=node
       NODE_VERSION: "26.8.1"
       # renovate: datasource=npm depName=corepack versioning=semver
-      COREPACK_VERSION: "0.35.0"
+      COREPACK_VERSION: "0.36.0"
 
   - variant: "26-bookworm"
     tags:
@@ -33,7 +33,7 @@ variants:
       # renovate: datasource=node-version depName=node versioning=node
       NODE_VERSION: "26.8.1"
       # renovate: datasource=npm depName=corepack versioning=semver
-      COREPACK_VERSION: "0.35.0"
+      COREPACK_VERSION: "0.36.0"
 
   - variant: "24-trixie"
     tags:
@@ -48,7 +48,7 @@ variants:
       # renovate: datasource=node-version depName=node versioning=node
       NODE_VERSION: "24.20.0"
       # renovate: datasource=npm depName=corepack versioning=semver
-      COREPACK_VERSION: "0.35.0"
+      COREPACK_VERSION: "0.36.0"
 
   - variant: "24-bookworm"
     tags:
@@ -60,4 +60,4 @@ variants:
       # renovate: datasource=node-version depName=node versioning=node
       NODE_VERSION: "24.20.0"
       # renovate: datasource=npm depName=corepack versioning=semver
-      COREPACK_VERSION: "0.35.0"
+      COREPACK_VERSION: "0.36.0"
