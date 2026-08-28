@@ -13,7 +13,7 @@ permissions: {}
 env:
   BASE_IMAGE_REF: ghcr.io/${{ github.repository_owner }}/debian
   # renovate: datasource=github-releases depName=aquasecurity/trivy
-  TRIVY_VERSION: "v0.73.0"
+  TRIVY_VERSION: "v0.74.0"
   TRIVY_SEVERITY: CRITICAL,HIGH
 
 jobs:
