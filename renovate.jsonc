@@ -167,6 +167,17 @@
       "semanticCommitType": "ci"
     },
     {
+      // Every build.yaml change ships a new image, so the commit type is `image`
+      // whatever the update type. Kept separate from the grouping rule below so
+      // minor and major updates, which stay ungrouped, still get the type.
+      "description": "Label all image build input updates as `image`.",
+      "matchFileNames": [
+        "**/build.yaml"
+      ],
+      "semanticCommitType": "image"
+    },
+    {
+      "description": "Group the low-risk image build input updates into a single pull request.",
       "groupName": "Image Builds",
       "matchFileNames": [
         "**/build.yaml"
@@ -174,8 +185,7 @@
       "matchUpdateTypes": [
         "patch",
         "digest"
-      ],
-      "semanticCommitType": "image"
+      ]
     }
   ]
 }
