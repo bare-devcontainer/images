@@ -17,7 +17,6 @@ on:
     paths:
       - .github/workflows/update-material.yml
       - scripts/update-material.sh
-      - scripts/housekeeper-pr.sh
       - scripts/build-config.sh
       # Re-syncs commit_to_pr materials when Renovate bumps a pinned version.
       - '*/build.yaml'
