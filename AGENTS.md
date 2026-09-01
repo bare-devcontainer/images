@@ -14,6 +14,7 @@ scripts/
   prune-trivyignore.sh       # drops the .trivyignore.yaml entries and paths Trivy no longer reports; called by trivyignore-cleanup.yml
   update-material.sh         # refreshes the trust material declared in build.yaml (materials); called by update-material.yml
   update-readme.sh           # regenerates the README Tags tables from build.yaml; run by CI after each release
+  update-zig-master.sh       # refreshes the Zig master build pinned in zig/build.yaml, which Renovate cannot track; called by update-zig-master.yml
   verify-image.sh            # confirms image verification steps succeed for a published image; run by attest-check.yml
 .github/workflows/
   release.yml                # builds and pushes images to GHCR

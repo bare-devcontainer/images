@@ -32,9 +32,18 @@ volume mounts that persist cache directories for faster rebuilds.
 | `0.16.0-bookworm`, `0.16-bookworm`, `bookworm` | bookworm |
 | `0.15.2-trixie`, `0.15-trixie`, `0.15.2`, `0.15` | trixie |
 | `0.15.2-bookworm`, `0.15-bookworm` | bookworm |
+| `master-trixie`, `master` | trixie |
 
 Tags are also published with a date suffix on each build (e.g., `0.16.0-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
+
+The `master` tags follow Zig's master branch and promise none of what the release tags do.
+Upstream publishes a master build roughly once a day, a day or two behind the commit it was
+built from, and the version here is refreshed weekly, so `master` is a recent master build
+rather than the newest one. ZLS is whichever build upstream reports as compatible with that
+Zig version, which is often weeks older. Expect breaking language changes between builds:
+these tags are for trying master out, and a project that needs a stable toolchain belongs on
+a release tag.
 
 ## Installed software
 
@@ -55,11 +64,12 @@ across container rebuilds.
 ## Supply chain
 
 The Zig tarball is downloaded from a [community mirror](https://ziglang.org/download/community-mirrors.txt)
-with ziglang.org as the fallback, then verified with a minisign signature against Zig's public
-key (`zig/zig-minisign.pub`); the signature's trusted comment is checked to name the requested
-file, so a valid signature for a different release cannot be substituted. ZLS is verified the
-same way against its own key (`zig/zls-minisign.pub`). Both keys are committed to this
-repository and reviewed like any other change.
+with ziglang.org as the fallback — master builds come from ziglang.org directly, since the
+mirrors carry tagged releases only — then verified with a minisign signature against Zig's
+public key (`zig/zig-minisign.pub`); the signature's trusted comment is checked to name the
+requested file, so a valid signature for a different release cannot be substituted. ZLS is
+verified the same way against its own key (`zig/zls-minisign.pub`). Both keys are committed
+to this repository and reviewed like any other change.
 
 Shell completions are fetched from [ziglang/shell-completions] with `git` at a pinned commit
 hash rather than by raw file URL, so the content is cryptographically bound to the reviewed
