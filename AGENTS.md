@@ -7,15 +7,15 @@ This repository builds and publishes minimal Debian-based Docker images for use 
   Dockerfile    # image build instructions
   build.yaml    # image description, variant definitions (tags, build args, debian_variant), and trusted material sources (materials)
   README.md     # image docs; the Tags table between <!-- tags:begin/end --> markers is generated
-scripts/
-  build-config.sh            # CLI for querying build.yaml; used by CI to generate matrices and build args
-  changed-images.sh          # maps changed files to the images they affect; used by build-checks.yml to skip untouched images
-  housekeeper-pr.sh          # commits working tree changes as the housekeeper app and opens the pull request for them
-  prune-trivyignore.sh       # drops the .trivyignore.yaml entries and paths Trivy no longer reports; called by trivyignore-cleanup.yml
-  update-material.sh         # refreshes the trust material declared in build.yaml (materials); called by update-material.yml
-  update-readme.sh           # regenerates the README Tags tables from build.yaml; run by CI after each release
-  update-zig-master.sh       # refreshes the Zig master build pinned in zig/build.yaml, which Renovate cannot track; called by update-zig-master.yml
-  verify-image.sh            # confirms image verification steps succeed for a published image; run by attest-check.yml
+scripts/                     # CLI helpers for CI; each script's header comment documents it
+  build-config.sh
+  changed-images.sh
+  housekeeper-pr.sh
+  prune-trivyignore.sh
+  update-material.sh
+  update-readme.sh
+  update-zig-master.sh
+  verify-image.sh
 .github/workflows/
   release.yml                # builds and pushes images to GHCR
   build-checks.yml           # for each changed image: builds and smoke-tests it, builds its sandbox dev container, and runs the Dev Container Feature tests on the base
