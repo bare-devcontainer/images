@@ -23,6 +23,7 @@ scripts/
   sandbox-<image>/           # one per image; for manually testing each image. Kept free of Features so it mirrors the published image
   feature-<image>/           # an image with every verified Dev Container Feature layered on, plus the test.sh covering them
 renovate.jsonc               # Renovate config
+.trivyignore.yaml            # Trivy findings waived until upstream ships a fix
 ```
 
 - Images are organized in two layers:
@@ -35,6 +36,12 @@ renovate.jsonc               # Renovate config
   - Verify against `debian` alone, since every image extends it. Add the Feature to the single `.devcontainer/feature-debian` configuration rather than introducing another one.
   - Leave Feature options at their upstream defaults, so the check reflects what a consumer gets. Record the reason in a comment whenever a default has to be overridden.
   - Assert only what the Feature and the image are jointly responsible for. The container's runtime flags are Docker's behaviour, not this repository's, so leave them unasserted; the image's own `smoke-test.sh` runs first and covers what the image ships, so never repeat it in `test.sh`.
+- `.trivyignore.yaml` is the only place a `CRITICAL`/`HIGH` finding is waived, so an entry is a statement that the image cannot currently do anything about the finding. When a scan fails:
+  - Check the latest upstream release of the affected component first. A finding that release already fixes is resolved by taking it — bump the pinned version in `build.yaml`, or let the Renovate pull request do it — and gets no entry.
+  - Only a finding whose newest upstream release is still affected is ignored. Record in `statement` what was checked: the dependency (or Go toolchain) version the pinned release carries, the version the fix is in, and what upstream carries on the branch the next release comes from. Where the advisory names a vulnerable symbol the binaries cannot reach, say so as well — it is why the waiting is acceptable, not a substitute for it.
+  - List the binaries actually reported in `paths`, rather than suppressing the id image-wide, so an entry stops covering a binary as soon as upstream fixes that one.
+  - Set `expired_at` to when the upstream fix is expected, judged from where the fix sits upstream and the component's release cadence. When that cannot be estimated — upstream carries no fix yet — set a date to re-check by instead, at most three months out. An entry covering several binaries takes the earliest of their dates, so the expiry re-opens the review for all of them.
+  - `trivyignore-cleanup.yml` drops entries and paths that no longer suppress anything, but it deliberately leaves expired entries in place: an expired entry fails the scan again, and extending it is a judgement call that belongs to a reviewer who re-checks upstream.
 - The sandbox dev containers take their build args from the environment with no defaults, so `build-checks.yml` can build them with the arguments it just built the image with and reuse those layers. Export the arguments of the variant you want before opening one by hand:
 
   ```sh
