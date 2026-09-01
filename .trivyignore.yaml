@@ -170,11 +170,6 @@ vulnerabilities:
       - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
-      The vulnerable symbol is connection.serverAuthenticate, reached through
-      ssh.NewServerConn, where a source-address restriction returned by a
-      non-public-key authentication callback went unenforced. OpenTofu imports
-      golang.org/x/crypto/ssh for its outbound SSH communicator only, and
-      neither language server imports the package in its own code.
       OpenTofu 1.12.6 depends on golang.org/x/crypto v0.52.0, OpenTofu
       Language Server 0.5.3 on v0.53.0 and Terraform Language Server 0.39.0 on
       v0.54.0. The fix is in v0.55.0, which Terraform 1.16.0 already ships.
