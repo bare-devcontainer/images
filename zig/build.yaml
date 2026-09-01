@@ -1,8 +1,6 @@
 description: "Dev Container image with the Zig compiler, built on Debian"
-# No materials: neither upstream publishes its minisign public key as a file to
-# fetch — Zig prints it on its download page, ZLS in the release-worker README —
-# so both keys are committed here and reviewed by hand. Verification is
-# fail-closed, so a rotated key surfaces as a failing build.
+# No materials: the Zig and ZLS signing keys have no direct download URL, so
+# they are committed here and not managed as materials.
 variants:
   - variant: "0.16-trixie"
     tags:
@@ -70,11 +68,8 @@ variants:
       # renovate: datasource=gitea-commits registryUrl=https://codeberg.org depName=ziglang/shell-completions
       SHELL_COMPLETIONS_COMMIT: "c2983a75dcbcaf3a1df74ab563a9bd3c8e7f448e"
 
-  # Zig master. Renovate cannot track these two versions: master builds carry
-  # no tag, and the ZLS build that matches one is served by an API rather than
-  # published as a release. scripts/update-zig-master.sh resolves both instead,
-  # so the pin still lands as a reviewed commit like every other version here.
-  # Only trixie is built: nobody following master is held to an older userland.
+  # ZIG_VERSION and ZLS_VERSION are kept current by update-zig-master.yml
+  # rather than by Renovate.
   - variant: "master-trixie"
     tags:
       - "master-trixie"
