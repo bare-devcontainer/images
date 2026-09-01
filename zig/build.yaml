@@ -68,8 +68,7 @@ variants:
       # renovate: datasource=gitea-commits registryUrl=https://codeberg.org depName=ziglang/shell-completions
       SHELL_COMPLETIONS_COMMIT: "c2983a75dcbcaf3a1df74ab563a9bd3c8e7f448e"
 
-  # ZIG_VERSION and ZLS_VERSION are kept current by update-zig-master.yml
-  # rather than by Renovate.
+  # ZIG_VERSION and ZLS_VERSION are kept current by update-zig-master.yml.
   - variant: "master-trixie"
     tags:
       - "master-trixie"
