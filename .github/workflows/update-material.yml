@@ -17,6 +17,7 @@ on:
     paths:
       - .github/workflows/update-material.yml
       - scripts/update-material.sh
+      - scripts/housekeeper-pr.sh
       - scripts/build-config.sh
       # Re-syncs commit_to_pr materials when Renovate bumps a pinned version.
       - '*/build.yaml'
@@ -77,75 +78,16 @@ jobs:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           set -eo pipefail
-
-          OWNER="${GITHUB_REPOSITORY_OWNER}"
-          REPO="${GITHUB_REPOSITORY#*/}"
-
           if [ "$EVENT_NAME" = "pull_request" ]; then
-            BRANCH="${HEAD_REF}"
+            # The files belong to the version bump that is already under
+            # review, so they go onto its own branch and open nothing.
+            bash scripts/housekeeper-pr.sh --no-pr \
+              --branch "${HEAD_REF}" \
+              --title "chore: update trusted material"
           else
-            BRANCH="housekeeper/update-material"
-            if ! gh api "repos/${OWNER}/${REPO}/git/ref/heads/${BRANCH}" > /dev/null 2>&1; then
-              gh api "repos/${OWNER}/${REPO}/git/refs" \
-                --method POST \
-                -f ref="refs/heads/${BRANCH}" \
-                -f sha="${GITHUB_SHA}"
-            fi
-          fi
-
-          head_sha=$(gh api "repos/${OWNER}/${REPO}/git/ref/heads/${BRANCH}" --jq '.object.sha')
-          base_tree=$(gh api "repos/${OWNER}/${REPO}/git/commits/${head_sha}" --jq '.tree.sha')
-
-          # base64 keeps binary keyrings intact; --input avoids the kernel's
-          # per-argument size limit. update-material.sh already refreshed
-          # these paths in the working tree, across every changed image.
-          tree_entries='[]'
-          while IFS= read -r path; do
-            blob_sha=$(base64 -w0 "$path" \
-              | jq -R '{content: ., encoding: "base64"}' \
-              | gh api "repos/${OWNER}/${REPO}/git/blobs" \
-                  --method POST --input - --jq '.sha')
-            tree_entries=$(jq --arg path "$path" --arg sha "$blob_sha" \
-              '. + [{path: $path, mode: "100644", type: "blob", sha: $sha}]' \
-              <<< "$tree_entries")
-          done < <(git diff --name-only)
-
-          tree_sha=$(jq -n --arg base_tree "$base_tree" --argjson tree "$tree_entries" \
-            '{base_tree: $base_tree, tree: $tree}' \
-            | gh api "repos/${OWNER}/${REPO}/git/trees" \
-                --method POST --input - --jq '.sha')
-
-          if [ "$tree_sha" = "$base_tree" ]; then
-            echo "Branch ${BRANCH} is already up to date; nothing to commit."
-            exit 0
-          fi
-
-          # No author/committer, so GitHub signs the commit (Verified).
-          commit_sha=$(gh api "repos/${OWNER}/${REPO}/git/commits" \
-            --method POST \
-            -f message="chore: update trusted material" \
-            -f tree="${tree_sha}" \
-            -f "parents[]=${head_sha}" \
-            --jq '.sha')
-
-          # Fast-forward only; if a concurrent push moved the branch, the
-          # run that push triggers refreshes the files again.
-          gh api "repos/${OWNER}/${REPO}/git/refs/heads/${BRANCH}" \
-            --method PATCH \
-            -f sha="${commit_sha}"
-
-      - name: Open pull request
-        if: steps.update.outputs.changed == 'true' && github.event_name != 'pull_request'
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          set -eo pipefail
-          BRANCH="housekeeper/update-material"
-          if [ -z "$(gh pr list --state open --head "${BRANCH}" --json number --jq '.[0]')" ]; then
             files=$(git diff --name-only | sed 's/^/- `/;s/$/`/')
-            gh pr create \
+            bash scripts/housekeeper-pr.sh \
+              --branch housekeeper/update-material \
               --title "chore: update trusted material" \
-              --body "Automated sync of trusted material."$'\n\n'"${files}" \
-              --head "${BRANCH}" \
-              --base main
+              --body "Automated sync of trusted material."$'\n\n'"${files}"
           fi

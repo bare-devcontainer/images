@@ -273,42 +273,10 @@ jobs:
         if: steps.regen.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
           BUILD_DATE: ${{ needs.setup.outputs.build_date }}
         run: |
           set -e
-          BRANCH="housekeeper/update-readme-tags-${BUILD_DATE}"
-          PR_TITLE="docs: update README tag tables"
-
-          if ! gh api "repos/${REPO}/git/ref/heads/${BRANCH}" > /dev/null 2>&1; then
-            gh api "repos/${REPO}/git/refs" \
-              --method POST \
-              -f ref="refs/heads/${BRANCH}" \
-              -f sha="${SHA}"
-          fi
-
-          # Commit each changed README via the contents API (one commit per
-          # file, same pattern as update-material.yml). Commits are created
-          # by the app, so they are verified.
-          while IFS= read -r path; do
-            image="${path%%/*}"
-            existing_sha=$(gh api "repos/${REPO}/contents/${path}?ref=${BRANCH}" \
-              --jq '.sha' 2>/dev/null || true)
-            args=(
-              --method PUT
-              -F message="docs(${image}): update README tag table"
-              -F content="$(base64 -w0 "$path")"
-              -F branch="${BRANCH}"
-            )
-            [ -n "$existing_sha" ] && args+=(-F sha="$existing_sha")
-            gh api "repos/${REPO}/contents/${path}" "${args[@]}"
-          done < <(git diff --name-only)
-
-          if [ -z "$(gh pr list --state open --head "${BRANCH}" --json number --jq '.[0]')" ]; then
-            gh pr create \
-              --title "${PR_TITLE}" \
-              --body "Automated regeneration of image README tag tables from each image's \`build.yaml\` after release v${BUILD_DATE}." \
-              --head "${BRANCH}" \
-              --base main
-          fi
+          bash scripts/housekeeper-pr.sh \
+            --branch "housekeeper/update-readme-tags-${BUILD_DATE}" \
+            --title "docs: update README tag tables" \
+            --body "Automated regeneration of image README tag tables from each image's \`build.yaml\` after release v${BUILD_DATE}."
