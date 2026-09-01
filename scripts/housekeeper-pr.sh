@@ -16,10 +16,11 @@
 #                       request that already exists, so the branch is neither
 #                       created nor reset.
 #
-# Paths default to every file changed in the working tree; nothing to commit is
-# not an error. The commits are created through the API rather than with git,
-# so GitHub signs them as the app and they come out verified. Requires GH_TOKEN
-# to hold the app's token, plus GITHUB_REPOSITORY and GITHUB_SHA from the run.
+# Paths default to every file the working tree adds, changes or deletes,
+# ignored files excluded; nothing to commit is not an error. The commits are
+# created through the API rather than with git, so GitHub signs them as the app
+# and they come out verified. Requires GH_TOKEN to hold the app's token, plus
+# GITHUB_REPOSITORY and GITHUB_SHA from the run.
 set -euo pipefail
 
 BRANCH=""
@@ -49,20 +50,27 @@ REPO="${GITHUB_REPOSITORY:?Missing GITHUB_REPOSITORY}"
 SHA="${GITHUB_SHA:?Missing GITHUB_SHA}"
 
 if [ "${#PATHS[@]}" -eq 0 ]; then
-  mapfile -t PATHS < <(git diff --name-only)
+  # --others covers a file the caller created, such as the first material of
+  # an image that had none; git diff would report only tracked ones.
+  mapfile -d '' -t PATHS < <(
+    git ls-files -z --modified --others --exclude-standard | sort -zu
+  )
 fi
 if [ "${#PATHS[@]}" -eq 0 ]; then
   echo "Nothing to commit." >&2
   exit 0
 fi
 
+# Callers assign the result rather than test it inline: a failed query has to
+# stop the run, not read as "no pull request is open" and reset a branch.
 open_pr_number() {
   gh pr list --repo "$REPO" --state open --head "$BRANCH" --json number --jq '.[0].number'
 }
 
 if [ "$OPEN_PR" = true ]; then
   if gh api "repos/${REPO}/git/ref/heads/${BRANCH}" > /dev/null 2>&1; then
-    if [ -z "$(open_pr_number)" ]; then
+    OPEN_PR_NUMBER=$(open_pr_number)
+    if [ -z "$OPEN_PR_NUMBER" ]; then
       # Left over from an earlier run whose pull request is gone, so restart
       # it from the commit this run is working from.
       gh api "repos/${REPO}/git/refs/heads/${BRANCH}" \
@@ -124,7 +132,12 @@ gh api "repos/${REPO}/git/refs/heads/${BRANCH}" \
   -f sha="${COMMIT_SHA}"
 echo "Committed ${COMMIT_SHA} to ${BRANCH}." >&2
 
-if [ "$OPEN_PR" = true ] && [ -z "$(open_pr_number)" ]; then
+if [ "$OPEN_PR" = false ]; then
+  exit 0
+fi
+
+OPEN_PR_NUMBER=$(open_pr_number)
+if [ -z "$OPEN_PR_NUMBER" ]; then
   gh pr create \
     --repo "$REPO" \
     --title "${TITLE}" \
