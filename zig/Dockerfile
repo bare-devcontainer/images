@@ -30,13 +30,14 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && ZIG_TMPDIR="$(mktemp -d)" \
     # Install Zig
     && ZIG_TARBALL="zig-${ZIG_ARCH}-linux-${ZIG_VERSION}.tar.xz" \
-    # Community mirrors carry tagged releases only, so a master build is taken
-    # from ziglang.org directly. Releases still try the mirrors first, which is
-    # what ziglang.org asks automation to do.
+    # Mirrors carry master builds as well as releases, so both take the same
+    # path: try the mirrors first, as ziglang.org asks automation to do, and
+    # fall back to the canonical location the channel publishes to.
     && case "${ZIG_VERSION}" in \
-        *-dev.*) ZIG_SOURCES="https://ziglang.org/builds" ;; \
-        *) ZIG_SOURCES="$(wget -q -T 30 -O - https://ziglang.org/download/community-mirrors.txt | shuf) https://ziglang.org/download/${ZIG_VERSION}" ;; \
+        *-dev.*) ZIG_CANONICAL="https://ziglang.org/builds" ;; \
+        *) ZIG_CANONICAL="https://ziglang.org/download/${ZIG_VERSION}" ;; \
        esac \
+    && ZIG_SOURCES="$(wget -q -T 30 -O - https://ziglang.org/download/community-mirrors.txt | shuf) ${ZIG_CANONICAL}" \
     && for source in ${ZIG_SOURCES}; do \
            if wget -q -T 30 -t 1 -P "${ZIG_TMPDIR}" "${source}/${ZIG_TARBALL}" \
                && wget -q -T 30 -t 1 -P "${ZIG_TMPDIR}" "${source}/${ZIG_TARBALL}.minisig"; then \
