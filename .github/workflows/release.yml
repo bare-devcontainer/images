@@ -175,8 +175,6 @@ jobs:
     needs: [setup, gate]
     if: needs.setup.outputs.should_run == 'true'
     strategy:
-      # One variant that cannot be built must not cancel the publishes of the
-      # others, which are unrelated to it.
       fail-fast: false
       matrix:
         variant: ${{ fromJson(needs.setup.outputs.base_variants) }}
