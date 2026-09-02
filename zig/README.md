@@ -64,12 +64,11 @@ across container rebuilds.
 ## Supply chain
 
 The Zig tarball is downloaded from a [community mirror](https://ziglang.org/download/community-mirrors.txt)
-with ziglang.org as the fallback — master builds come from ziglang.org directly, since the
-mirrors carry tagged releases only — then verified with a minisign signature against Zig's
-public key (`zig/zig-minisign.pub`); the signature's trusted comment is checked to name the
-requested file, so a valid signature for a different release cannot be substituted. ZLS is
-verified the same way against its own key (`zig/zls-minisign.pub`). Both keys are committed
-to this repository and reviewed like any other change.
+with ziglang.org as the fallback, then verified with a minisign signature against Zig's public
+key (`zig/zig-minisign.pub`); the signature's trusted comment is checked to name the requested
+file, so a valid signature for a different release cannot be substituted. ZLS is verified the
+same way against its own key (`zig/zls-minisign.pub`). Both keys are committed to this
+repository and reviewed like any other change.
 
 Shell completions are fetched from [ziglang/shell-completions] with `git` at a pinned commit
 hash rather than by raw file URL, so the content is cryptographically bound to the reviewed
