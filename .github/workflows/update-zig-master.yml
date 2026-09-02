@@ -1,16 +1,13 @@
 name: Update Zig Master Build
 
-# Refreshes the Zig master build pinned in zig/build.yaml, which Renovate
-# cannot track: master builds carry no tag, and the matching ZLS build is
-# served by an API rather than published as a release. update-zig-master.sh
-# resolves both and this workflow proposes the result as a pull request, so
-# build-checks.yml builds the resolved master before it can reach the
-# registry: a broken master fails the check and stays unmerged, leaving the
-# published master tag on the last build that worked.
+# Proposes the master build update-zig-master.sh resolves as a pull request,
+# so build-checks.yml builds that master before it can reach the registry: a
+# broken one fails the check and stays unmerged, leaving the published master
+# tag on the last build that worked.
 
 on:
-  # Thursday, so the bump does not land on the Monday the weekly rebuild,
-  # the Trivy scan and the attestation checks already share.
+  # Thursday keeps the bump off the Monday the weekly rebuild, the Trivy scan
+  # and the attestation checks already share.
   schedule:
     - cron: '0 6 * * 4'
   workflow_dispatch:
@@ -33,8 +30,8 @@ jobs:
         id: update
         run: |
           set -eo pipefail
-          # Assigned first so a failed resolution fails the step; inside the
-          # echo below, the script's exit status would be discarded.
+          # Assigned, so a failed resolution fails the step rather than being
+          # discarded inside the echo below.
           CHANGED=$(bash scripts/update-zig-master.sh)
           ZIG_VERSION=$(yq '.variants[] | select(.variant == "master-trixie") | .build_args.ZIG_VERSION' zig/build.yaml)
           ZLS_VERSION=$(yq '.variants[] | select(.variant == "master-trixie") | .build_args.ZLS_VERSION' zig/build.yaml)
@@ -60,9 +57,8 @@ jobs:
           ZLS_VERSION: ${{ steps.update.outputs.zls_version }}
         run: |
           set -eo pipefail
-          # The versions go in the body rather than the title: the branch is
-          # reused, so an open pull request picks up a newer build as another
-          # commit and a title naming one version would go stale.
+          # The versions go in the body: the branch is reused, so a title
+          # naming one of them would go stale on the next bump.
           BODY=$(cat <<EOF
           The Zig master build currently published on ziglang.org, with the ZLS build the
           [release worker](https://github.com/zigtools/release-worker) reports as compatible with it.
