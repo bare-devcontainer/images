@@ -10,6 +10,7 @@ This repository builds and publishes minimal Debian-based Docker images for use 
 scripts/
   build-config.sh            # CLI for querying build.yaml; used by CI to generate matrices and build args
   changed-images.sh          # maps changed files to the images they affect; used by build-checks.yml to skip untouched images
+  housekeeper-pr.sh          # commits working tree changes as the housekeeper app and opens the pull request for them
   prune-trivyignore.sh       # drops the .trivyignore.yaml entries and paths Trivy no longer reports; called by trivyignore-cleanup.yml
   update-material.sh         # refreshes the trust material declared in build.yaml (materials); called by update-material.yml
   update-readme.sh           # regenerates the README Tags tables from build.yaml; run by CI after each release

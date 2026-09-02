@@ -167,51 +167,13 @@ jobs:
         if: steps.prune.outputs.changed == 'true' && github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
           REPORT_FILE: ${{ runner.temp }}/prune-report.txt
         run: |
           set -eo pipefail
-          BRANCH="housekeeper/trivyignore-cleanup"
-          PR_TITLE="ci: drop obsolete Trivy ignore entries"
-
-          if gh api "repos/${REPO}/git/ref/heads/${BRANCH}" > /dev/null 2>&1; then
-            # Left over from an earlier run whose pull request is gone, so
-            # restart it from the commit this run scanned.
-            if [ -z "$(gh pr list --state open --head "${BRANCH}" --json number --jq '.[0]')" ]; then
-              gh api "repos/${REPO}/git/refs/heads/${BRANCH}" \
-                --method PATCH \
-                -f sha="${SHA}" \
-                -F force=true
-            fi
-          else
-            gh api "repos/${REPO}/git/refs" \
-              --method POST \
-              -f ref="refs/heads/${BRANCH}" \
-              -f sha="${SHA}"
-          fi
-
-          # Committed through the contents API, so the commit is created by
-          # the app and comes out verified (same pattern as update-readme in
-          # release.yml).
-          existing_sha=$(gh api "repos/${REPO}/contents/.trivyignore.yaml?ref=${BRANCH}" \
-            --jq '.sha' 2>/dev/null || true)
-          args=(
-            --method PUT
-            -F message="${PR_TITLE}"
-            -F content="$(base64 -w0 .trivyignore.yaml)"
-            -F branch="${BRANCH}"
-          )
-          [ -n "$existing_sha" ] && args+=(-F sha="$existing_sha")
-          gh api "repos/${REPO}/contents/.trivyignore.yaml" "${args[@]}"
-
-          if [ -z "$(gh pr list --state open --head "${BRANCH}" --json number --jq '.[0]')" ]; then
-            body=$(printf '%s\n\n%s\n' \
-              "Scanning the published images left these entries without a finding to suppress." \
-              "$(sed 's/^/- /' "$REPORT_FILE")")
-            gh pr create \
-              --title "${PR_TITLE}" \
-              --body "${body}" \
-              --head "${BRANCH}" \
-              --base main
-          fi
+          body=$(printf '%s\n\n%s\n' \
+            "Scanning the published images left these entries without a finding to suppress." \
+            "$(sed 's/^/- /' "$REPORT_FILE")")
+          bash scripts/housekeeper-pr.sh \
+            --branch housekeeper/trivyignore-cleanup \
+            --title "ci: drop obsolete Trivy ignore entries" \
+            --body "${body}"
