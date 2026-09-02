@@ -1,13 +1,6 @@
 name: Update Zig Master Build
 
-# Proposes the master build update-zig-master.sh resolves as a pull request,
-# so build-checks.yml builds that master before it can reach the registry: a
-# broken one fails the check and stays unmerged, leaving the published master
-# tag on the last build that worked.
-
 on:
-  # Thursday keeps the bump off the Monday the weekly rebuild, the Trivy scan
-  # and the attestation checks already share.
   schedule:
     - cron: '0 6 * * 4'
   workflow_dispatch:

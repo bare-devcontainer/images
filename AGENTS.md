@@ -30,6 +30,18 @@ renovate.jsonc               # Renovate config
   - Verify against `debian` alone, since every image extends it. Add the Feature to the single `.devcontainer/feature-debian` configuration rather than introducing another one.
   - Leave Feature options at their upstream defaults, so the check reflects what a consumer gets. Record the reason in a comment whenever a default has to be overridden.
   - Assert only what the Feature and the image are jointly responsible for. The container's runtime flags are Docker's behaviour, not this repository's, so leave them unasserted; the image's own `smoke-test.sh` runs first and covers what the image ships, so never repeat it in `test.sh`.
+- Scheduled workflows, all UTC. Keep a new one off the daily release run at 00:00, and off Monday, which the weekly rebuild and the three checks that read published images already share:
+
+  | Workflow | Schedule | Runs |
+  |----------|----------|------|
+  | `release.yml` | daily 00:00 | publishes when an `image:` commit landed since the last release, plus one guaranteed rebuild every Monday |
+  | `trivy.yml` | Monday 06:00 | scans the published images |
+  | `trivyignore-cleanup.yml` | Monday 07:00 | opens a pull request dropping `.trivyignore.yaml` entries left without a finding |
+  | `attest-check.yml` | Monday 08:00 | verifies the attestations of the published images |
+  | `update-material.yml` | Wednesday 06:00 | opens a pull request refreshing the trust material |
+  | `update-zig-master.yml` | Thursday 06:00 | opens a pull request moving the Zig master pin |
+
+  Every version an automation moves arrives as a pull request, so `build-checks.yml` builds it before it can be merged and an upstream that breaks simply stays unmerged.
 - `.trivyignore.yaml` is the only place a `CRITICAL`/`HIGH` finding is waived, so an entry is a statement that the image cannot currently do anything about the finding. When a scan fails:
   - Check the latest upstream release of the affected component first. A finding that release already fixes is resolved by taking it — bump the pinned version in `build.yaml`, or let the Renovate pull request do it — and gets no entry.
   - Only a finding whose newest upstream release is still affected is ignored. Record in `statement` what was checked and nothing else: the dependency (or Go toolchain) version the pinned release carries, the version the fix is in, and what upstream carries on the branch the next release comes from. The `id` is the reference for what the finding is, so never restate the advisory.
