@@ -56,37 +56,14 @@ jobs:
         if: steps.update.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
           ZIG_VERSION: ${{ steps.update.outputs.zig_version }}
           ZLS_VERSION: ${{ steps.update.outputs.zls_version }}
         run: |
           set -eo pipefail
-          # The branch is named after the build it pins, so a rerun that
-          # resolves the same build updates that pull request instead of
-          # opening a second one.
-          BRANCH="housekeeper/update-zig-master-${ZIG_VERSION//+/-}"
-          PR_TITLE="image(zig): update zig master build to ${ZIG_VERSION}"
-
-          if ! gh api "repos/${REPO}/git/ref/heads/${BRANCH}" > /dev/null 2>&1; then
-            gh api "repos/${REPO}/git/refs" \
-              --method POST \
-              -f ref="refs/heads/${BRANCH}" \
-              -f sha="${SHA}"
-          fi
-
-          # Committed through the contents API, so the commit is created by the
-          # app and comes out verified (same pattern as update-material.yml).
-          existing_sha=$(gh api "repos/${REPO}/contents/zig/build.yaml?ref=${BRANCH}" --jq '.sha')
-          gh api "repos/${REPO}/contents/zig/build.yaml" \
-            --method PUT \
-            -F message="${PR_TITLE}" \
-            -F content="$(base64 -w0 zig/build.yaml)" \
-            -F branch="${BRANCH}" \
-            -F sha="${existing_sha}"
-
-          if [ -z "$(gh pr list --state open --head "${BRANCH}" --json number --jq '.[0]')" ]; then
-            BODY=$(cat <<EOF
+          # The versions go in the body rather than the title: the branch is
+          # reused, so an open pull request picks up a newer build as another
+          # commit and a title naming one version would go stale.
+          BODY=$(cat <<EOF
           The Zig master build currently published on ziglang.org, with the ZLS build the
           [release worker](https://github.com/zigtools/release-worker) reports as compatible with it.
 
@@ -99,10 +76,8 @@ jobs:
           repository, exactly as the release variants are. Merge only once the build checks
           pass: a master that fails them leaves \`zig:master\` on the last build that worked.
           EOF
-            )
-            gh pr create \
-              --title "${PR_TITLE}" \
-              --body "${BODY}" \
-              --head "${BRANCH}" \
-              --base main
-          fi
+          )
+          bash scripts/housekeeper-pr.sh \
+            --branch housekeeper/update-zig-master \
+            --title "image(zig): update zig master build" \
+            --body "${BODY}"
