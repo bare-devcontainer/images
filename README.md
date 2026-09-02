@@ -122,9 +122,8 @@ date-suffixed ones is mutable**: the same tag resolves to different content over
 what makes security patches arrive automatically, and also why a tag alone is not a
 reproducible reference.
 
-The `zig` image additionally publishes a `master` tag, built from Zig's master branch rather
-than a release. It follows the same build and verification pipeline as every other tag, but
-carries none of the stability the version tags imply; see its [README](zig/README.md).
+The `zig` image also publishes a `master` tag, built from Zig's master branch rather than a
+release; see its [README](zig/README.md).
 
 > [!TIP]
 > Pin the digest as well as the tag (`image:tag@sha256:...`). The tag stays readable, the

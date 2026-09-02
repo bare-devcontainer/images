@@ -37,13 +37,8 @@ volume mounts that persist cache directories for faster rebuilds.
 Tags are also published with a date suffix on each build (e.g., `0.16.0-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
-The `master` tags follow Zig's master branch and promise none of what the release tags do.
-Upstream publishes a master build roughly once a day, a day or two behind the commit it was
-built from, and the version here is refreshed weekly, so `master` is a recent master build
-rather than the newest one. ZLS is whichever build upstream reports as compatible with that
-Zig version, which is often weeks older. Expect breaking language changes between builds:
-these tags are for trying master out, and a project that needs a stable toolchain belongs on
-a release tag.
+Besides the release tags, the `master` tags carry the master builds Zig publishes, refreshed
+weekly.
 
 ## Installed software
 
