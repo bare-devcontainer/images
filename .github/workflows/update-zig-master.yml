@@ -1,6 +1,12 @@
 name: Update Zig Master Build
 
 on:
+  # Resolving the build is the half worth exercising before a change to it
+  # reaches a scheduled run; the steps that write anything are skipped below.
+  pull_request:
+    paths:
+      - .github/workflows/update-zig-master.yml
+      - scripts/update-zig-master.sh
   schedule:
     - cron: '0 6 * * 4'
   workflow_dispatch:
@@ -36,22 +42,22 @@ jobs:
 
       - name: Generate GitHub App Token
         id: app-token
-        if: steps.update.outputs.changed == 'true'
+        if: steps.update.outputs.changed == 'true' && github.event_name != 'pull_request'
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           client-id: ${{ secrets.HOUSEKEEPER_CLIENT_ID }}
           private-key: ${{ secrets.HOUSEKEEPER_PRIVATE_KEY }}
 
       - name: Open pull request
-        if: steps.update.outputs.changed == 'true'
+        if: steps.update.outputs.changed == 'true' && github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           ZIG_VERSION: ${{ steps.update.outputs.zig_version }}
           ZLS_VERSION: ${{ steps.update.outputs.zls_version }}
         run: |
           set -eo pipefail
-          # The versions go in the body: the branch is reused, so a title
-          # naming one of them would go stale on the next bump.
+          # The versions go in the body, which the script rewrites on every
+          # run; a title naming one of them would go stale on the next bump.
           BODY=$(cat <<EOF
           The Zig master build currently published on ziglang.org, with the ZLS build the
           [release worker](https://github.com/zigtools/release-worker) reports as compatible with it.
