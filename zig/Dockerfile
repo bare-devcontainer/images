@@ -30,9 +30,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && ZIG_TMPDIR="$(mktemp -d)" \
     # Install Zig
     && ZIG_TARBALL="zig-${ZIG_ARCH}-linux-${ZIG_VERSION}.tar.xz" \
-    # Mirrors carry master builds as well as releases, so both take the same
-    # path: try the mirrors first, as ziglang.org asks automation to do, and
-    # fall back to the canonical location the channel publishes to.
     && case "${ZIG_VERSION}" in \
         *-dev.*) ZIG_CANONICAL="https://ziglang.org/builds" ;; \
         *) ZIG_CANONICAL="https://ziglang.org/download/${ZIG_VERSION}" ;; \
