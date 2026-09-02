@@ -144,4 +144,8 @@ if [ -z "$OPEN_PR_NUMBER" ]; then
     --body "${BODY}" \
     --head "${BRANCH}" \
     --base "${BASE}"
+elif [ -n "$BODY" ]; then
+  # A pull request left open collects the commits of every later run, so its
+  # body has to describe what it carries now rather than what opened it.
+  gh pr edit "$OPEN_PR_NUMBER" --repo "$REPO" --body "${BODY}"
 fi
