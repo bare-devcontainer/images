@@ -43,7 +43,6 @@ fi
 ZLS_VERSION=$(jq -r '.version // ""' <<< "$ZLS_META")
 [ -n "$ZLS_VERSION" ] || { echo "error: the ZLS release worker named no version" >&2; exit 1; }
 
-# The names have to be the ones zig/Dockerfile builds from these versions.
 for TARGET in "${TARGETS[@]}"; do
   ZIG_TARBALL=$(jq -r --arg t "$TARGET" '.master[$t].tarball // ""' <<< "$ZIG_INDEX")
   [ "${ZIG_TARBALL##*/}" = "zig-${TARGET}-${ZIG_VERSION}.tar.xz" ] \

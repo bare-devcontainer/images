@@ -34,8 +34,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         *-dev.*) ZIG_CANONICAL="https://ziglang.org/builds" ;; \
         *) ZIG_CANONICAL="https://ziglang.org/download/${ZIG_VERSION}" ;; \
        esac \
-    # The mirror list comes from ziglang.org too, so failing to fetch it must
-    # not take the canonical host down with it.
+    # Without the `|| true` a failed fetch aborts the chain, never reaching the
+    # fallback below.
     && ZIG_MIRRORS="$(wget -q -T 30 -O - https://ziglang.org/download/community-mirrors.txt | shuf || true)" \
     && for source in ${ZIG_MIRRORS} "${ZIG_CANONICAL}"; do \
            if wget -q -T 30 -t 1 -P "${ZIG_TMPDIR}" "${source}/${ZIG_TARBALL}" \
