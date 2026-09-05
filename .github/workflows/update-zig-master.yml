@@ -1,8 +1,6 @@
 name: Update Zig Master Build
 
 on:
-  # Resolving the build is the half worth exercising before a change to it
-  # reaches a scheduled run; the steps that write anything are skipped below.
   pull_request:
     paths:
       - .github/workflows/update-zig-master.yml
