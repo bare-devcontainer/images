@@ -10,24 +10,24 @@ variants:
   - variant: "1-trixie"
     tags:
       # renovate: datasource=github-releases depName=oven-sh/bun versioning=semver extractVersion=^bun-v(?<version>.+)
-      - "1.4.1-trixie"
+      - "1.4.2-trixie"
       - "1-trixie"
       # renovate: datasource=github-releases depName=oven-sh/bun versioning=semver extractVersion=^bun-v(?<version>.+)
-      - "1.4.1"
+      - "1.4.2"
       - "1"
       - "trixie"
     debian_variant: "trixie"
     build_args:
       # renovate: datasource=github-releases depName=oven-sh/bun versioning=semver extractVersion=^bun-v(?<version>.+)
-      BUN_VERSION: "1.4.1"
+      BUN_VERSION: "1.4.2"
 
   - variant: "1-bookworm"
     tags:
       # renovate: datasource=github-releases depName=oven-sh/bun versioning=semver extractVersion=^bun-v(?<version>.+)
-      - "1.4.1-bookworm"
+      - "1.4.2-bookworm"
       - "1-bookworm"
       - "bookworm"
     debian_variant: "bookworm"
     build_args:
       # renovate: datasource=github-releases depName=oven-sh/bun versioning=semver extractVersion=^bun-v(?<version>.+)
-      BUN_VERSION: "1.4.1"
+      BUN_VERSION: "1.4.2"
