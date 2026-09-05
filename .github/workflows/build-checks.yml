@@ -12,6 +12,7 @@ on:
       - '*/tofu-ls-checksums.txt'
       - '*/rustup-init-*.sha256'
       - '*/uv-*.sha256'
+      - '*/pnpm-*.sha256'
       - .devcontainer/feature-**
       - .devcontainer/sandbox-**
       - scripts/build-config.sh
@@ -29,6 +30,7 @@ on:
       - '*/tofu-ls-checksums.txt'
       - '*/rustup-init-*.sha256'
       - '*/uv-*.sha256'
+      - '*/pnpm-*.sha256'
       - .devcontainer/feature-**
       - .devcontainer/sandbox-**
       - scripts/build-config.sh

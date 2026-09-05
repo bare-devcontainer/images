@@ -7,12 +7,13 @@ This repository builds and publishes minimal Debian-based Docker images for use 
   Dockerfile    # image build instructions
   build.yaml    # image description, variant definitions (tags, build args, debian_variant), and trusted material sources (materials)
   README.md     # image docs; the Tags table between <!-- tags:begin/end --> markers is generated
+  checksum.sh   # only where a material declares `command`; must be named this, since update-material.yml triggers on */checksum.sh
 scripts/
   build-config.sh            # CLI for querying build.yaml; used by CI to generate matrices and build args
   changed-images.sh          # maps changed files to the images they affect; used by build-checks.yml to skip untouched images
   housekeeper-pr.sh          # commits working tree changes as the housekeeper app and opens the pull request for them
   prune-trivyignore.sh       # drops the .trivyignore.yaml entries and paths Trivy no longer reports; called by trivyignore-cleanup.yml
-  update-material.sh         # refreshes the trust material declared in build.yaml (materials); called by update-material.yml
+  update-material.sh         # refreshes the trust material declared in build.yaml (materials), downloading each `url` or running each `command`; called by update-material.yml
   update-readme.sh           # regenerates the README Tags tables from build.yaml; run by CI after each release
   verify-image.sh            # confirms image verification steps succeed for a published image; run by attest-check.yml
 .github/workflows/

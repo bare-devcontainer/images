@@ -18,6 +18,8 @@ on:
       - .github/workflows/update-material.yml
       - scripts/update-material.sh
       - scripts/build-config.sh
+      # Regenerates the materials an image derives itself when its script changes.
+      - '*/checksum.sh'
       # Re-syncs commit_to_pr materials when Renovate bumps a pinned version.
       - '*/build.yaml'
   schedule:
@@ -45,6 +47,7 @@ jobs:
         id: update
         env:
           EVENT_NAME: ${{ github.event_name }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -eo pipefail
           images=$(bash scripts/build-config.sh images | jq -r '.[]')

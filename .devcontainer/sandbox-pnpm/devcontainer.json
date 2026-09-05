@@ -1,0 +1,19 @@
+{
+  // Build args are read from the environment without defaults, so build-checks.yml
+  // supplies the values it just built the image with and the Dev Container CLI
+  // reuses those layers. A missing value fails the build instead of silently
+  // selecting a different version; AGENTS.md documents how to export them by hand.
+  "name": "sandbox-pnpm",
+  "build": {
+    "dockerfile": "../../pnpm/Dockerfile",
+    "args": {
+      "DEBIAN_TAG": "${localEnv:DEBIAN_TAG}",
+      "PNPM_VERSION": "${localEnv:PNPM_VERSION}"
+    }
+  },
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges"
+  ],
+  "remoteUser": "dev"
+}
