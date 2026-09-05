@@ -6,10 +6,10 @@
 [![Attestation Checks](https://github.com/bare-devcontainer/images/actions/workflows/attest-check.yml/badge.svg?branch=main)](https://github.com/bare-devcontainer/images/actions/workflows/attest-check.yml)
 
 Minimal, multi-arch Dev Container images: a small Debian base, plus one image per stack for
-Go, Node.js, Deno, Bun, Python, Rust, Zig, Terraform, and OpenTofu, and one with mise for
-polyglot projects. Each carries only what its target stack needs, is built from a small set
-of verified upstreams, and ships with SLSA provenance, a GitHub artifact attestation, and an
-SBOM.
+Go, Node.js, Deno, Bun, Python, Rust, Zig, Terraform, and OpenTofu, one with pnpm for Node.js
+projects that pin their own runtime, and one with mise for polyglot projects. Each carries
+only what its target stack needs, is built from a small set of verified upstreams, and ships
+with SLSA provenance, a GitHub artifact attestation, and an SBOM.
 
 ## Quick start
 
@@ -60,9 +60,9 @@ README says otherwise:
   extensions compile, but a library a project links against brings its own `-dev` package.
 - **No editors, shells, or CLI tooling beyond the basics.** `bash` and `vim-tiny` are present;
   editors, alternative shells, cloud CLIs, and linters are not.
-- **No language toolchain in the version-manager images.** `mise`, `rustup`, and `uv` install
-  the version the project declares rather than one baked into the image. The `Not installed`
-  section of each image's README states exactly what is left out.
+- **No language toolchain in the version-manager images.** `mise`, `pnpm`, `rustup`, and `uv`
+  install the version the project declares rather than one baked into the image. The
+  `Not installed` section of each image's README states exactly what is left out.
 
 There are two ways to add what a project needs on top:
 
@@ -97,6 +97,7 @@ There are two ways to add what a project needs on top:
 | [mise](mise/README.md) | `ghcr.io/bare-devcontainer/mise` | Polyglot projects that pin their own runtimes |
 | [node](node/README.md) | `ghcr.io/bare-devcontainer/node` | Node.js, with Corepack instead of npm |
 | [opentofu](opentofu/README.md) | `ghcr.io/bare-devcontainer/opentofu` | Infrastructure as code with OpenTofu |
+| [pnpm](pnpm/README.md) | `ghcr.io/bare-devcontainer/pnpm` | Node.js, with the runtime version managed by pnpm |
 | [rustup](rustup/README.md) | `ghcr.io/bare-devcontainer/rustup` | Rust, with the toolchain chosen by the project |
 | [terraform](terraform/README.md) | `ghcr.io/bare-devcontainer/terraform` | Infrastructure as code with Terraform |
 | [uv](uv/README.md) | `ghcr.io/bare-devcontainer/uv` | Python, with the interpreter managed by uv |

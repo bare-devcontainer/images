@@ -1,0 +1,45 @@
+description: "Dev Container image for Node.js development with pnpm, built on Debian"
+materials:
+  - path: pnpm-amd64.sha256
+    command: ["checksum.sh", "amd64"]
+    version_key: PNPM_VERSION
+    commit_to_pr: true
+    description: >-
+      Checksum for pnpm's amd64 release archive, matching the pinned
+      PNPM_VERSION. pnpm publishes neither a checksum nor a signature, so
+      checksum.sh accepts the archive only after `gh attestation verify` has
+      bound its digest to pnpm's release workflow at that version's tag. This
+      committed file is the trust anchor the Dockerfile verifies the downloaded
+      archive against.
+  - path: pnpm-arm64.sha256
+    command: ["checksum.sh", "arm64"]
+    version_key: PNPM_VERSION
+    commit_to_pr: true
+    description: >-
+      Checksum for pnpm's arm64 release archive; same trust anchor as the amd64
+      entry.
+variants:
+  - variant: "12-trixie"
+    tags:
+      # renovate: datasource=github-releases depName=pnpm/pnpm versioning=semver extractVersion=^v(?<version>.+)
+      - "12.3.4-trixie"
+      - "12-trixie"
+      # renovate: datasource=github-releases depName=pnpm/pnpm versioning=semver extractVersion=^v(?<version>.+)
+      - "12.3.4"
+      - "12"
+      - "trixie"
+    debian_variant: "trixie"
+    build_args:
+      # renovate: datasource=github-releases depName=pnpm/pnpm versioning=semver extractVersion=^v(?<version>.+)
+      PNPM_VERSION: "12.3.4"
+
+  - variant: "12-bookworm"
+    tags:
+      # renovate: datasource=github-releases depName=pnpm/pnpm versioning=semver extractVersion=^v(?<version>.+)
+      - "12.3.4-bookworm"
+      - "12-bookworm"
+      - "bookworm"
+    debian_variant: "bookworm"
+    build_args:
+      # renovate: datasource=github-releases depName=pnpm/pnpm versioning=semver extractVersion=^v(?<version>.+)
+      PNPM_VERSION: "12.3.4"
