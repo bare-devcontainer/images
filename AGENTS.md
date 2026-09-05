@@ -7,15 +7,7 @@ This repository builds and publishes minimal Debian-based Docker images for use 
   Dockerfile    # image build instructions
   build.yaml    # image description, variant definitions (tags, build args, debian_variant), and trusted material sources (materials)
   README.md     # image docs; the Tags table between <!-- tags:begin/end --> markers is generated
-  checksum.sh   # only where a material declares `command`; must be named this, since update-material.yml triggers on */checksum.sh
-scripts/
-  build-config.sh            # CLI for querying build.yaml; used by CI to generate matrices and build args
-  changed-images.sh          # maps changed files to the images they affect; used by build-checks.yml to skip untouched images
-  housekeeper-pr.sh          # commits working tree changes as the housekeeper app and opens the pull request for them
-  prune-trivyignore.sh       # drops the .trivyignore.yaml entries and paths Trivy no longer reports; called by trivyignore-cleanup.yml
-  update-material.sh         # refreshes the trust material declared in build.yaml (materials), downloading each `url` or running each `command`; called by update-material.yml
-  update-readme.sh           # regenerates the README Tags tables from build.yaml; run by CI after each release
-  verify-image.sh            # confirms image verification steps succeed for a published image; run by attest-check.yml
+scripts/                     # CLI helpers CI calls; each script's header comment documents it
 .github/workflows/
   release.yml                # builds and pushes images to GHCR
   build-checks.yml           # for each changed image: builds and smoke-tests it, builds its sandbox dev container, and runs the Dev Container Feature tests on the base
@@ -38,6 +30,18 @@ renovate.jsonc               # Renovate config
   - Verify against `debian` alone, since every image extends it. Add the Feature to the single `.devcontainer/feature-debian` configuration rather than introducing another one.
   - Leave Feature options at their upstream defaults, so the check reflects what a consumer gets. Record the reason in a comment whenever a default has to be overridden.
   - Assert only what the Feature and the image are jointly responsible for. The container's runtime flags are Docker's behaviour, not this repository's, so leave them unasserted; the image's own `smoke-test.sh` runs first and covers what the image ships, so never repeat it in `test.sh`.
+- Scheduled workflows, all UTC. Keep a new one off the daily release run at 00:00, and off Monday, which the weekly rebuild and the three checks that read published images already share:
+
+  | Workflow | Schedule | Runs |
+  |----------|----------|------|
+  | `release.yml` | daily 00:00 | publishes when an `image:` commit landed since the last release, plus one guaranteed rebuild every Monday |
+  | `trivy.yml` | Monday 06:00 | scans the published images |
+  | `trivyignore-cleanup.yml` | Monday 07:00 | opens a pull request dropping `.trivyignore.yaml` entries left without a finding |
+  | `attest-check.yml` | Monday 08:00 | verifies the attestations of the published images |
+  | `update-material.yml` | Wednesday 06:00 | opens a pull request refreshing the trust material |
+  | `update-zig-master.yml` | daily 05:00 | opens a pull request moving the Zig master pin |
+
+  Every version an automation moves arrives as a pull request, so `build-checks.yml` builds it before it can be merged and an upstream that breaks simply stays unmerged.
 - `.trivyignore.yaml` is the only place a `CRITICAL`/`HIGH` finding is waived, so an entry is a statement that the image cannot currently do anything about the finding. When a scan fails:
   - Check the latest upstream release of the affected component first. A finding that release already fixes is resolved by taking it — bump the pinned version in `build.yaml`, or let the Renovate pull request do it — and gets no entry.
   - Only a finding whose newest upstream release is still affected is ignored. Record in `statement` what was checked and nothing else: the dependency (or Go toolchain) version the pinned release carries, the version the fix is in, and what upstream carries on the branch the next release comes from. The `id` is the reference for what the finding is, so never restate the advisory.
@@ -56,9 +60,11 @@ renovate.jsonc               # Renovate config
 
   `debian` is the exception: its `build-args` already carry `DEBIAN_TAG`, so the second line is unnecessary.
 - Use English for all documentation and comments.
-- Comments should follow either of the following types:
-  - Documentation comments: describe the purpose/signature of a file, function, or block of code. 
-  - Inline comments: describe the important details of a line or block of code for future maintainers. Avoid obvious comments, or comments only useful in the context of the current change. 
+- Comments are one of two kinds:
+  - Documentation comments: the purpose of a file, function, or block, written at the top of it.
+  - Inline comments: one of exactly three things — a behaviour of an external system, a coupling to another file, or a constraint a plausible edit would silently break. Anything else: delete it.
+- Comments describe the code as it is, never how it came to be. A decision, an alternative, a past incident, or an answer to review feedback is how it came to be, and belongs in the commit message and the pull request.
+- Default to no comment. Re-read every comment you added or reworded before committing.
 - PR titles must follow Conventional Commits format:
   - Allowed types: `image`, `ci`, `chore`, `test`, `docs`
   - The scope is optional. Examples:

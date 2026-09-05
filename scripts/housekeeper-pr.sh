@@ -50,8 +50,6 @@ REPO="${GITHUB_REPOSITORY:?Missing GITHUB_REPOSITORY}"
 SHA="${GITHUB_SHA:?Missing GITHUB_SHA}"
 
 if [ "${#PATHS[@]}" -eq 0 ]; then
-  # --others covers a file the caller created, such as the first material of
-  # an image that had none; git diff would report only tracked ones.
   mapfile -d '' -t PATHS < <(
     git ls-files -z --modified --others --exclude-standard | sort -zu
   )
@@ -61,8 +59,6 @@ if [ "${#PATHS[@]}" -eq 0 ]; then
   exit 0
 fi
 
-# Callers assign the result rather than test it inline: a failed query has to
-# stop the run, not read as "no pull request is open" and reset a branch.
 open_pr_number() {
   gh pr list --repo "$REPO" --state open --head "$BRANCH" --json number --jq '.[0].number'
 }
@@ -71,8 +67,6 @@ if [ "$OPEN_PR" = true ]; then
   if gh api "repos/${REPO}/git/ref/heads/${BRANCH}" > /dev/null 2>&1; then
     OPEN_PR_NUMBER=$(open_pr_number)
     if [ -z "$OPEN_PR_NUMBER" ]; then
-      # Left over from an earlier run whose pull request is gone, so restart
-      # it from the commit this run is working from.
       gh api "repos/${REPO}/git/refs/heads/${BRANCH}" \
         --method PATCH \
         -f sha="${SHA}" \
@@ -117,7 +111,7 @@ if [ "$TREE_SHA" = "$BASE_TREE" ]; then
   exit 0
 fi
 
-# No author/committer, so GitHub signs the commit (Verified).
+# GitHub signs a commit created with no author or committer (Verified).
 COMMIT_SHA=$(gh api "repos/${REPO}/git/commits" \
   --method POST \
   -f message="${TITLE}" \
@@ -144,4 +138,6 @@ if [ -z "$OPEN_PR_NUMBER" ]; then
     --body "${BODY}" \
     --head "${BRANCH}" \
     --base "${BASE}"
+elif [ -n "$BODY" ]; then
+  gh pr edit "$OPEN_PR_NUMBER" --repo "$REPO" --body "${BODY}"
 fi

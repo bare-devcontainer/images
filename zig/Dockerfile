@@ -30,10 +30,14 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && ZIG_TMPDIR="$(mktemp -d)" \
     # Install Zig
     && ZIG_TARBALL="zig-${ZIG_ARCH}-linux-${ZIG_VERSION}.tar.xz" \
-    && ZIG_MIRRORS="$(wget -q -T 30 -O - https://ziglang.org/download/community-mirrors.txt | shuf)" \
-    && for mirror in ${ZIG_MIRRORS} "https://ziglang.org/download/${ZIG_VERSION}"; do \
-           if wget -q -T 30 -t 1 -P "${ZIG_TMPDIR}" "${mirror}/${ZIG_TARBALL}" \
-               && wget -q -T 30 -t 1 -P "${ZIG_TMPDIR}" "${mirror}/${ZIG_TARBALL}.minisig"; then \
+    && case "${ZIG_VERSION}" in \
+        *-dev.*) ZIG_CANONICAL="https://ziglang.org/builds" ;; \
+        *) ZIG_CANONICAL="https://ziglang.org/download/${ZIG_VERSION}" ;; \
+       esac \
+    && ZIG_MIRRORS="$(wget -q -T 30 -O - https://ziglang.org/download/community-mirrors.txt | shuf || true)" \
+    && for source in ${ZIG_MIRRORS} "${ZIG_CANONICAL}"; do \
+           if wget -q -T 30 -t 1 -P "${ZIG_TMPDIR}" "${source}/${ZIG_TARBALL}" \
+               && wget -q -T 30 -t 1 -P "${ZIG_TMPDIR}" "${source}/${ZIG_TARBALL}.minisig"; then \
                break; \
            fi; \
            rm -f "${ZIG_TMPDIR}/${ZIG_TARBALL}" "${ZIG_TMPDIR}/${ZIG_TARBALL}.minisig"; \

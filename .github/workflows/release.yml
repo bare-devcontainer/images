@@ -175,6 +175,7 @@ jobs:
     needs: [setup, gate]
     if: needs.setup.outputs.should_run == 'true'
     strategy:
+      fail-fast: false
       matrix:
         variant: ${{ fromJson(needs.setup.outputs.base_variants) }}
     uses: ./.github/workflows/publish-image.yml
@@ -196,6 +197,7 @@ jobs:
     needs: [setup, build-base, gate]
     if: needs.setup.outputs.should_run == 'true'
     strategy:
+      fail-fast: false
       matrix:
         include: ${{ fromJson(needs.setup.outputs.matrix) }}
     uses: ./.github/workflows/publish-image.yml

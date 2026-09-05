@@ -32,9 +32,13 @@ volume mounts that persist cache directories for faster rebuilds.
 | `0.16.0-bookworm`, `0.16-bookworm`, `bookworm` | bookworm |
 | `0.15.2-trixie`, `0.15-trixie`, `0.15.2`, `0.15` | trixie |
 | `0.15.2-bookworm`, `0.15-bookworm` | bookworm |
+| `master-trixie`, `master` | trixie |
 
 Tags are also published with a date suffix on each build (e.g., `0.16.0-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
+
+Besides the release tags, the `master` tags carry the master builds Zig publishes, refreshed
+daily.
 
 ## Installed software
 
