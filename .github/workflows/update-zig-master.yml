@@ -8,7 +8,7 @@ on:
       - .github/workflows/update-zig-master.yml
       - scripts/update-zig-master.sh
   schedule:
-    - cron: '0 6 * * 4'
+    - cron: '0 5 * * *'
   workflow_dispatch:
 
 permissions: {}

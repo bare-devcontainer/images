@@ -39,7 +39,7 @@ renovate.jsonc               # Renovate config
   | `trivyignore-cleanup.yml` | Monday 07:00 | opens a pull request dropping `.trivyignore.yaml` entries left without a finding |
   | `attest-check.yml` | Monday 08:00 | verifies the attestations of the published images |
   | `update-material.yml` | Wednesday 06:00 | opens a pull request refreshing the trust material |
-  | `update-zig-master.yml` | Thursday 06:00 | opens a pull request moving the Zig master pin |
+  | `update-zig-master.yml` | daily 05:00 | opens a pull request moving the Zig master pin |
 
   Every version an automation moves arrives as a pull request, so `build-checks.yml` builds it before it can be merged and an upstream that breaks simply stays unmerged.
 - `.trivyignore.yaml` is the only place a `CRITICAL`/`HIGH` finding is waived, so an entry is a statement that the image cannot currently do anything about the finding. When a scan fails:

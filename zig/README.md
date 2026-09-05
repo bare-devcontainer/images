@@ -38,7 +38,7 @@ Tags are also published with a date suffix on each build (e.g., `0.16.0-trixie-<
 <!-- tags:end -->
 
 Besides the release tags, the `master` tags carry the master builds Zig publishes, refreshed
-weekly.
+daily.
 
 ## Installed software
 
