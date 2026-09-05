@@ -60,9 +60,13 @@ renovate.jsonc               # Renovate config
 
   `debian` is the exception: its `build-args` already carry `DEBIAN_TAG`, so the second line is unnecessary.
 - Use English for all documentation and comments.
-- Comments should follow either of the following types:
-  - Documentation comments: describe the purpose/signature of a file, function, or block of code. 
-  - Inline comments: describe the important details of a line or block of code for future maintainers. Avoid obvious comments, or comments only useful in the context of the current change. 
+- Comments are one of two kinds:
+  - Documentation comments: the purpose of a file, function, or block, written at the top of it.
+  - Inline comments: a fact about the system that the code cannot state — a coupling to another file, a behaviour of an external service, a constraint a reader would otherwise undo.
+- Default to no comment. Before adding one, apply both tests and drop it if it fails either:
+  - Does it read the same to someone who has never seen this change? Anything explaining a decision, answering review feedback, comparing a rejected alternative, or recording what upstream used to do fails this test.
+  - Does it state a fact rather than argue? "X, so Y", "this must not Z", "rather than W" are justification. Justification belongs in the commit message and the pull request, never in the file.
+- Re-read every comment you added before committing. Delete the ones written to explain yourself rather than the code — rewriting code in response to review is where they appear.
 - PR titles must follow Conventional Commits format:
   - Allowed types: `image`, `ci`, `chore`, `test`, `docs`
   - The scope is optional. Examples:

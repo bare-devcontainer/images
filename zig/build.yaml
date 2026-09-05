@@ -1,5 +1,4 @@
 description: "Dev Container image with the Zig compiler, built on Debian"
-# The Zig and ZLS signing keys have no direct download URL, so they are not managed as materials.
 variants:
   - variant: "0.16-trixie"
     tags:
