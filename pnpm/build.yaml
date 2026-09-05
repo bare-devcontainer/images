@@ -22,24 +22,24 @@ variants:
   - variant: "12-trixie"
     tags:
       # renovate: datasource=github-releases depName=pnpm/pnpm versioning=semver extractVersion=^v(?<version>.+)
-      - "12.3.1-trixie"
+      - "12.3.4-trixie"
       - "12-trixie"
       # renovate: datasource=github-releases depName=pnpm/pnpm versioning=semver extractVersion=^v(?<version>.+)
-      - "12.3.1"
+      - "12.3.4"
       - "12"
       - "trixie"
     debian_variant: "trixie"
     build_args:
       # renovate: datasource=github-releases depName=pnpm/pnpm versioning=semver extractVersion=^v(?<version>.+)
-      PNPM_VERSION: "12.3.1"
+      PNPM_VERSION: "12.3.4"
 
   - variant: "12-bookworm"
     tags:
       # renovate: datasource=github-releases depName=pnpm/pnpm versioning=semver extractVersion=^v(?<version>.+)
-      - "12.3.1-bookworm"
+      - "12.3.4-bookworm"
       - "12-bookworm"
       - "bookworm"
     debian_variant: "bookworm"
     build_args:
       # renovate: datasource=github-releases depName=pnpm/pnpm versioning=semver extractVersion=^v(?<version>.+)
-      PNPM_VERSION: "12.3.1"
+      PNPM_VERSION: "12.3.4"
