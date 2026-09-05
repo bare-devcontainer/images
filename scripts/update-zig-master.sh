@@ -49,7 +49,6 @@ done
 echo "  zig ${ZIG_VERSION}, zls ${ZLS_VERSION}" >&2
 
 BEFORE=$(cat "$FILE")
-# `yq -i` reformats the whole document and drops the blank lines between variants.
 TMP=$(mktemp)
 awk -v variant="$VARIANT" -v zig="$ZIG_VERSION" -v zls="$ZLS_VERSION" '
   /^  - variant:/ { inside = ($0 ~ "\"" variant "\"") }
