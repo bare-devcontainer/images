@@ -111,7 +111,7 @@ if [ "$TREE_SHA" = "$BASE_TREE" ]; then
   exit 0
 fi
 
-# No author/committer, so GitHub signs the commit (Verified).
+# GitHub signs a commit created with no author or committer (Verified).
 COMMIT_SHA=$(gh api "repos/${REPO}/git/commits" \
   --method POST \
   -f message="${TITLE}" \
