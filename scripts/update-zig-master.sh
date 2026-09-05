@@ -43,9 +43,7 @@ fi
 ZLS_VERSION=$(jq -r '.version // ""' <<< "$ZLS_META")
 [ -n "$ZLS_VERSION" ] || { echo "error: the ZLS release worker named no version" >&2; exit 1; }
 
-# Compared by name, not just presence: zig/Dockerfile builds the file name from
-# the version, and upstream has renamed these artifacts before, so a rename has
-# to fail here rather than as a 404 in the build.
+# The names have to be the ones zig/Dockerfile builds from these versions.
 for TARGET in "${TARGETS[@]}"; do
   ZIG_TARBALL=$(jq -r --arg t "$TARGET" '.master[$t].tarball // ""' <<< "$ZIG_INDEX")
   [ "${ZIG_TARBALL##*/}" = "zig-${TARGET}-${ZIG_VERSION}.tar.xz" ] \
