@@ -3,6 +3,11 @@
 Dev container image for Python development, with [uv](https://docs.astral.sh/uv/)
 installed, built on the [debian](../debian) base image.
 
+Like every image in this repository, it is minimal, built only from upstreams verified at build
+time, and published with SLSA provenance, a GitHub artifact attestation, and an SBOM; it runs as
+the non-root user `dev`. [Why these images](../README.md#why-these-images) explains the
+reasoning, and [Verifying the image](#verifying-the-image) below shows how to check a build.
+
 ## Image
 
 ```
@@ -88,3 +93,19 @@ is reviewed like any other change rather than fetched alongside the binary at bu
 Note that this covers the `uv` binary only. Interpreters and packages that uv installs at
 runtime are fetched from their own upstreams under uv's own verification, outside this image's
 build pipeline.
+
+## Verifying the image
+
+Every build is published with SLSA provenance, a GitHub artifact attestation, and an SBOM. The
+attestation confirms that an image was built by the release workflow of this repository and has
+not been altered since:
+
+```sh
+gh attestation verify oci://ghcr.io/bare-devcontainer/uv:<tag>@sha256:<digest> \
+  --owner bare-devcontainer
+```
+
+The attestation is looked up by digest, and the Docker Hub mirror carries the same digests, so
+an image pulled from `docker.io/baredevcontainer/uv` verifies with the same command against its
+own reference. [Verifying Published Images](../README.md#verifying-published-images) covers
+inspecting the provenance and the SBOM as well.

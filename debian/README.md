@@ -2,6 +2,11 @@
 
 Minimal Debian base image for dev containers. All other images in this repository extend this image.
 
+Like every image in this repository, it is minimal, built only from upstreams verified at build
+time, and published with SLSA provenance, a GitHub artifact attestation, and an SBOM; it runs as
+the non-root user `dev`. [Why these images](../README.md#why-these-images) explains the
+reasoning, and [Verifying the image](#verifying-the-image) below shows how to check a build.
+
 ## Image
 
 ```
@@ -69,3 +74,19 @@ pinned in `build.yaml` to both a tag and a content digest so a build always reso
 exact base that was reviewed. Renovate raises a pull request whenever a new Debian base is
 published. All other software comes from the Debian package archive over `apt`, which verifies
 the archive's signatures on every install.
+
+## Verifying the image
+
+Every build is published with SLSA provenance, a GitHub artifact attestation, and an SBOM. The
+attestation confirms that an image was built by the release workflow of this repository and has
+not been altered since:
+
+```sh
+gh attestation verify oci://ghcr.io/bare-devcontainer/debian:<tag>@sha256:<digest> \
+  --owner bare-devcontainer
+```
+
+The attestation is looked up by digest, and the Docker Hub mirror carries the same digests, so
+an image pulled from `docker.io/baredevcontainer/debian` verifies with the same command against
+its own reference. [Verifying Published Images](../README.md#verifying-published-images) covers
+inspecting the provenance and the SBOM as well.

@@ -2,6 +2,11 @@
 
 Dev container image with Go installed, built on the [debian](../debian) base image.
 
+Like every image in this repository, it is minimal, built only from upstreams verified at build
+time, and published with SLSA provenance, a GitHub artifact attestation, and an SBOM; it runs as
+the non-root user `dev`. [Why these images](../README.md#why-these-images) explains the
+reasoning, and [Verifying the image](#verifying-the-image) below shows how to check a build.
+
 ## Image
 
 ```
@@ -65,3 +70,19 @@ Google's GPG signature before installation. The signing key
 checked against a key reviewed here rather than one fetched at build time. `gopls` is built
 from source in a throwaway builder stage at a pinned version, and only the resulting binary is
 copied into the final image.
+
+## Verifying the image
+
+Every build is published with SLSA provenance, a GitHub artifact attestation, and an SBOM. The
+attestation confirms that an image was built by the release workflow of this repository and has
+not been altered since:
+
+```sh
+gh attestation verify oci://ghcr.io/bare-devcontainer/golang:<tag>@sha256:<digest> \
+  --owner bare-devcontainer
+```
+
+The attestation is looked up by digest, and the Docker Hub mirror carries the same digests, so
+an image pulled from `docker.io/baredevcontainer/golang` verifies with the same command against
+its own reference. [Verifying Published Images](../README.md#verifying-published-images) covers
+inspecting the provenance and the SBOM as well.

@@ -4,6 +4,11 @@ Dev container image for infrastructure-as-code development, with the [OpenTofu](
 CLI and [tofu-ls](https://github.com/opentofu/tofu-ls) language server installed, built on the
 [debian](../debian) base image.
 
+Like every image in this repository, it is minimal, built only from upstreams verified at build
+time, and published with SLSA provenance, a GitHub artifact attestation, and an SBOM; it runs as
+the non-root user `dev`. [Why these images](../README.md#why-these-images) explains the
+reasoning, and [Verifying the image](#verifying-the-image) below shows how to check a build.
+
 ## Image
 
 ```
@@ -17,6 +22,13 @@ Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well 
   "image": "ghcr.io/bare-devcontainer/opentofu:1@sha256:<digest>"
 }
 ```
+
+## Dev Container Template
+
+A ready-to-use Dev Container template for this image is available at
+[bare-devcontainer/templates](https://github.com/bare-devcontainer/templates/tree/main/src/opentofu).
+It provides the recommended configuration for this image, including security hardening and
+volume mounts that persist cache directories for faster rebuilds.
 
 ## Tags
 
@@ -65,3 +77,20 @@ archive is verified against that reviewed copy rather than the one served from i
 Note that this covers the CLI. Providers that `tofu init` downloads at runtime come from the
 OpenTofu Registry under OpenTofu's own checksum and signature verification, outside this
 image's build pipeline.
+
+## Verifying the image
+
+Every build is published with SLSA provenance, a GitHub artifact attestation, and an SBOM. The
+attestation confirms that an image was built by the release workflow of this repository and has
+not been altered since:
+
+```sh
+gh attestation verify oci://ghcr.io/bare-devcontainer/opentofu:<tag>@sha256:<digest> \
+  --owner bare-devcontainer
+```
+
+The attestation is looked up by digest, and the Docker Hub mirror carries the same digests, so
+an image pulled from `docker.io/baredevcontainer/opentofu` verifies with the same command
+against its own reference.
+[Verifying Published Images](../README.md#verifying-published-images) covers inspecting the
+provenance and the SBOM as well.
