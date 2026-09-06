@@ -125,7 +125,7 @@ jobs:
         env:
           SOURCE_REGISTRY_USER: ${{ github.actor }}
           SOURCE_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TARGET_REGISTRY_USER: ${{ vars.DOCKERHUB_USERNAME || github.repository_owner }}
+          TARGET_REGISTRY_USER: ${{ secrets.DOCKERHUB_USERNAME }}
           TARGET_REGISTRY_TOKEN: ${{ secrets.DOCKERHUB_PAT }}
         run: |
           docker run --rm \
