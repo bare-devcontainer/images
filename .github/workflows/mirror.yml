@@ -47,7 +47,9 @@ jobs:
     # overrides anything the caller passes, so the target credentials have to be
     # read here rather than handed down by release.yml.
     environment: ${{ github.event_name != 'pull_request' && 'dockerhub' || 'ci' }}
-    runs-on: ubuntu-slim
+    # regsync runs as a container, which needs the Docker daemon ubuntu-slim
+    # does not carry.
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - name: Resolve mirror scope
