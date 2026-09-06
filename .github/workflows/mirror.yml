@@ -34,7 +34,9 @@ permissions: {}
 
 env:
   SOURCE_IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
-  TARGET_IMAGE_PREFIX: docker.io/${{ github.repository_owner }}
+  # Docker Hub namespaces admit no hyphen, so the mirror lives under a name of
+  # its own rather than the GitHub owner.
+  TARGET_IMAGE_PREFIX: docker.io/baredevcontainer
   CONFIG_DIR: ${{ github.workspace }}/regsync
   # renovate: datasource=docker registryUrl=https://ghcr.io depName=regclient/regsync versioning=docker
   REGSYNC_TAG: "v0.11.6@sha256:09ebf5172332f4c79c0383ada9d352dd7f47686898d09a22a44f02d338a6f9f0"
