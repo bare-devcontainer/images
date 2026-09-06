@@ -47,8 +47,6 @@ jobs:
     # on.workflow_call cannot carry an environment and an environment secret
     # overrides one passed by the caller, so release.yml passes no credentials.
     environment: ${{ github.event_name != 'pull_request' && 'dockerhub' || 'ci' }}
-    # regsync runs as a container, which needs the Docker daemon ubuntu-slim
-    # does not carry.
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
