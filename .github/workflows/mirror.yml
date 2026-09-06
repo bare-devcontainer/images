@@ -23,6 +23,11 @@ on:
       - .github/workflows/mirror.yml
       - scripts/build-config.sh
       - scripts/mirror-config.sh
+      - scripts/dockerhub-description.sh
+      - scripts/dockerhub-overview.sh
+      - scripts/update-readme.sh
+      - '*/README.md'
+      - '*/build.yaml'
 
 # A release and a manual full sync write the same tags, so they must not run
 # together. PR dry-runs never push, so they get a group of their own.
@@ -142,6 +147,34 @@ jobs:
             -e SOURCE_REGISTRY_USER -e SOURCE_REGISTRY_TOKEN \
             -e TARGET_REGISTRY_USER -e TARGET_REGISTRY_TOKEN \
             "ghcr.io/regclient/regsync:${REGSYNC_TAG}" once -c "/config/${MODE}.yaml" -v info
+
+      # update-readme.sh regenerates the tag tables the overviews carry: the
+      # pull request release.yml opens to commit them lands after this workflow
+      # runs, so the tables in a checkout still describe the previous release.
+      - name: Update Docker Hub descriptions
+        if: github.event_name != 'pull_request'
+        env:
+          TREE: ${{ steps.scope.outputs.ref != '' && 'released' || '.' }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PAT: ${{ secrets.DOCKERHUB_PAT }}
+        run: |
+          cd "$TREE"
+          bash "${GITHUB_WORKSPACE}/scripts/update-readme.sh"
+          printf '\n## Docker Hub descriptions\n\n' >> "$GITHUB_STEP_SUMMARY"
+          bash "${GITHUB_WORKSPACE}/scripts/dockerhub-description.sh" publish \
+            "$SOURCE_IMAGE_PREFIX" "$TARGET_IMAGE_PREFIX" \
+            "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" >> "$GITHUB_STEP_SUMMARY"
+
+      # Unlike the mirror plan, this runs against the checkout rather than the
+      # released tree: what it has to catch is a README a pull request changes.
+      - name: Check Docker Hub descriptions
+        if: github.event_name == 'pull_request'
+        run: |
+          ./scripts/update-readme.sh
+          printf '\n## Docker Hub descriptions\n\n' >> "$GITHUB_STEP_SUMMARY"
+          ./scripts/dockerhub-description.sh check \
+            "$SOURCE_IMAGE_PREFIX" "$TARGET_IMAGE_PREFIX" \
+            "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" >> "$GITHUB_STEP_SUMMARY"
 
       # A release run and a manual full sync each exercise one half of
       # mirror-config.sh, so both configurations are checked. check resolves the

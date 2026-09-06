@@ -10,7 +10,7 @@ This repository builds and publishes minimal Debian-based Docker images for use 
 scripts/                     # CLI helpers CI calls; each script's header comment documents it
 .github/workflows/
   release.yml                # builds and pushes images to GHCR
-  mirror.yml                 # copies published images from GHCR to Docker Hub; called by release.yml, or run by hand for a full sync
+  mirror.yml                 # copies published images from GHCR to Docker Hub and sets the description of each Docker Hub repository; called by release.yml, or run by hand for a full sync
   build-checks.yml           # for each changed image: builds and smoke-tests it, builds its sandbox dev container, and runs the Dev Container Feature tests on the base
   trivyignore-cleanup.yml    # scans the published images with no ignore file in play and opens a pull request removing the .trivyignore.yaml entries left without a finding
 .devcontainer/
@@ -25,7 +25,7 @@ renovate.jsonc               # Renovate config
   - base image(`debian`); all other images extend it
   - language-specific images built on the debian base
 - All images are built on Debian base images, and target multi-arch (linux/amd64 + linux/arm64) builds.
-- GHCR is where every image is published; Docker Hub is a mirror of it. `mirror.yml` copies manifests unchanged, so a tag resolves to the same digest on both registries. A release mirrors only the tags it just published, since `build.yaml` is the only thing that names them; the tags of earlier releases and of variants `build.yaml` no longer defines are picked up by running `mirror.yml` by hand with `full` set, which enumerates the source registry instead.
+- GHCR is where every image is published; Docker Hub is a mirror of it. `mirror.yml` copies manifests unchanged, so a tag resolves to the same digest on both registries. A release mirrors only the tags it just published, since `build.yaml` is the only thing that names them; the tags of earlier releases and of variants `build.yaml` no longer defines are picked up by running `mirror.yml` by hand with `full` set, which enumerates the source registry instead. The same workflow sets what each Docker Hub repository says about itself: the short description is the `description` of `build.yaml`, and the overview is `dockerhub-overview.sh`'s rendering of `<image>/README.md`, so the README stays the one place the image is documented. Docker Hub renders neither the relative links nor the alert syntax a README may use, so anything the rendering cannot carry over fails the workflow rather than reaching the page.
 - Dev Container Feature checks exist to guarantee that Features can supply tooling the images deliberately omit. When adding one:
   - Cover a Feature when it exercises an install mechanism that no already-covered Feature exercises (user and shell provisioning, a third-party apt repository, a release binary download, an upstream install script). Do not add a second Feature that only repeats a covered mechanism.
   - Cover a Feature only when it complements the images by supplying something they do not provide. A Feature that would replace what an image already ships is out of scope.
