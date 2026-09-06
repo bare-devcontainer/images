@@ -106,6 +106,12 @@ There are two ways to add what a project needs on top:
 Every image is published for `linux/amd64` and `linux/arm64`. See each image's README for its
 available tags, the software it ships, and how its upstreams are verified.
 
+The same builds are mirrored to Docker Hub as `docker.io/bare-devcontainer/<image>`, under the
+same tags and with the same digests, for environments that pull from there. GitHub Container
+Registry receives every build first, and Docker Hub applies
+[pull rate limits](https://docs.docker.com/docker-hub/usage/pulls/) that it does not, so prefer
+the `ghcr.io` reference unless something in your environment requires the other.
+
 ## Tags and pinning
 
 Each image publishes several tags per build. Using `golang` as an example:
@@ -211,6 +217,8 @@ gh attestation verify oci://ghcr.io/bare-devcontainer/golang:1.27@sha256:<digest
 ```
 
 A successful verification confirms that the image was built by the official GitHub Actions workflow in this repository and has not been tampered with.
+
+The attestations are held by GitHub and looked up by digest, and the Docker Hub mirror carries the same digests, so an image pulled from `docker.io/bare-devcontainer/<image>` verifies with the same command against its own reference.
 
 ### Build Provenance
 

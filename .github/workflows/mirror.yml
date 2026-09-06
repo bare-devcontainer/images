@@ -1,0 +1,146 @@
+name: Mirror Images
+
+on:
+  workflow_call:
+    inputs:
+      build_date:
+        description: 'Date suffix of the release to mirror (YYYYMMDD)'
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to mirror (e.g. v20260906); defaults to the latest. Ignored when full is set.'
+        type: string
+        required: false
+      full:
+        description: 'Mirror every tag the source registry holds instead of a single release'
+        type: boolean
+        required: true
+        default: false
+  pull_request:
+    paths:
+      - .github/workflows/mirror.yml
+      - scripts/build-config.sh
+      - scripts/mirror-config.sh
+
+# A release and a manual full sync write the same tags, so they must not run
+# together. PR dry-runs never push, so they get a group of their own.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('mirror-pr-{0}', github.event.pull_request.number) || 'mirror' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions: {}
+
+env:
+  SOURCE_IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
+  TARGET_IMAGE_PREFIX: docker.io/${{ github.repository_owner }}
+  # renovate: datasource=docker registryUrl=https://ghcr.io depName=regclient/regsync versioning=docker
+  REGSYNC_TAG: "v0.11.6@sha256:09ebf5172332f4c79c0383ada9d352dd7f47686898d09a22a44f02d338a6f9f0"
+
+jobs:
+  mirror:
+    permissions:
+      contents: read
+      packages: read
+    # on.workflow_call cannot carry an environment, and an environment secret
+    # overrides anything the caller passes, so the target credentials have to be
+    # read here rather than handed down by release.yml.
+    environment: ${{ github.event_name != 'pull_request' && 'dockerhub' || 'ci' }}
+    runs-on: ubuntu-slim
+    timeout-minutes: 60
+    steps:
+      - name: Resolve mirror scope
+        id: scope
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          BUILD_DATE: ${{ inputs.build_date }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          FULL: ${{ inputs.full || false }}
+        run: |
+          # A pull request cannot dry-run the release mode: build.yaml on the
+          # branch may already name tags no release has published yet. The full
+          # mode reads only the image list, so it always matches the registry.
+          if [ "$FULL" = "true" ] || [ "$EVENT_NAME" = "pull_request" ]; then
+            echo "mode=full" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "mode=release" >> "$GITHUB_OUTPUT"
+
+          # release.yml calls this workflow before create-tag pushes
+          # v${BUILD_DATE}, so leave the checkout on the caller's ref, which is
+          # the commit being released.
+          if [ -n "$BUILD_DATE" ]; then
+            echo "build_date=${BUILD_DATE}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ -z "$RELEASE_TAG" ]; then
+            RELEASE_TAG=$(gh api "repos/${REPO}/git/refs/tags/v" \
+              --paginate \
+              --jq '.[] | select(.ref | test("refs/tags/v[0-9]{8}")) | .ref | ltrimstr("refs/tags/")' \
+              2>/dev/null | sort | tail -1 || echo "")
+          fi
+          if [ -z "$RELEASE_TAG" ]; then
+            echo "No release tag found to mirror." >&2
+            exit 1
+          fi
+          echo "ref=${RELEASE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "build_date=${RELEASE_TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.scope.outputs.ref }}
+          persist-credentials: false
+
+      - name: Generate regsync configuration
+        env:
+          MODE: ${{ steps.scope.outputs.mode }}
+          BUILD_DATE: ${{ steps.scope.outputs.build_date }}
+        run: |
+          ARGS=("$MODE" "$SOURCE_IMAGE_PREFIX" "$TARGET_IMAGE_PREFIX")
+          if [ -n "$BUILD_DATE" ]; then
+            ARGS+=("$BUILD_DATE")
+          fi
+          bash scripts/mirror-config.sh "${ARGS[@]}" > regsync.yaml
+
+          echo "=== regsync configuration ==="
+          cat regsync.yaml
+          {
+            echo "## Mirror ${SOURCE_IMAGE_PREFIX} to ${TARGET_IMAGE_PREFIX}"
+            echo ""
+            echo "- Mode: \`${MODE}\`"
+            echo "- Release: \`${BUILD_DATE:-every published tag}\`"
+            echo "- Sync entries: $(grep -c '^  - source:' regsync.yaml)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Mirror images
+        if: github.event_name != 'pull_request'
+        env:
+          SOURCE_REGISTRY_USER: ${{ github.actor }}
+          SOURCE_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_REGISTRY_USER: ${{ vars.DOCKERHUB_USERNAME || github.repository_owner }}
+          TARGET_REGISTRY_TOKEN: ${{ secrets.DOCKERHUB_PAT }}
+        run: |
+          docker run --rm \
+            -v "${PWD}/regsync.yaml:/regsync.yaml:ro" \
+            -e SOURCE_REGISTRY_USER -e SOURCE_REGISTRY_TOKEN \
+            -e TARGET_REGISTRY_USER -e TARGET_REGISTRY_TOKEN \
+            "ghcr.io/regclient/regsync:${REGSYNC_TAG}" once -c /regsync.yaml -v info
+
+      # No target credentials: the dry-run only compares digests, and the
+      # public repositories on both registries serve that anonymously.
+      - name: Check mirror plan
+        if: github.event_name == 'pull_request'
+        env:
+          SOURCE_REGISTRY_USER: ${{ github.actor }}
+          SOURCE_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          docker run --rm \
+            -v "${PWD}/regsync.yaml:/regsync.yaml:ro" \
+            -e SOURCE_REGISTRY_USER -e SOURCE_REGISTRY_TOKEN \
+            "ghcr.io/regclient/regsync:${REGSYNC_TAG}" check -c /regsync.yaml -v info

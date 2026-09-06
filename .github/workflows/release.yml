@@ -209,6 +209,18 @@ jobs:
       overwrite: ${{ inputs.overwrite || false }}
       dryrun: ${{ github.event_name == 'pull_request' }}
 
+  # Deliberately not a dependency of create-tag: the images are published once
+  # they reach GHCR, and a mirror failure must not hold back the release tag.
+  mirror:
+    permissions:
+      contents: read
+      packages: read
+    needs: [setup, build-base, build-image]
+    if: needs.setup.outputs.should_run == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/mirror.yml
+    with:
+      build_date: ${{ needs.setup.outputs.build_date }}
+
   create-tag:
     permissions:
       actions: write
