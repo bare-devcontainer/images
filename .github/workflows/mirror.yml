@@ -44,9 +44,8 @@ jobs:
     permissions:
       contents: read
       packages: read
-    # on.workflow_call cannot carry an environment, and an environment secret
-    # overrides anything the caller passes, so the target credentials have to be
-    # read here rather than handed down by release.yml.
+    # on.workflow_call cannot carry an environment and an environment secret
+    # overrides one passed by the caller, so release.yml passes no credentials.
     environment: ${{ github.event_name != 'pull_request' && 'dockerhub' || 'ci' }}
     # regsync runs as a container, which needs the Docker daemon ubuntu-slim
     # does not carry.
@@ -72,7 +71,6 @@ jobs:
           # commit it just published, before create-tag pushes v${BUILD_DATE}.
           if [ -n "$BUILD_DATE" ]; then
             echo "build_date=${BUILD_DATE}" >> "$GITHUB_OUTPUT"
-            echo "tree=." >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -88,17 +86,15 @@ jobs:
           fi
           echo "ref=${RELEASE_TAG}" >> "$GITHUB_OUTPUT"
           echo "build_date=${RELEASE_TAG#v}" >> "$GITHUB_OUTPUT"
-          echo "tree=released" >> "$GITHUB_OUTPUT"
 
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      # The configuration names images and tags that build.yaml defines, so it
-      # is generated from a tree whose images have been published. This ref can
-      # already carry an image or a variant no release has reached yet, which
-      # would name a source the registry does not hold.
+      # build.yaml at the latest release tag names the images and tags that have
+      # been published; this ref can already carry an image or a variant no
+      # release has reached yet.
       - name: Checkout the released tree
         if: steps.scope.outputs.ref != ''
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -111,12 +107,11 @@ jobs:
         env:
           BUILD_DATE: ${{ steps.scope.outputs.build_date }}
           MODE: ${{ steps.scope.outputs.mode }}
-          TREE: ${{ steps.scope.outputs.tree }}
+          TREE: ${{ steps.scope.outputs.ref != '' && 'released' || '.' }}
         run: |
-          # Invoked by absolute path so the scripts come from the checkout above
-          # while build.yaml is read from the tree this runs in. mirror-config.sh
-          # resolves build-config.sh next to itself, not under the working
-          # directory.
+          # mirror-config.sh resolves build-config.sh next to itself, so the
+          # absolute path keeps both scripts from the repository checkout while
+          # build.yaml comes from the tree this runs in.
           MIRROR_CONFIG="${GITHUB_WORKSPACE}/scripts/mirror-config.sh"
           mkdir -p "$CONFIG_DIR"
           cd "$TREE"
@@ -131,7 +126,7 @@ jobs:
             echo "## Mirror ${SOURCE_IMAGE_PREFIX} to ${TARGET_IMAGE_PREFIX}"
             echo ""
             echo "- Mode: \`${MODE}\`"
-            echo "- Release: \`${BUILD_DATE}\`, read from \`${TREE}\`"
+            echo "- Release: \`${BUILD_DATE}\`"
             echo "- Sync entries: release $(grep -c '^  - source:' "${CONFIG_DIR}/release.yaml"), full $(grep -c '^  - source:' "${CONFIG_DIR}/full.yaml")"
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -150,10 +145,10 @@ jobs:
             -e TARGET_REGISTRY_USER -e TARGET_REGISTRY_TOKEN \
             "ghcr.io/regclient/regsync:${REGSYNC_TAG}" once -c "/config/${MODE}.yaml" -v info
 
-      # Both configurations are checked because a release run and a manual full
-      # sync exercise different halves of mirror-config.sh. No target
-      # credentials: check resolves the source manifests, counts a target it
-      # cannot read as out of date, and returns before writing anything.
+      # A release run and a manual full sync each exercise one half of
+      # mirror-config.sh, so both configurations are checked. check resolves the
+      # source manifests, counts a target it cannot read as out of date, and
+      # returns before writing, so it needs no target credentials.
       - name: Check mirror plan
         if: github.event_name == 'pull_request'
         env:

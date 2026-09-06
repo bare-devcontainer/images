@@ -209,8 +209,8 @@ jobs:
       overwrite: ${{ inputs.overwrite || false }}
       dryrun: ${{ github.event_name == 'pull_request' }}
 
-  # Deliberately not a dependency of create-tag: the images are published once
-  # they reach GHCR, and a mirror failure must not hold back the release tag.
+  # Not a dependency of create-tag: the images are published once they reach
+  # GHCR, so a mirror failure must not hold back the release tag.
   mirror:
     permissions:
       contents: read
