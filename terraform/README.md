@@ -4,13 +4,10 @@ Dev container image for infrastructure-as-code development, with the [Terraform]
 CLI and [terraform-ls](https://github.com/hashicorp/terraform-ls) language server installed, built on the
 [debian](../debian) base image.
 
-Like every image in this repository, it is built to keep the supply chain of a development
-environment small and auditable: it carries only what Terraform development needs, installs
-software only from upstreams verified at build time, runs as a non-root user, and is published
-with SLSA provenance, a GitHub artifact attestation, and an SBOM. The reasoning is in
-[Why these images](../README.md#why-these-images); the [Supply chain](#supply-chain) section
-below describes how this image's upstreams are verified, and
-[Verifying the image](#verifying-the-image) how to check a build before using it.
+Like every image in this repository, it is minimal, built only from upstreams verified at build
+time, and published with SLSA provenance, a GitHub artifact attestation, and an SBOM; it runs as
+the non-root user `dev`. [Why these images](../README.md#why-these-images) explains the
+reasoning, and [Verifying the image](#verifying-the-image) below shows how to check a build.
 
 ## Image
 
