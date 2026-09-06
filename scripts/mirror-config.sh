@@ -9,12 +9,15 @@
 # tag-less registry paths (e.g. ghcr.io/bare-devcontainer) that each image name
 # is appended to. The configuration is written to stdout.
 #
+# Both modes read the working tree, so run this against a released commit: an
+# image directory or a tag that no release has published yet resolves to a
+# source reference the registry does not hold, which fails the sync.
+#
 # Modes:
 #   release
 #       One entry per tag the release dated <build_date> published: every tag
 #       <image>/build.yaml defines, plus each variant's primary tag carrying the
-#       date suffix. Reads build.yaml, so it has to run against the released
-#       commit rather than whatever main holds now.
+#       date suffix.
 #
 #   full
 #       One entry per image, covering every tag the source repository holds.
@@ -35,9 +38,14 @@ MODE="${1:?Usage: mirror-config.sh <release|full> <source_prefix> <target_prefix
 SOURCE_PREFIX="${2:?Missing source_prefix}"
 TARGET_PREFIX="${3:?Missing target_prefix}"
 
-# regsync compares the source and target digests before copying anything, so
-# this bounds the concurrent comparisons as well as the concurrent copies.
+# Bounds the concurrent copies. regsync compares the source and target digests
+# before it takes this throttle, so the comparisons stay unbounded either way.
 PARALLEL=3
+
+fail() {
+  echo "error: $*" >&2
+  exit 1
+}
 
 build_config() {
   bash "${SCRIPT_DIR}/build-config.sh" "$@"
@@ -65,24 +73,35 @@ emit_repository() {
   printf -- '    tags:\n      deny:\n        - sha256-.*\n'
 }
 
+# Every list below is captured by assignment before it is read. mapfile reading
+# a process substitution succeeds even when the command inside it failed, which
+# would drop entries from the configuration instead of stopping the script.
 emit_release() {
   local image="$1" build_date="$2"
-  local variant primary source_refs target_refs i
+  local variants variant primary source_tags target_tags source_refs target_refs i
+
+  variants=$(build_config variants "$image" | jq -r '.[]')
+  [ -n "$variants" ] || fail "${image}/build.yaml defines no variant"
 
   while IFS= read -r variant; do
     primary=$(build_config primary-tag "$image" "$variant")
+    [ -n "$primary" ] || fail "variant ${variant} of ${image} defines no tag"
     emit_image "${SOURCE_PREFIX}/${image}:${primary}-${build_date}" \
       "${TARGET_PREFIX}/${image}:${primary}-${build_date}"
 
-    mapfile -t source_refs < <(build_config tags "$image" "$variant" "${SOURCE_PREFIX}/${image}")
-    mapfile -t target_refs < <(build_config tags "$image" "$variant" "${TARGET_PREFIX}/${image}")
+    source_tags=$(build_config tags "$image" "$variant" "${SOURCE_PREFIX}/${image}")
+    target_tags=$(build_config tags "$image" "$variant" "${TARGET_PREFIX}/${image}")
+    mapfile -t source_refs <<< "$source_tags"
+    mapfile -t target_refs <<< "$target_tags"
     for i in "${!source_refs[@]}"; do
       emit_image "${source_refs[$i]}" "${target_refs[$i]}"
     done
-  done < <(build_config variants "$image" | jq -r '.[]')
+  done <<< "$variants"
 }
 
-mapfile -t IMAGES < <(build_config images | jq -r '.[]')
+IMAGE_LIST=$(build_config images | jq -r '.[]')
+[ -n "$IMAGE_LIST" ] || fail "no image directory contains a build.yaml"
+mapfile -t IMAGES <<< "$IMAGE_LIST"
 
 emit_header
 
