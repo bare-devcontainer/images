@@ -35,8 +35,6 @@ RUN --mount=type=cache,target=/root/go/pkg/mod \
 
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
-ARG TARGETARCH
-
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -45,12 +43,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
     # cgo dependencies
-    && apt-get --no-install-recommends install -y pkg-config \
-    # Go's external linker needs the gold linker on arm64
-    # https://github.com/golang/go/issues/22040
-    && if [ "${TARGETARCH}" = "arm64" ]; then \
-           apt-get --no-install-recommends install -y binutils-gold; \
-       fi
+    && apt-get --no-install-recommends install -y pkg-config
 
 COPY --from=builder /usr/local/go /usr/local/go
 COPY --from=builder /usr/local/bin/gopls /usr/local/bin/gopls
