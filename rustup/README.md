@@ -3,6 +3,14 @@
 Dev container image for Rust development, with [rustup](https://rustup.rs/) installed,
 built on the [debian](../debian) base image.
 
+Like every image in this repository, it is built to keep the supply chain of a development
+environment small and auditable: it carries only rustup on top of the base, installs software
+only from upstreams verified at build time, runs as a non-root user, and is published with SLSA
+provenance, a GitHub artifact attestation, and an SBOM. The reasoning is in
+[Why these images](../README.md#why-these-images); the [Supply chain](#supply-chain) section
+below describes how this image's upstreams are verified, and
+[Verifying the image](#verifying-the-image) how to check a build before using it.
+
 ## Image
 
 ```
@@ -82,3 +90,19 @@ tampering with the download channel cannot affect builds.
 Note that this covers `rustup` itself. Toolchains it installs at runtime are downloaded from
 static.rust-lang.org under rustup's own signature verification, outside this image's build
 pipeline.
+
+## Verifying the image
+
+Every build is published with SLSA provenance, a GitHub artifact attestation, and an SBOM. The
+attestation confirms that an image was built by the release workflow of this repository and has
+not been altered since:
+
+```sh
+gh attestation verify oci://ghcr.io/bare-devcontainer/rustup:<tag>@sha256:<digest> \
+  --owner bare-devcontainer
+```
+
+The attestation is looked up by digest, and the Docker Hub mirror carries the same digests, so
+an image pulled from `docker.io/baredevcontainer/rustup` verifies with the same command against
+its own reference. [Verifying Published Images](../README.md#verifying-published-images) covers
+inspecting the provenance and the SBOM as well.

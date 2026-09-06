@@ -16,7 +16,7 @@
 #   - opens with a note that the Docker Hub repository is a mirror, and that
 #     the README lives in the GitHub repository the supply chain sections mean
 #     by "this repository",
-#   - rewrites each ../<image> link to its address on GitHub,
+#   - rewrites each ../<image> and ../README.md link to its address on GitHub,
 #   - turns the > [!NOTE] alert syntax into a bold lead-in, and
 #   - drops the <!-- tags:begin/end --> markers update-readme.sh writes between.
 #
@@ -52,8 +52,7 @@ emit_banner() {
 >
 > This page is rendered from the image's README in
 > [${slug}](${REPOSITORY_URL}/tree/main/${IMAGE}).
-> That is the repository "this repository" refers to below, and where verifying the
-> attestations and the SBOM is documented.
+> That is the repository "this repository" refers to below.
 EOF
 }
 
@@ -82,6 +81,7 @@ RENDERED=$(
   ' "$README" |
     sed -E \
       -e "s|\]\(\.\./([a-z0-9][a-z0-9-]*)\)|](${REPOSITORY_URL}/tree/main/\1)|g" \
+      -e "s|\]\(\.\./README\.md(#[a-z0-9-]+)?\)|](${REPOSITORY_URL}/blob/main/README.md\1)|g" \
       -e 's|^> \[!([A-Z]+)\][[:space:]]*$|> **\L\u\1**|' \
       -e '/^<!-- tags:(begin|end) -->$/d'
 )
