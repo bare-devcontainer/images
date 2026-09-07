@@ -182,7 +182,6 @@ vulnerabilities:
 
   - id: CVE-2026-84304
     paths:
-      - "usr/local/bin/terraform"
       - "usr/local/bin/tofu"
     expired_at: 2026-10-31
     statement: |
