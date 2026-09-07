@@ -1,4 +1,4 @@
-description: "Minimal Debian base image for Dev Containers"
+description: "Minimal Debian base image for Dev Containers: verified upstreams, SLSA provenance"
 variants:
   - variant: "trixie"
     tags:

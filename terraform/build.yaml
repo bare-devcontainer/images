@@ -1,4 +1,4 @@
-description: "Dev Container image with the Terraform CLI and terraform-ls, built on Debian"
+description: "Minimal Dev Container image with Terraform: Debian, verified upstreams, SLSA provenance"
 materials:
   - path: hashicorp-signing-key.asc
     url: https://www.hashicorp.com/.well-known/pgp-key.txt
