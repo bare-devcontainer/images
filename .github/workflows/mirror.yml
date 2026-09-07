@@ -93,7 +93,43 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # Full history so the diff against the base commit can be resolved.
+          fetch-depth: 0
           persist-credentials: false
+
+      # The plan is generated from the released tree, so a pull request reaches
+      # it only through the workflow and the scripts that build it; the
+      # build.yaml and README paths the filter above also admits reach the
+      # description check instead. Keep this list in step with that filter.
+      - name: Detect mirror plan changes
+        id: plan
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          # Whenever the base commit cannot be resolved (force push, deleted
+          # commit), fall back to treating every tracked file as changed so the
+          # plan is never skipped by accident.
+          if [ -n "$BASE_SHA" ] && git cat-file -e "${BASE_SHA}^{commit}" 2> /dev/null; then
+            CHANGED=$(git diff --name-only "${BASE_SHA}...${HEAD_SHA}")
+          else
+            echo "Base commit ${BASE_SHA:-<unknown>} is unavailable; treating every tracked file as changed."
+            CHANGED=$(git ls-files)
+          fi
+
+          MATCHED=$(printf '%s\n' "$CHANGED" | grep -xF \
+            -e .github/workflows/mirror.yml \
+            -e scripts/mirror-config.sh \
+            -e scripts/build-config.sh || true)
+          if [ -n "$MATCHED" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "=== Mirror plan inputs changed ==="
+            echo "$MATCHED"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No mirror plan input changed; the plan cannot differ from the released tree."
+          fi
 
       # build.yaml at the latest release tag names the images and tags that have
       # been published; this ref can already carry an image or a variant no
@@ -181,7 +217,7 @@ jobs:
       # source manifests, counts a target it cannot read as out of date, and
       # returns before writing, so it needs no target credentials.
       - name: Check mirror plan
-        if: github.event_name == 'pull_request'
+        if: steps.plan.outputs.changed == 'true'
         env:
           SOURCE_REGISTRY_USER: ${{ github.actor }}
           SOURCE_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
