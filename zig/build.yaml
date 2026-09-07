@@ -1,4 +1,4 @@
-description: "Dev Container image with the Zig compiler, built on Debian"
+description: "Minimal Dev Container image with Zig: Debian, verified upstreams, SLSA provenance"
 variants:
   - variant: "0.16-trixie"
     tags:

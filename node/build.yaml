@@ -1,4 +1,4 @@
-description: "Dev Container image with Node.js, built on Debian"
+description: "Minimal Dev Container image with Node.js: Debian, verified upstreams, SLSA provenance"
 materials:
   - path: node-keyring.kbx
     url: https://github.com/nodejs/release-keys/raw/HEAD/gpg/pubring.kbx

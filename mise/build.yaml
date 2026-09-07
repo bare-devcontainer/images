@@ -1,4 +1,4 @@
-description: "Dev Container image with the mise polyglot runtime manager, built on Debian"
+description: "Minimal Dev Container image with mise: Debian, verified upstreams, SLSA provenance"
 materials:
   - path: mise-minisign.pub
     url: https://raw.githubusercontent.com/jdx/mise/main/minisign.pub

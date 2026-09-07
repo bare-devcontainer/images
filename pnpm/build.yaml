@@ -1,4 +1,4 @@
-description: "Dev Container image for Node.js development with pnpm, built on Debian"
+description: "Minimal Dev Container image for Node.js with pnpm: Debian, verified upstreams, SLSA provenance"
 materials:
   - path: pnpm-amd64.sha256
     command: ["checksum.sh", "amd64"]

@@ -1,4 +1,4 @@
-description: "Dev Container image with the Go toolchain, built on Debian"
+description: "Minimal Dev Container image with Go: Debian, verified upstreams, SLSA provenance"
 materials:
   - path: google-linux-signing-key.asc
     url: https://dl.google.com/linux/linux_signing_key.pub
