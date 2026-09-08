@@ -9,7 +9,7 @@ materials:
 # The tag lines carry the upstream JDK version, and the build arg the exact
 # version of the Debian package that ships it, so both are read from the apt
 # repository index: extractVersion trims the package version
-# (25.0.4.1.0+1-1, 21.0.11.0.0+10-1) down to the JDK version (25.0.4.1,
+# (25.0.4.1.0+1-0, 21.0.11.0.0+10-1) down to the JDK version (25.0.4.1,
 # 21.0.11) the tags carry.
 variants:
   - variant: "25-trixie"
@@ -24,7 +24,7 @@ variants:
     debian_variant: "trixie"
     build_args:
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=trixie&components=main&binaryArch=amd64 depName=temurin-25-jdk versioning=deb
-      TEMURIN_VERSION: "25.0.4.1.0+1-1"
+      TEMURIN_VERSION: "25.0.4.1.0+1-0"
 
   - variant: "25-bookworm"
     tags:
@@ -35,7 +35,7 @@ variants:
     debian_variant: "bookworm"
     build_args:
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=bookworm&components=main&binaryArch=amd64 depName=temurin-25-jdk versioning=deb
-      TEMURIN_VERSION: "25.0.4.1.0+1-1"
+      TEMURIN_VERSION: "25.0.4.1.0+1-0"
 
   - variant: "21-trixie"
     tags:
@@ -48,7 +48,7 @@ variants:
     debian_variant: "trixie"
     build_args:
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=trixie&components=main&binaryArch=amd64 depName=temurin-21-jdk versioning=deb
-      TEMURIN_VERSION: "21.0.12.1.0+1-1"
+      TEMURIN_VERSION: "21.0.12.1.0+1-0"
 
   - variant: "21-bookworm"
     tags:
@@ -58,4 +58,4 @@ variants:
     debian_variant: "bookworm"
     build_args:
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=bookworm&components=main&binaryArch=amd64 depName=temurin-21-jdk versioning=deb
-      TEMURIN_VERSION: "21.0.12.1.0+1-1"
+      TEMURIN_VERSION: "21.0.12.1.0+1-0"
