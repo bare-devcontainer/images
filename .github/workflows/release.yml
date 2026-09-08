@@ -220,6 +220,9 @@ jobs:
     uses: ./.github/workflows/mirror.yml
     with:
       build_date: ${{ needs.setup.outputs.build_date }}
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PAT: ${{ secrets.DOCKERHUB_PAT }}
 
   create-tag:
     permissions:
