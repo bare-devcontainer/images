@@ -13,6 +13,7 @@ on:
       - '*/rustup-init-*.sha256'
       - '*/uv-*.sha256'
       - '*/pnpm-*.sha256'
+      - '*/adoptium-signing-key.asc'
       - .devcontainer/feature-**
       - .devcontainer/sandbox-**
       - scripts/build-config.sh
@@ -31,6 +32,7 @@ on:
       - '*/rustup-init-*.sha256'
       - '*/uv-*.sha256'
       - '*/pnpm-*.sha256'
+      - '*/adoptium-signing-key.asc'
       - .devcontainer/feature-**
       - .devcontainer/sandbox-**
       - scripts/build-config.sh

@@ -6,10 +6,10 @@
 [![Attestation Checks](https://github.com/bare-devcontainer/images/actions/workflows/attest-check.yml/badge.svg?branch=main)](https://github.com/bare-devcontainer/images/actions/workflows/attest-check.yml)
 
 Minimal, multi-arch Dev Container images: a small Debian base, plus one image per stack for
-Go, Node.js, Deno, Bun, Python, Rust, Zig, Terraform, and OpenTofu, one with pnpm for Node.js
-projects that pin their own runtime, and one with mise for polyglot projects. Each carries
-only what its target stack needs, is built from a small set of verified upstreams, and ships
-with SLSA provenance, a GitHub artifact attestation, and an SBOM.
+Go, Node.js, Deno, Bun, Python, Java, Rust, Zig, Terraform, and OpenTofu, one with pnpm for
+Node.js projects that pin their own runtime, and one with mise for polyglot projects. Each
+carries only what its target stack needs, is built from a small set of verified upstreams, and
+ships with SLSA provenance, a GitHub artifact attestation, and an SBOM.
 
 ## Quick start
 
@@ -99,6 +99,7 @@ There are two ways to add what a project needs on top:
 | [opentofu](opentofu/README.md) | `ghcr.io/bare-devcontainer/opentofu` | Infrastructure as code with OpenTofu |
 | [pnpm](pnpm/README.md) | `ghcr.io/bare-devcontainer/pnpm` | Node.js, with the runtime version managed by pnpm |
 | [rustup](rustup/README.md) | `ghcr.io/bare-devcontainer/rustup` | Rust, with the toolchain chosen by the project |
+| [temurin](temurin/README.md) | `ghcr.io/bare-devcontainer/temurin` | Java, with the Eclipse Temurin JDK version pinned by tag |
 | [terraform](terraform/README.md) | `ghcr.io/bare-devcontainer/terraform` | Infrastructure as code with Terraform |
 | [uv](uv/README.md) | `ghcr.io/bare-devcontainer/uv` | Python, with the interpreter managed by uv |
 | [zig](zig/README.md) | `ghcr.io/bare-devcontainer/zig` | Zig, with the compiler version pinned by tag |
