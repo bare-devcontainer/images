@@ -50,6 +50,12 @@ variants:
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=trixie&components=main&binaryArch=amd64 depName=temurin-21-jdk versioning=deb
       TEMURIN_VERSION: "21.0.12.1.0+1-0"
 
-# No 21-bookworm variant: Adoptium's bookworm suite carries no temurin-21-jdk
-# newer than 21.0.2 for arm64, while its amd64 packages and the trixie suite
-# are current, so the variant cannot be published for both architectures.
+  - variant: "21-bookworm"
+    tags:
+      # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=bookworm&components=main&binaryArch=amd64 depName=temurin-21-jdk versioning=deb extractVersion=^(?<version>\d+\.\d+\.\d+(?:\.[1-9]\d*)?)(?:\.0)*\+
+      - "21.0.12.1-bookworm"
+      - "21-bookworm"
+    debian_variant: "bookworm"
+    build_args:
+      # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=bookworm&components=main&binaryArch=amd64 depName=temurin-21-jdk versioning=deb
+      TEMURIN_VERSION: "21.0.12.1.0+1-0"
