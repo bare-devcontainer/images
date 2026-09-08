@@ -37,7 +37,6 @@ volume mounts that persist cache directories for faster rebuilds.
 | `25.0.4.1-trixie`, `25-trixie`, `trixie`, `25.0.4.1`, `25` | trixie |
 | `25.0.4.1-bookworm`, `25-bookworm`, `bookworm` | bookworm |
 | `21.0.12.1-trixie`, `21-trixie`, `21.0.12.1`, `21` | trixie |
-| `21.0.12.1-bookworm`, `21-bookworm` | bookworm |
 
 Tags are also published with a date suffix on each build (e.g., `25.0.4.1-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
