@@ -52,12 +52,17 @@ Everything from the [debian](../debian) base image, plus:
 - [Eclipse Temurin JDK](https://adoptium.net/temurin/) (`java`, `javac`, `jar`, `jshell`,
   `keytool`, and the other JDK tools), one feature release per tag
 
-`JAVA_HOME` points at the JDK, and its tools are on `PATH` through Debian's alternatives
-system. The JDK's trust store is the system CA store, kept in step by `adoptium-ca-certificates`,
-so certificates added with `update-ca-certificates` are trusted by Java as well.
+`JAVA_HOME` is `/usr/lib/jvm/temurin`, a symlink to the installed JDK. The path is the same in
+every tag and on both architectures, so a `devcontainer.json` can point a Java extension at the
+JDK without knowing which one it is running. The JDK's tools are on `PATH` through Debian's
+alternatives system. The JDK's trust store is the system CA store, kept in step by
+`adoptium-ca-certificates`, so certificates added with `update-ca-certificates` are trusted by
+Java as well.
 
-`~/.m2/repository` and `~/.gradle` exist and are owned by `dev`, so a volume mounted on either
-keeps the Maven or Gradle cache across container rebuilds.
+`~/.m2/repository` and `~/.gradle` exist and are owned by `dev`. Mount a volume on `~/.m2` and
+on `~/.gradle` rather than on the caches inside them: `mvnw` and `gradlew` install the build tool
+a project pins under `~/.m2/wrapper/dists` and `~/.gradle/wrapper/dists`, so a volume covering
+only the local repository re-downloads it on every rebuild.
 
 ## Not installed
 

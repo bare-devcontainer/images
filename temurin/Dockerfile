@@ -23,10 +23,14 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         "${VERSION_CODENAME}" > /etc/apt/sources.list.d/adoptium.sources \
     && apt-get update \
     && apt-get --no-install-recommends install -y "temurin-${TEMURIN_VERSION%%.*}-jdk=${TEMURIN_VERSION}" \
-    # The package installs under this path, which ENV JAVA_HOME below repeats.
-    && test -x "/usr/lib/jvm/temurin-${TEMURIN_VERSION%%.*}-jdk-${TARGETARCH}/bin/java"
+    # The package installs under a directory naming the feature release and the
+    # architecture. The symlink gives every variant of this image the same
+    # JAVA_HOME, so a devcontainer.json can point a Java extension at the JDK
+    # without knowing which tag it is running; smoke-test.sh asserts the path.
+    && ln -s "temurin-${TEMURIN_VERSION%%.*}-jdk-${TARGETARCH}" /usr/lib/jvm/temurin \
+    && test -x /usr/lib/jvm/temurin/bin/java
 
-ENV JAVA_HOME=/usr/lib/jvm/temurin-${TEMURIN_VERSION%%.*}-jdk-${TARGETARCH}
+ENV JAVA_HOME=/usr/lib/jvm/temurin
 
 USER dev
 
