@@ -7,6 +7,13 @@ on:
         description: 'Date suffix of the release to mirror (YYYYMMDD)'
         type: string
         required: true
+    # A called workflow sees no repository secret of its own, only what the
+    # caller passes here and GITHUB_TOKEN.
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: true
+      DOCKERHUB_PAT:
+        required: true
   workflow_dispatch:
     inputs:
       release_tag:
@@ -49,8 +56,8 @@ jobs:
     permissions:
       contents: read
       packages: read
-    # on.workflow_call cannot carry an environment and an environment secret
-    # overrides one passed by the caller, so release.yml passes no credentials.
+    # on.workflow_call cannot carry an environment, so the job names it for
+    # the release call and a dispatch run alike.
     environment: ${{ github.event_name != 'pull_request' && 'dockerhub' || 'ci' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
