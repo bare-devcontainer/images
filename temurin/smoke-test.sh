@@ -8,9 +8,12 @@ jshell --version
 java -version 2>&1 | grep -q "Temurin"
 
 echo "=== Verifying JAVA_HOME ==="
-[ -n "${JAVA_HOME:-}" ]
-[ "$(readlink -f "$(command -v java)")" = "${JAVA_HOME}/bin/java" ]
-[ "$(readlink -f "$(command -v javac)")" = "${JAVA_HOME}/bin/javac" ]
+# The path is the contract a devcontainer.json points a Java extension at, so
+# it is asserted literally rather than read back out of the environment.
+[ "${JAVA_HOME:-}" = /usr/lib/jvm/temurin ]
+[ -x "${JAVA_HOME}/bin/java" ]
+[ "$(readlink -f "$(command -v java)")" = "$(readlink -f "${JAVA_HOME}/bin/java")" ]
+[ "$(readlink -f "$(command -v javac)")" = "$(readlink -f "${JAVA_HOME}/bin/javac")" ]
 
 echo "=== Verifying compile, package and run ==="
 TMPDIR=$(mktemp -d)
