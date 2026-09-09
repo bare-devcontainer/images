@@ -9,12 +9,16 @@ Minimal, multi-arch Dev Container images: a small Debian base, plus one image pe
 carries only what its target stack needs, is built from a small set of verified upstreams, and
 ships with SLSA provenance, a GitHub artifact attestation, and an SBOM.
 
-- **Base** — Debian (`debian`), which every other image extends
-- **Language toolchains, version pinned by tag** — Go (`golang`), Node.js (`node`), Deno
-  (`deno`), Bun (`bun`), Java (`temurin`), Zig (`zig`)
-- **Version managers, toolchain chosen by the project** — Python (`uv`), Rust (`rustup`),
-  Node.js (`pnpm`), polyglot (`mise`)
-- **Infrastructure as code** — Terraform (`terraform`), OpenTofu (`opentofu`)
+- **No particular stack** — `debian`, the base every other image extends
+- **JavaScript / TypeScript** — `node`, `pnpm` (Node.js with the runtime managed by pnpm),
+  `deno`, `bun`
+- **Python** — `uv`
+- **Go** — `golang`
+- **Java** — `temurin`
+- **Rust** — `rustup`
+- **Zig** — `zig`
+- **Infrastructure as code** — `terraform`, `opentofu`
+- **Several languages in one project** — `mise`
 
 ## Quick start
 
