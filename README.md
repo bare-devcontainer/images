@@ -5,20 +5,11 @@
 [![Trivy Scan](https://github.com/bare-devcontainer/images/actions/workflows/trivy.yml/badge.svg)](https://github.com/bare-devcontainer/images/actions/workflows/trivy.yml)
 [![Attestation Checks](https://github.com/bare-devcontainer/images/actions/workflows/attest-check.yml/badge.svg?branch=main)](https://github.com/bare-devcontainer/images/actions/workflows/attest-check.yml)
 
-Minimal, multi-arch Dev Container images: a small Debian base, plus one image per stack. Each
-carries only what its target stack needs, is built from a small set of verified upstreams, and
-ships with SLSA provenance, a GitHub artifact attestation, and an SBOM.
-
-- **No particular stack** — `debian`, the base every other image extends
-- **JavaScript / TypeScript** — `node`, `pnpm` (Node.js with the runtime managed by pnpm),
-  `deno`, `bun`
-- **Python** — `uv`
-- **Go** — `golang`
-- **Java** — `temurin`
-- **Rust** — `rustup`
-- **Zig** — `zig`
-- **Infrastructure as code** — `terraform`, `opentofu`
-- **Several languages in one project** — `mise`
+Minimal, multi-arch Dev Container images: a small Debian base, plus one image per stack for
+JavaScript/TypeScript (Node.js, pnpm, Deno, or Bun), Python, Go, Java, Rust, Zig, and
+infrastructure as code (Terraform or OpenTofu), and one with mise for projects that mix
+languages. Each carries only what its target stack needs, is built from a small set of verified
+upstreams, and ships with SLSA provenance, a GitHub artifact attestation, and an SBOM.
 
 ## Quick start
 
