@@ -107,13 +107,10 @@ There are two ways to add what a project needs on top:
 Every image is published for `linux/amd64` and `linux/arm64`. See each image's README for its
 available tags, the software it ships, and how its upstreams are verified.
 
-GitHub Container Registry is where the images are published. The same builds are mirrored to
-Docker Hub as `docker.io/baredevcontainer/<image>`, under the same tags and with the same
-digests, so that they stay available while `ghcr.io` is down. The mirror normally follows each
-release right away, but it is a copy of the primary, and Docker Hub applies
-[pull rate limits](https://docs.docker.com/docker-hub/usage/pulls/) that GitHub Container
-Registry does not, so prefer the `ghcr.io` reference and fall back to Docker Hub only when
-`ghcr.io` is unreachable.
+The same builds are mirrored to Docker Hub as `docker.io/baredevcontainer/<image>`, with the
+same tags and digests, so they stay available while `ghcr.io` is down. Prefer `ghcr.io`: it is
+where each release lands first, and it has no
+[pull rate limits](https://docs.docker.com/docker-hub/usage/pulls/).
 
 ## Tags and pinning
 
