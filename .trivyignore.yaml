@@ -190,6 +190,15 @@ vulnerabilities:
       branch still carries v1.82.1, and the OpenTofu development branch and the
       v1.13 branch 1.13.0-beta1 was cut from carry v1.83.0, so neither has a
       fixed release yet.
+  - id: CVE-2026-84445
+    paths:
+      - "usr/local/bin/tofu"
+    expired_at: 2026-10-31
+    statement: |
+      Terraform 1.16.2 depends on google.golang.org/grpc v1.83.2 and OpenTofu
+      1.12.6 on v1.79.3. The fix is in v1.82.2 and v1.83.2. The OpenTofu
+      development branch and the v1.13 branch 1.13.0-beta1 was cut from carry
+      v1.83.0, so no fixed release is available yet.
 
   # terraform
   - id: CVE-2026-27145
