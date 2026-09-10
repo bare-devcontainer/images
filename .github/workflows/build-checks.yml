@@ -115,8 +115,6 @@ jobs:
           STATUS=0
           for IMAGE in $IMAGES; do
             CONFIG=".devcontainer/sandbox-${IMAGE}/devcontainer.json"
-            # A configuration that declares none makes grep exit 1; reporting
-            # that is the comparison below.
             DECLARED=$({ grep -o '\${localEnv:[A-Z_]\+}' "$CONFIG" || true; } \
               | sed 's/^\${localEnv:\(.*\)}$/\1/' | sort -u)
             for VARIANT in $(bash scripts/build-config.sh variants "$IMAGE" | jq -r '.[]'); do
