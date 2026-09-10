@@ -29,11 +29,13 @@ concurrency:
 
 permissions: {}
 
-# The shell a step gets by default is bash -e, which reports the status of the
-# last command of a pipeline and so hides a failure anywhere before it.
+# The shell a step gets by default is bash -e, which leaves an unset variable
+# empty and reports the status of the last command of a pipeline, so a failure
+# anywhere before it goes unnoticed. Every script in scripts/ sets the same
+# three options for itself.
 defaults:
   run:
-    shell: bash
+    shell: bash -euo pipefail {0}
 
 env:
   BASE_IMAGE_REF: ghcr.io/${{ github.repository_owner }}/debian
@@ -385,7 +387,6 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           BUILD_DATE: ${{ needs.setup.outputs.build_date }}
         run: |
-          set -e
           bash scripts/housekeeper-pr.sh \
             --branch "housekeeper/update-readme-tags-${BUILD_DATE}" \
             --title "docs: update README tag tables" \
