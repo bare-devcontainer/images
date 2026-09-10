@@ -82,7 +82,7 @@ jobs:
             git ls-files > "$CHANGED_FILES"
           fi
 
-          REPORT=$(bash scripts/changed-images.sh "$CHANGED_FILES")
+          REPORT=$(bash scripts/changed-images.sh build "$CHANGED_FILES")
           echo "report=${REPORT}" >> "$GITHUB_OUTPUT"
 
           # Report every image, selected or not, together with the changes it

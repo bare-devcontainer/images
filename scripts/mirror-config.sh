@@ -2,12 +2,16 @@
 # mirror-config.sh — generate a regsync configuration that mirrors published images
 #
 # Usage:
-#   mirror-config.sh release <source_prefix> <target_prefix> <build_date>
+#   mirror-config.sh release <source_prefix> <target_prefix> <build_date> <images>
 #   mirror-config.sh full <source_prefix> <target_prefix>
 #
 # Must be run from the repository root. <source_prefix> and <target_prefix> are
 # tag-less registry paths (e.g. ghcr.io/bare-devcontainer) that each image name
-# is appended to. The configuration is written to stdout.
+# is appended to. <images> is a JSON array naming the images the release dated
+# <build_date> published, each of which must have a build.yaml; a release
+# publishes only the images that changed since the one before it, so this list
+# is what bounds the tags the registry holds for that date. The configuration
+# is written to stdout.
 #
 # Both modes read the working tree, so run this against a released commit: an
 # image directory or a tag that no release has published yet resolves to a
@@ -15,9 +19,9 @@
 #
 # Modes:
 #   release
-#       One entry per tag the release dated <build_date> published: every tag
-#       <image>/build.yaml defines, plus each variant's primary tag carrying the
-#       date suffix.
+#       One entry per tag the release dated <build_date> published: for each
+#       image in <images>, every tag <image>/build.yaml defines, plus each
+#       variant's primary tag carrying the date suffix.
 #
 #   full
 #       One entry per image, covering every tag the source repository holds.
@@ -34,7 +38,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-MODE="${1:?Usage: mirror-config.sh <release|full> <source_prefix> <target_prefix> [build_date]}"
+MODE="${1:?Usage: mirror-config.sh <release|full> <source_prefix> <target_prefix> [build_date images]}"
 SOURCE_PREFIX="${2:?Missing source_prefix}"
 TARGET_PREFIX="${3:?Missing target_prefix}"
 
@@ -108,9 +112,14 @@ emit_header
 case "$MODE" in
   release)
     BUILD_DATE="${4:?Missing build_date}"
-    for IMAGE in "${IMAGES[@]}"; do
+    RELEASED="${5:?Missing images}"
+    RELEASED_LIST=$(jq -r '.[]' <<< "$RELEASED")
+    [ -n "$RELEASED_LIST" ] || fail "the release names no image"
+    while IFS= read -r IMAGE; do
+      printf '%s\n' "${IMAGES[@]}" | grep -qxF -- "$IMAGE" \
+        || fail "no image directory ${IMAGE} contains a build.yaml"
       emit_release "$IMAGE" "$BUILD_DATE"
-    done
+    done <<< "$RELEASED_LIST"
     ;;
   full)
     for IMAGE in "${IMAGES[@]}"; do
