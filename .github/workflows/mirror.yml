@@ -149,47 +149,9 @@ jobs:
           path: released
           persist-credentials: false
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      # A release publishes only the images that changed since the one before
-      # it, so build.yaml names the tags of an image but cannot tell whether
-      # this release built it; the dated tag on the registry can.
-      - name: Resolve released images
-        id: released
-        env:
-          BUILD_DATE: ${{ steps.scope.outputs.build_date }}
-          TREE: ${{ steps.scope.outputs.ref != '' && 'released' || '.' }}
-        run: |
-          BUILD_CONFIG="${GITHUB_WORKSPACE}/scripts/build-config.sh"
-          cd "$TREE"
-          IMAGES='[]'
-          echo "=== Images released on ${BUILD_DATE} ==="
-          for IMAGE in $(bash "$BUILD_CONFIG" images | jq -r '.[]'); do
-            VARIANT=$(bash "$BUILD_CONFIG" variants "$IMAGE" | jq -r '.[0]')
-            PRIMARY=$(bash "$BUILD_CONFIG" primary-tag "$IMAGE" "$VARIANT")
-            REF="${SOURCE_IMAGE_PREFIX}/${IMAGE}:${PRIMARY}-${BUILD_DATE}"
-            if docker manifest inspect "$REF" > /dev/null 2>&1; then
-              echo "[RUN ] ${IMAGE}: ${REF}"
-              IMAGES=$(jq -c --arg image "$IMAGE" '. + [$image]' <<< "$IMAGES")
-            else
-              echo "[SKIP] ${IMAGE}: ${REF} is not published"
-            fi
-          done
-          if [ "$IMAGES" = "[]" ]; then
-            echo "No image was released on ${BUILD_DATE}." >&2
-            exit 1
-          fi
-          echo "images=${IMAGES}" >> "$GITHUB_OUTPUT"
-
       - name: Generate regsync configurations
         env:
           BUILD_DATE: ${{ steps.scope.outputs.build_date }}
-          IMAGES: ${{ steps.released.outputs.images }}
           MODE: ${{ steps.scope.outputs.mode }}
           TREE: ${{ steps.scope.outputs.ref != '' && 'released' || '.' }}
         run: |
@@ -200,7 +162,7 @@ jobs:
           mkdir -p "$CONFIG_DIR"
           cd "$TREE"
           bash "$MIRROR_CONFIG" release \
-            "$SOURCE_IMAGE_PREFIX" "$TARGET_IMAGE_PREFIX" "$BUILD_DATE" "$IMAGES" > "${CONFIG_DIR}/release.yaml"
+            "$SOURCE_IMAGE_PREFIX" "$TARGET_IMAGE_PREFIX" "$BUILD_DATE" > "${CONFIG_DIR}/release.yaml"
           bash "$MIRROR_CONFIG" full \
             "$SOURCE_IMAGE_PREFIX" "$TARGET_IMAGE_PREFIX" > "${CONFIG_DIR}/full.yaml"
 
@@ -211,7 +173,6 @@ jobs:
             echo ""
             echo "- Mode: \`${MODE}\`"
             echo "- Release: \`${BUILD_DATE}\`"
-            echo "- Images: $(echo "$IMAGES" | jq -r 'map("`" + . + "`") | join(", ")')"
             echo "- Sync entries: release $(grep -c '^  - source:' "${CONFIG_DIR}/release.yaml"), full $(grep -c '^  - source:' "${CONFIG_DIR}/full.yaml")"
           } >> "$GITHUB_STEP_SUMMARY"
 

@@ -2,16 +2,12 @@
 # mirror-config.sh — generate a regsync configuration that mirrors published images
 #
 # Usage:
-#   mirror-config.sh release <source_prefix> <target_prefix> <build_date> <images>
+#   mirror-config.sh release <source_prefix> <target_prefix> <build_date>
 #   mirror-config.sh full <source_prefix> <target_prefix>
 #
 # Must be run from the repository root. <source_prefix> and <target_prefix> are
 # tag-less registry paths (e.g. ghcr.io/bare-devcontainer) that each image name
-# is appended to. <images> is a JSON array naming the images the release dated
-# <build_date> published, each of which must have a build.yaml; a release
-# publishes only the images that changed since the one before it, so this list
-# is what bounds the tags the registry holds for that date. The configuration
-# is written to stdout.
+# is appended to. The configuration is written to stdout.
 #
 # Both modes read the working tree, so run this against a released commit: an
 # image directory or a tag that no release has published yet resolves to a
@@ -19,9 +15,12 @@
 #
 # Modes:
 #   release
-#       One entry per tag the release dated <build_date> published: for each
-#       image in <images>, every tag <image>/build.yaml defines, plus each
-#       variant's primary tag carrying the date suffix.
+#       One entry per image, allowing every tag <image>/build.yaml defines plus
+#       each variant's primary tag carrying the date suffix. regsync lists the
+#       tags the source repository holds and copies the ones the allow list
+#       matches, so a release that built only some of the images needs no say
+#       in which: the images it left alone carry no tag for <build_date> and
+#       contribute nothing, rather than naming a source that does not exist.
 #
 #   full
 #       One entry per image, covering every tag the source repository holds.
@@ -38,7 +37,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-MODE="${1:?Usage: mirror-config.sh <release|full> <source_prefix> <target_prefix> [build_date images]}"
+MODE="${1:?Usage: mirror-config.sh <release|full> <source_prefix> <target_prefix> [build_date]}"
 SOURCE_PREFIX="${2:?Missing source_prefix}"
 TARGET_PREFIX="${3:?Missing target_prefix}"
 
@@ -65,11 +64,6 @@ emit_header() {
   printf -- 'defaults:\n  parallel: %s\nsync:\n' "$PARALLEL"
 }
 
-emit_image() {
-  local source_ref="$1" target_ref="$2"
-  printf -- '  - source: %s\n    target: %s\n    type: image\n' "$source_ref" "$target_ref"
-}
-
 emit_repository() {
   local image="$1"
   printf -- '  - source: %s/%s\n    target: %s/%s\n    type: repository\n' \
@@ -77,28 +71,35 @@ emit_repository() {
   printf -- '    tags:\n      deny:\n        - sha256-.*\n'
 }
 
+# regsync compiles every allow pattern as a regular expression anchored with ^
+# and $, so a tag only matches itself once its metacharacters are escaped.
+escape_tag() {
+  sed 's/[^A-Za-z0-9_-]/\\&/g'
+}
+
 # Every list below is captured by assignment before it is read. mapfile reading
 # a process substitution succeeds even when the command inside it failed, which
 # would drop entries from the configuration instead of stopping the script.
 emit_release() {
   local image="$1" build_date="$2"
-  local variants variant primary source_tags target_tags source_refs target_refs i
+  local variants variant primary tags allow patterns pattern
 
   variants=$(build_config variants "$image" | jq -r '.[]')
   [ -n "$variants" ] || fail "${image}/build.yaml defines no variant"
 
-  while IFS= read -r variant; do
-    primary=$(build_config primary-tag "$image" "$variant")
-    [ -n "$primary" ] || fail "variant ${variant} of ${image} defines no tag"
-    emit_image "${SOURCE_PREFIX}/${image}:${primary}-${build_date}" \
-      "${TARGET_PREFIX}/${image}:${primary}-${build_date}"
+  printf -- '  - source: %s/%s\n    target: %s/%s\n    type: repository\n' \
+    "$SOURCE_PREFIX" "$image" "$TARGET_PREFIX" "$image"
+  printf -- '    tags:\n      allow:\n'
 
-    source_tags=$(build_config tags "$image" "$variant" "${SOURCE_PREFIX}/${image}")
-    target_tags=$(build_config tags "$image" "$variant" "${TARGET_PREFIX}/${image}")
-    mapfile -t source_refs <<< "$source_tags"
-    mapfile -t target_refs <<< "$target_tags"
-    for i in "${!source_refs[@]}"; do
-      emit_image "${source_refs[$i]}" "${target_refs[$i]}"
+  while IFS= read -r variant; do
+    tags=$(build_config tag-names "$image" "$variant")
+    [ -n "$tags" ] || fail "variant ${variant} of ${image} defines no tag"
+    primary=$(build_config primary-tag "$image" "$variant")
+
+    allow=$(printf '%s\n%s\n' "${primary}-${build_date}" "$tags" | escape_tag)
+    mapfile -t patterns <<< "$allow"
+    for pattern in "${patterns[@]}"; do
+      printf -- "        - '%s'\n" "$pattern"
     done
   done <<< "$variants"
 }
@@ -112,14 +113,9 @@ emit_header
 case "$MODE" in
   release)
     BUILD_DATE="${4:?Missing build_date}"
-    RELEASED="${5:?Missing images}"
-    RELEASED_LIST=$(jq -r '.[]' <<< "$RELEASED")
-    [ -n "$RELEASED_LIST" ] || fail "the release names no image"
-    while IFS= read -r IMAGE; do
-      printf '%s\n' "${IMAGES[@]}" | grep -qxF -- "$IMAGE" \
-        || fail "no image directory ${IMAGE} contains a build.yaml"
+    for IMAGE in "${IMAGES[@]}"; do
       emit_release "$IMAGE" "$BUILD_DATE"
-    done <<< "$RELEASED_LIST"
+    done
     ;;
   full)
     for IMAGE in "${IMAGES[@]}"; do
