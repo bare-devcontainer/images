@@ -29,6 +29,12 @@ concurrency:
 
 permissions: {}
 
+# The shell a step gets by default is bash -e, which reports the status of the
+# last command of a pipeline and so hides a failure anywhere before it.
+defaults:
+  run:
+    shell: bash
+
 env:
   BASE_IMAGE_REF: ghcr.io/${{ github.repository_owner }}/debian
 
@@ -108,11 +114,8 @@ jobs:
           IMAGES='[]'
           SKIPPED='[]'
           if [ -n "$LATEST_TAG" ]; then
-            # The default shell is bash -e without pipefail, so a pipeline
-            # here would hide a failing git diff behind its last command.
-            git diff --name-only "$LATEST_TAG" HEAD > "$CHANGED_FILES"
             echo "=== Changed files (${LATEST_TAG}..HEAD) ==="
-            cat "$CHANGED_FILES"
+            git diff --name-only "$LATEST_TAG" HEAD | tee "$CHANGED_FILES"
 
             REPORT=$(bash scripts/changed-images.sh release "$CHANGED_FILES")
             echo "=== Images changed since ${LATEST_TAG} ==="
