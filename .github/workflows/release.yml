@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/release.yml
       - .github/workflows/publish-image.yml
+      - scripts/build-config.sh
       - scripts/changed-images.sh
   workflow_dispatch:
     inputs:
@@ -85,8 +86,9 @@ jobs:
           if [ -z "$LATEST_TAG" ]; then
             every_image "no release tag found"
           fi
-          # A failed weekly rebuild leaves no tag, so the guarantee above is
-          # carried over to the first release after a week without one.
+          # Every release moves the tag, so this catches a pipeline that has
+          # stopped releasing altogether, not a weekly rebuild that failed on
+          # its own; that one waits for the next Monday.
           if [ "$(( ($(date -u +%s) - $(date -u -d "${LATEST_TAG#v}" +%s)) / 86400 ))" -ge 7 ]; then
             every_image "latest release ${LATEST_TAG} is over a week old"
           fi
@@ -283,11 +285,12 @@ jobs:
     permissions:
       contents: read
       packages: read
-    needs: [setup, build-base, build-image]
+    needs: [setup, gate, build-base, build-image]
     if: >-
       ${{ !cancelled() &&
       needs.setup.outputs.should_run == 'true' &&
       github.event_name != 'pull_request' && github.ref == 'refs/heads/main' &&
+      needs.gate.result == 'success' &&
       (needs.build-base.result == 'success' || needs.build-base.result == 'skipped') &&
       (needs.build-image.result == 'success' || needs.build-image.result == 'skipped') }}
     uses: ./.github/workflows/mirror.yml
@@ -301,11 +304,12 @@ jobs:
     permissions:
       actions: write
       contents: write
-    needs: [setup, build-base, build-image]
+    needs: [setup, gate, build-base, build-image]
     if: >-
       ${{ !cancelled() &&
       needs.setup.outputs.should_run == 'true' &&
       github.event_name != 'pull_request' && github.ref == 'refs/heads/main' &&
+      needs.gate.result == 'success' &&
       (needs.build-base.result == 'success' || needs.build-base.result == 'skipped') &&
       (needs.build-image.result == 'success' || needs.build-image.result == 'skipped') }}
     runs-on: ubuntu-slim

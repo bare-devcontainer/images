@@ -10,8 +10,9 @@
 # is appended to. The configuration is written to stdout.
 #
 # Both modes read the working tree, so run this against a released commit: an
-# image directory or a tag that no release has published yet resolves to a
-# source reference the registry does not hold, which fails the sync.
+# image directory the source registry holds no repository for fails the sync.
+# A tag no release has published is skipped instead, since both modes take
+# their tags from what the registry lists rather than naming them.
 #
 # Modes:
 #   release
