@@ -45,7 +45,6 @@ jobs:
     outputs:
       build_date: ${{ steps.init.outputs.build_date }}
       should_run: ${{ steps.select.outputs.should_run }}
-      images: ${{ steps.select.outputs.images }}
       matrix: ${{ steps.matrix.outputs.matrix }}
       base_variants: ${{ steps.matrix.outputs.base_variants }}
     steps:
@@ -90,10 +89,13 @@ jobs:
           if [ -z "$LATEST_TAG" ]; then
             every_image "no release tag found"
           fi
+          # Parsed in its own assignment so an unparsable tag stops the run:
+          # errexit does not apply to a command an if evaluates.
+          TAG_TIMESTAMP=$(date -u -d "${LATEST_TAG#v}" +%s)
           # A week without a tag means the weekly rebuild did not produce one
           # either. Any release moves the tag, so a failed Monday that partial
           # releases followed waits for the next Monday instead.
-          if [ "$(( ($(date -u +%s) - $(date -u -d "${LATEST_TAG#v}" +%s)) / 86400 ))" -ge 7 ]; then
+          if [ "$(( ($(date -u +%s) - TAG_TIMESTAMP) / 86400 ))" -ge 7 ]; then
             every_image "latest release ${LATEST_TAG} is over a week old"
           fi
 
@@ -187,7 +189,8 @@ jobs:
               # The selection reads paths, so the log has to as well or it can
               # name commits the release is not building, and miss the ones it
               # is. The exclusion mirrors the pattern changed-images.sh drops.
-              mapfile -t IMAGE_PATHS < <(echo "$IMAGES" | jq -r '.[] + "/"')
+              PATHS=$(echo "$IMAGES" | jq -r '.[] + "/"')
+              mapfile -t IMAGE_PATHS <<< "$PATHS"
               # shellcheck disable=SC2016  # backticks are literal Markdown code spans
               UPDATES=$(git log --format='- `%h` %s' "${LATEST_TAG}..HEAD" \
                 -- "${IMAGE_PATHS[@]}" ':(exclude)*.md')

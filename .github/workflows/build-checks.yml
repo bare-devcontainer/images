@@ -115,7 +115,9 @@ jobs:
           STATUS=0
           for IMAGE in $IMAGES; do
             CONFIG=".devcontainer/sandbox-${IMAGE}/devcontainer.json"
-            DECLARED=$(grep -o '\${localEnv:[A-Z_]\+}' "$CONFIG" \
+            # A configuration that declares none makes grep exit 1; reporting
+            # that is the comparison below.
+            DECLARED=$({ grep -o '\${localEnv:[A-Z_]\+}' "$CONFIG" || true; } \
               | sed 's/^\${localEnv:\(.*\)}$/\1/' | sort -u)
             for VARIANT in $(bash scripts/build-config.sh variants "$IMAGE" | jq -r '.[]'); do
               # DEBIAN_TAG is a build arg of the debian image and the base
@@ -217,7 +219,7 @@ jobs:
           configFile: .devcontainer/sandbox-debian/devcontainer.json
           push: never
           runCmd: |
-            set -e
+            set -euo pipefail
             [ "$(id -un)" = "dev" ] \
               || { echo "ERROR: expected user dev, got $(id -un)" >&2; exit 1; }
       - name: Run Trivy vulnerability scanner
@@ -242,7 +244,7 @@ jobs:
           configFile: .devcontainer/feature-debian/devcontainer.json
           push: never
           runCmd: |
-            set -e
+            set -euo pipefail
             bash debian/smoke-test.sh
             bash .devcontainer/feature-debian/test.sh
 
@@ -322,7 +324,7 @@ jobs:
           configFile: .devcontainer/sandbox-${{ matrix.image }}/devcontainer.json
           push: never
           runCmd: |
-            set -e
+            set -euo pipefail
             [ "$(id -un)" = "dev" ] \
               || { echo "ERROR: expected user dev, got $(id -un)" >&2; exit 1; }
       - name: Run Trivy vulnerability scanner

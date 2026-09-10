@@ -45,7 +45,8 @@
 #       - Files under <image>/ affect that image.
 #       - Files under debian/ affect every image: release.yml publishes debian
 #         first and builds each derived image FROM the digest it just
-#         published, so a base image change reaches every derived image.
+#         published, so a base image change reaches every derived image. The
+#         exception is debian/smoke-test.sh, which the pattern above drops.
 #       - Every other path affects no image. The weekly rebuild of every image
 #         is the catch-all for what a change outside the image directories
 #         (a workflow, a shared script) alters in a published image.
@@ -58,7 +59,7 @@ BUILD_CROSS_IMAGE_PATHS='["debian/smoke-test.sh"]'
 
 # Paths that cannot reach any build the caller performs, matched as a regular
 # expression against each changed path. Markdown is documentation only; no
-# Dockerfile copies one in.
+# Dockerfile copies one in. Each mode adds what it alone cannot reach.
 IGNORED_PATTERN='\.md$'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -80,6 +81,9 @@ case "$MODE" in
     CROSS_IMAGE_REASON=""
     REPO_WIDE_PREFIX="debian/"
     REPO_WIDE_REASON="base image changed"
+    # No image copies the debian smoke test in; build-checks.yml bind-mounts it
+    # at test time, so a change to it alters nothing that gets published.
+    IGNORED_PATTERN="${IGNORED_PATTERN}|^debian/smoke-test\.sh$"
     ;;
   *)
     echo "Unknown mode: $MODE" >&2
