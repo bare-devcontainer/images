@@ -10,6 +10,10 @@ on:
 
 permissions: {}
 
+defaults:
+  run:
+    shell: bash -euo pipefail {0}
+
 jobs:
   delete-caches:
     permissions:
@@ -23,8 +27,6 @@ jobs:
           GH_REPO: ${{ github.repository }}
           KEY_PREFIX: ${{ inputs.key }}
         run: |
-          set -euo pipefail
-
           if [ -z "${KEY_PREFIX}" ]; then
             echo "::error::key input must not be empty"
             exit 1

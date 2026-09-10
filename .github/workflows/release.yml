@@ -29,10 +29,6 @@ concurrency:
 
 permissions: {}
 
-# The shell a step gets by default is bash -e, which leaves an unset variable
-# empty and reports the status of the last command of a pipeline, so a failure
-# anywhere before it goes unnoticed. Every script in scripts/ sets the same
-# three options for itself.
 defaults:
   run:
     shell: bash -euo pipefail {0}

@@ -40,6 +40,10 @@ on:
 
 permissions: {}
 
+defaults:
+  run:
+    shell: bash -euo pipefail {0}
+
 env:
   # renovate: datasource=github-releases depName=aquasecurity/trivy
   TRIVY_VERSION: "v0.74.0"
