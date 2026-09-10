@@ -86,9 +86,9 @@ jobs:
           if [ -z "$LATEST_TAG" ]; then
             every_image "no release tag found"
           fi
-          # Every release moves the tag, so this catches a pipeline that has
-          # stopped releasing altogether, not a weekly rebuild that failed on
-          # its own; that one waits for the next Monday.
+          # A week without a tag means the weekly rebuild did not produce one
+          # either. Any release moves the tag, so a failed Monday that partial
+          # releases followed waits for the next Monday instead.
           if [ "$(( ($(date -u +%s) - $(date -u -d "${LATEST_TAG#v}" +%s)) / 86400 ))" -ge 7 ]; then
             every_image "latest release ${LATEST_TAG} is over a week old"
           fi
@@ -102,19 +102,23 @@ jobs:
           LATEST_TAG: ${{ steps.init.outputs.latest_tag }}
           CHANGED_FILES: ${{ runner.temp }}/changed-files.txt
         run: |
-          # Reported whenever a release tag exists, even for a run that builds
-          # every image, so the selection can be verified from the log.
+          # The diff is reported even when the scope is every image, so the
+          # release rules stay verifiable from the log; the matrix step logs
+          # what the run settles on building.
           IMAGES='[]'
           SKIPPED='[]'
           if [ -n "$LATEST_TAG" ]; then
+            # The default shell is bash -e without pipefail, so a pipeline
+            # here would hide a failing git diff behind its last command.
+            git diff --name-only "$LATEST_TAG" HEAD > "$CHANGED_FILES"
             echo "=== Changed files (${LATEST_TAG}..HEAD) ==="
-            git diff --name-only "$LATEST_TAG" HEAD | tee "$CHANGED_FILES"
+            cat "$CHANGED_FILES"
 
             REPORT=$(bash scripts/changed-images.sh release "$CHANGED_FILES")
             echo "=== Images changed since ${LATEST_TAG} ==="
             echo "$REPORT" | jq -r '.[] |
-              "[" + (if .selected then "RUN " else "SKIP" end) + "] " + .image + ": " + .reason,
-              (.files[] | "         " + .)'
+              "[" + (if .selected then "CHANGED" else "       " end) + "] " + .image + ": " + .reason,
+              (.files[] | "            " + .)'
             IMAGES=$(echo "$REPORT" | jq -c '[.[] | select(.selected) | .image]')
             SKIPPED=$(echo "$REPORT" | jq -c '[.[] | select(.selected | not) | .image]')
           fi
@@ -161,6 +165,7 @@ jobs:
           LATEST_TAG: ${{ steps.init.outputs.latest_tag }}
           SCOPE: ${{ steps.init.outputs.scope }}
           SCOPE_REASON: ${{ steps.init.outputs.scope_reason }}
+          IMAGES: ${{ steps.select.outputs.images }}
           SKIPPED: ${{ steps.select.outputs.skipped }}
           MATRIX: ${{ steps.matrix.outputs.matrix }}
           BASE_VARIANTS: ${{ steps.matrix.outputs.base_variants }}
@@ -177,15 +182,18 @@ jobs:
             fi
             echo ""
             if [ -n "$LATEST_TAG" ]; then
-              echo "### Image updates since ${LATEST_TAG}"
+              echo "### Image changes since ${LATEST_TAG}"
+              # The selection reads paths, so the log has to as well or it can
+              # name commits the release is not building, and miss the ones it
+              # is. The exclusion mirrors the pattern changed-images.sh drops.
+              mapfile -t IMAGE_PATHS < <(echo "$IMAGES" | jq -r '.[] + "/"')
               # shellcheck disable=SC2016  # backticks are literal Markdown code spans
-              UPDATES=$(git log --format='%h %s' "${LATEST_TAG}..HEAD" \
-                | grep -E '^[0-9a-f]+ image(\([^)]*\))?!?:' \
-                | sed -E 's/^([0-9a-f]+) /- `\1` /' || true)
+              UPDATES=$(git log --format='- `%h` %s' "${LATEST_TAG}..HEAD" \
+                -- "${IMAGE_PATHS[@]}" ':(exclude)*.md')
               if [ -n "$UPDATES" ]; then
                 echo "$UPDATES"
               else
-                echo "_No image updates since ${LATEST_TAG}._"
+                echo "_No file of these images changed since ${LATEST_TAG}._"
               fi
             else
               echo "_No previous release tag found._"

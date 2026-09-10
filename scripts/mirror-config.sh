@@ -20,8 +20,8 @@
 #       each variant's primary tag carrying the date suffix. regsync lists the
 #       tags the source repository holds and copies the ones the allow list
 #       matches, so a release that built only some of the images needs no say
-#       in which: the images it left alone carry no tag for <build_date> and
-#       contribute nothing, rather than naming a source that does not exist.
+#       in which: an image it left alone holds no tag for <build_date>, and the
+#       rest of its allow list still resolves to what it published before.
 #
 #   full
 #       One entry per image, covering every tag the source repository holds.
