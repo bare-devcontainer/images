@@ -89,15 +89,6 @@ jobs:
           if [ -z "$LATEST_TAG" ]; then
             every_image "no release tag found"
           fi
-          # Parsed in its own assignment so an unparsable tag stops the run:
-          # errexit does not apply to a command an if evaluates.
-          TAG_TIMESTAMP=$(date -u -d "${LATEST_TAG#v}" +%s)
-          # A week without a tag means the weekly rebuild did not produce one
-          # either. Any release moves the tag, so a failed Monday that partial
-          # releases followed waits for the next Monday instead.
-          if [ "$(( ($(date -u +%s) - TAG_TIMESTAMP) / 86400 ))" -ge 7 ]; then
-            every_image "latest release ${LATEST_TAG} is over a week old"
-          fi
 
           echo "Building the images changed since ${LATEST_TAG}."
           echo "scope=changed" >> "$GITHUB_OUTPUT"
