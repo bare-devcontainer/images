@@ -46,7 +46,7 @@
 #       - Files under debian/ affect every image: release.yml publishes debian
 #         first and builds each derived image FROM the digest it just
 #         published, so a base image change reaches every derived image. The
-#         exception is debian/smoke-test.sh, which the pattern above drops.
+#         smoke tests are the exception; the pattern above drops them.
 #       - Every other path affects no image. The weekly rebuild of every image
 #         is the catch-all for what a change outside the image directories
 #         (a workflow, a shared script) alters in a published image.
@@ -78,9 +78,9 @@ case "$MODE" in
     CROSS_IMAGE_REASON=""
     REPO_WIDE_PREFIX="debian/"
     REPO_WIDE_REASON="base image changed"
-    # No image copies the debian smoke test in; build-checks.yml bind-mounts it
-    # at test time, so a change to it alters nothing that gets published.
-    IGNORED_PATTERN="${IGNORED_PATTERN}|^debian/smoke-test\.sh$"
+    # No image copies its smoke test in; build-checks.yml bind-mounts them at
+    # test time, so a change to one alters nothing that gets published.
+    IGNORED_PATTERN="${IGNORED_PATTERN}|^[^/]+/smoke-test\.sh$"
     ;;
   *)
     echo "Unknown mode: $MODE" >&2

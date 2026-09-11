@@ -177,12 +177,12 @@ jobs:
             if [ -n "$LATEST_TAG" ]; then
               echo "### Image changes since ${LATEST_TAG}"
               # The selection reads paths, so the log reads paths too. The
-              # exclusion mirrors the pattern changed-images.sh drops.
+              # exclusions mirror the patterns changed-images.sh drops.
               PATHS=$(echo "$IMAGES" | jq -r '.[] + "/"')
               mapfile -t IMAGE_PATHS <<< "$PATHS"
               # shellcheck disable=SC2016  # backticks are literal Markdown code spans
               UPDATES=$(git log --format='- `%h` %s' "${LATEST_TAG}..HEAD" \
-                -- "${IMAGE_PATHS[@]}" ':(exclude)*.md')
+                -- "${IMAGE_PATHS[@]}" ':(exclude)*.md' ':(exclude)*/smoke-test.sh')
               if [ -n "$UPDATES" ]; then
                 echo "$UPDATES"
               else
