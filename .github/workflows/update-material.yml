@@ -28,6 +28,10 @@ on:
 
 permissions: {}
 
+defaults:
+  run:
+    shell: bash -euo pipefail {0}
+
 jobs:
   update:
     permissions:
@@ -49,7 +53,6 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -eo pipefail
           images=$(bash scripts/build-config.sh images | jq -r '.[]')
           changed=false
           for image in $images; do
@@ -79,7 +82,6 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          set -eo pipefail
           if [ "$EVENT_NAME" = "pull_request" ]; then
             # The files belong to the version bump that is already under
             # review, so they go onto its own branch and open nothing.

@@ -120,14 +120,15 @@ Each image publishes several tags per build. Using `golang` as an example:
 |-----|-----------|------------|
 | `1.27.0-trixie` | An exact version on an exact Debian release | The image is rebuilt (base updates, security patches) |
 | `1.27-trixie`, `1-trixie` | The newest matching version on that Debian release | A new patch or minor version is published |
-| `trixie` | The newest version on that Debian release | Any release |
+| `trixie` | The newest version on that Debian release | Any build of the image |
 | `1.27.0`, `1.27`, `1` | The same as the `-trixie` form; the default Debian release is implied | Same as the `-trixie` form |
 | `1.27.0-trixie-20260727` | One specific build, by date | Never |
 
-Because the base image and its packages are refreshed on every build, **every tag except the
-date-suffixed ones is mutable**: the same tag resolves to different content over time. That is
-what makes security patches arrive automatically, and also why a tag alone is not a
-reproducible reference.
+An image is rebuilt when its own definition or the shared Debian base changes, and every image
+is rebuilt at least once a week. Because the base image and its packages are refreshed on every
+build, **every tag except the date-suffixed ones is mutable**: the same tag resolves to
+different content over time. That is what makes security patches arrive automatically, and also
+why a tag alone is not a reproducible reference.
 
 > [!TIP]
 > Pin the digest as well as the tag (`image:tag@sha256:...`). The tag stays readable, the

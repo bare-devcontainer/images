@@ -24,6 +24,10 @@
 #   tags <image> <variant> <image_ref>
 #       Print all tags for <variant> as <image_ref>:<tag>, one per line.
 #
+#   tag-names <image> <variant>
+#       Print all tags for <variant> on their own, one per line, for a caller
+#       that needs the tag rather than a reference to it.
+#
 #   primary-tag <image> <variant>
 #       Print the first (primary) tag for <variant>.
 #
@@ -57,6 +61,10 @@ case "$COMMAND" in
       '.variants[] | select(.variant == strenv(VARIANT)) | .tags[] | strenv(REF) + ":" + .' \
       "$FILE"
     ;;
+  tag-names)
+    VARIANT="${3:?Missing variant}" yq \
+      '.variants[] | select(.variant == strenv(VARIANT)) | .tags[]' "$FILE"
+    ;;
   primary-tag)
     VARIANT="${3:?Missing variant}" yq \
       '.variants[] | select(.variant == strenv(VARIANT)) | .tags[0]' "$FILE"
@@ -83,7 +91,7 @@ case "$COMMAND" in
     ;;
   *)
     echo "Unknown command: $COMMAND" >&2
-    echo "Available commands: images, variants, description, tags, primary-tag, get-field, build-args, all-matrix" >&2
+    echo "Available commands: images, variants, description, tags, tag-names, primary-tag, get-field, build-args, all-matrix" >&2
     exit 1
     ;;
 esac

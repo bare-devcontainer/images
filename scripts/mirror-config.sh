@@ -10,14 +10,18 @@
 # is appended to. The configuration is written to stdout.
 #
 # Both modes read the working tree, so run this against a released commit: an
-# image directory or a tag that no release has published yet resolves to a
-# source reference the registry does not hold, which fails the sync.
+# image directory the source registry holds no repository for fails the sync.
+# A tag no release has published is skipped instead, since both modes take
+# their tags from what the registry lists rather than naming them.
 #
 # Modes:
 #   release
-#       One entry per tag the release dated <build_date> published: every tag
-#       <image>/build.yaml defines, plus each variant's primary tag carrying the
-#       date suffix.
+#       One entry per image, allowing every tag <image>/build.yaml defines plus
+#       each variant's primary tag carrying the date suffix. regsync lists the
+#       tags the source repository holds and copies the ones the allow list
+#       matches, so a release that built only some of the images needs no say
+#       in which: an image it left alone holds no tag for <build_date>, and the
+#       rest of its allow list still resolves to what it published before.
 #
 #   full
 #       One entry per image, covering every tag the source repository holds.
@@ -61,16 +65,23 @@ emit_header() {
   printf -- 'defaults:\n  parallel: %s\nsync:\n' "$PARALLEL"
 }
 
-emit_image() {
-  local source_ref="$1" target_ref="$2"
-  printf -- '  - source: %s\n    target: %s\n    type: image\n' "$source_ref" "$target_ref"
-}
-
-emit_repository() {
+# The lines both modes share; each appends its own tag filter below.
+emit_entry() {
   local image="$1"
   printf -- '  - source: %s/%s\n    target: %s/%s\n    type: repository\n' \
     "$SOURCE_PREFIX" "$image" "$TARGET_PREFIX" "$image"
-  printf -- '    tags:\n      deny:\n        - sha256-.*\n'
+  printf -- '    tags:\n'
+}
+
+emit_full() {
+  emit_entry "$1"
+  printf -- '      deny:\n        - sha256-.*\n'
+}
+
+# regsync compiles every allow pattern as a regular expression anchored with ^
+# and $, so a tag only matches itself once its metacharacters are escaped.
+escape_tag() {
+  sed 's/[^A-Za-z0-9_-]/\\&/g'
 }
 
 # Every list below is captured by assignment before it is read. mapfile reading
@@ -78,23 +89,23 @@ emit_repository() {
 # would drop entries from the configuration instead of stopping the script.
 emit_release() {
   local image="$1" build_date="$2"
-  local variants variant primary source_tags target_tags source_refs target_refs i
+  local variants variant primary tags allow patterns pattern
 
   variants=$(build_config variants "$image" | jq -r '.[]')
   [ -n "$variants" ] || fail "${image}/build.yaml defines no variant"
 
-  while IFS= read -r variant; do
-    primary=$(build_config primary-tag "$image" "$variant")
-    [ -n "$primary" ] || fail "variant ${variant} of ${image} defines no tag"
-    emit_image "${SOURCE_PREFIX}/${image}:${primary}-${build_date}" \
-      "${TARGET_PREFIX}/${image}:${primary}-${build_date}"
+  emit_entry "$image"
+  printf -- '      allow:\n'
 
-    source_tags=$(build_config tags "$image" "$variant" "${SOURCE_PREFIX}/${image}")
-    target_tags=$(build_config tags "$image" "$variant" "${TARGET_PREFIX}/${image}")
-    mapfile -t source_refs <<< "$source_tags"
-    mapfile -t target_refs <<< "$target_tags"
-    for i in "${!source_refs[@]}"; do
-      emit_image "${source_refs[$i]}" "${target_refs[$i]}"
+  while IFS= read -r variant; do
+    tags=$(build_config tag-names "$image" "$variant")
+    [ -n "$tags" ] || fail "variant ${variant} of ${image} defines no tag"
+    primary=$(build_config primary-tag "$image" "$variant")
+
+    allow=$(printf '%s\n%s\n' "${primary}-${build_date}" "$tags" | escape_tag)
+    mapfile -t patterns <<< "$allow"
+    for pattern in "${patterns[@]}"; do
+      printf -- "        - '%s'\n" "$pattern"
     done
   done <<< "$variants"
 }
@@ -114,7 +125,7 @@ case "$MODE" in
     ;;
   full)
     for IMAGE in "${IMAGES[@]}"; do
-      emit_repository "$IMAGE"
+      emit_full "$IMAGE"
     done
     ;;
   *)

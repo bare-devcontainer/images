@@ -7,6 +7,8 @@ on:
     paths:
       - .github/workflows/release.yml
       - .github/workflows/publish-image.yml
+      - scripts/build-config.sh
+      - scripts/changed-images.sh
   workflow_dispatch:
     inputs:
       overwrite:
@@ -15,7 +17,7 @@ on:
         type: boolean
         default: false
       force:
-        description: 'Continue even if there are no new image commits since the last release'
+        description: 'Build every image, even those unchanged since the last release'
         required: true
         type: boolean
         default: false
@@ -26,6 +28,10 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions: {}
+
+defaults:
+  run:
+    shell: bash -euo pipefail {0}
 
 env:
   BASE_IMAGE_REF: ghcr.io/${{ github.repository_owner }}/debian
@@ -38,69 +44,105 @@ jobs:
     timeout-minutes: 5
     outputs:
       build_date: ${{ steps.init.outputs.build_date }}
-      should_run: ${{ steps.init.outputs.should_run }}
+      should_run: ${{ steps.select.outputs.should_run }}
       matrix: ${{ steps.matrix.outputs.matrix }}
       base_variants: ${{ steps.matrix.outputs.base_variants }}
     steps:
-      - name: Check run conditions
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history so the release tags and the diff from the latest one
+          # can be resolved.
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Resolve release scope
         id: init
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           EVENT_NAME: ${{ github.event_name }}
-          REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
           FORCE: ${{ inputs.force || false }}
         run: |
           BUILD_DATE=$(date -u +%Y%m%d)
           echo "build_date=${BUILD_DATE}" >> "$GITHUB_OUTPUT"
 
-          LATEST_TAG=$(gh api "repos/${REPO}/git/refs/tags/v" \
-            --paginate \
-            --jq '.[] | select(.ref | test("refs/tags/v[0-9]{8}")) | .ref | ltrimstr("refs/tags/")' \
-            2>/dev/null | sort | tail -1 || echo "")
+          LATEST_TAG=$(git tag --list 'v[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]' | sort | tail -1)
           echo "latest_tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
 
+          every_image() {
+            echo "Building every image: $1."
+            echo "scope=all" >> "$GITHUB_OUTPUT"
+            echo "scope_reason=$1" >> "$GITHUB_OUTPUT"
+            exit 0
+          }
+
           if [ "${EVENT_NAME}" = "pull_request" ]; then
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-            exit 0
+            every_image "pull request dry run"
           fi
-
           if [ "${FORCE}" = "true" ]; then
-            echo "Force run requested, skipping commit check."
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-            exit 0
+            every_image "force run requested"
           fi
-
           # Guarantee at least one release per week so Debian security
           # updates from the package archive are picked up even when no
-          # image commits have landed since the last release.
+          # image has changed since the last release.
           if [ "${EVENT_NAME}" = "schedule" ] && [ "$(date -u +%u)" = "1" ]; then
-            echo "Weekly scheduled rebuild, skipping commit check."
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-            exit 0
+            every_image "weekly scheduled rebuild"
+          fi
+          if [ -z "$LATEST_TAG" ]; then
+            every_image "no release tag found"
           fi
 
+          echo "Building the images changed since ${LATEST_TAG}."
+          echo "scope=changed" >> "$GITHUB_OUTPUT"
+      - name: Select images
+        id: select
+        env:
+          SCOPE: ${{ steps.init.outputs.scope }}
+          LATEST_TAG: ${{ steps.init.outputs.latest_tag }}
+          CHANGED_FILES: ${{ runner.temp }}/changed-files.txt
+        run: |
+          # The diff is reported even when the scope is every image, so the
+          # release rules stay verifiable from the log.
+          IMAGES='[]'
+          SKIPPED='[]'
           if [ -n "$LATEST_TAG" ]; then
-            IMAGE_COMMITS=$(gh api "repos/${REPO}/compare/${LATEST_TAG}...${SHA}" \
-              --jq '[.commits[].commit.message | split("\n")[0]] | map(select(test("^image(\\([^)]*\\))?!?:"))) | length' \
-              2>/dev/null || echo "1")
-            if [ "$IMAGE_COMMITS" = "0" ]; then
-              echo "No image commits since ${LATEST_TAG}, skipping."
-              echo "should_run=false" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
+            echo "=== Changed files (${LATEST_TAG}..HEAD) ==="
+            git diff --name-only "$LATEST_TAG" HEAD | tee "$CHANGED_FILES"
+
+            REPORT=$(bash scripts/changed-images.sh release "$CHANGED_FILES")
+            echo "=== Images changed since ${LATEST_TAG} ==="
+            echo "$REPORT" | jq -r '.[] |
+              "[" + (if .selected then "CHANGED" else "       " end) + "] " + .image + ": " + .reason,
+              (.files[] | "            " + .)'
+            IMAGES=$(echo "$REPORT" | jq -c '[.[] | select(.selected) | .image]')
+            SKIPPED=$(echo "$REPORT" | jq -c '[.[] | select(.selected | not) | .image]')
           fi
 
-          echo "should_run=true" >> "$GITHUB_OUTPUT"
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
+          if [ "$SCOPE" = "all" ]; then
+            IMAGES=$(bash scripts/build-config.sh images)
+            SKIPPED='[]'
+          fi
+          echo "images=${IMAGES}" >> "$GITHUB_OUTPUT"
+          echo "skipped=${SKIPPED}" >> "$GITHUB_OUTPUT"
+
+          if [ "$IMAGES" = "[]" ]; then
+            echo "No image changed since ${LATEST_TAG}, skipping."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Build image matrix
         id: matrix
+        env:
+          IMAGES: ${{ steps.select.outputs.images }}
         run: |
-          MATRIX=$(bash scripts/build-config.sh all-matrix)
-          BASE_VARIANTS=$(bash scripts/build-config.sh variants debian | jq -c .)
+          MATRIX=$(bash scripts/build-config.sh all-matrix \
+            | jq -c --argjson selected "$IMAGES" '[.[] | select(.image | IN($selected[]))]')
+          # changed-images.sh selects every image for a debian change, so the
+          # base variants are all or nothing.
+          if echo "$IMAGES" | jq -e 'any(. == "debian")' > /dev/null; then
+            BASE_VARIANTS=$(bash scripts/build-config.sh variants debian | jq -c .)
+          else
+            BASE_VARIANTS='[]'
+          fi
           echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
           echo "base_variants=${BASE_VARIANTS}" >> "$GITHUB_OUTPUT"
 
@@ -110,13 +152,14 @@ jobs:
           echo "Other images:"
           echo "$MATRIX" | jq -r '.[] | "  " + .image + ":" + .primary_tag'
       - name: Write release summary
-        if: steps.init.outputs.should_run == 'true'
+        if: steps.select.outputs.should_run == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
           BUILD_DATE: ${{ steps.init.outputs.build_date }}
           LATEST_TAG: ${{ steps.init.outputs.latest_tag }}
+          SCOPE: ${{ steps.init.outputs.scope }}
+          SCOPE_REASON: ${{ steps.init.outputs.scope_reason }}
+          IMAGES: ${{ steps.select.outputs.images }}
+          SKIPPED: ${{ steps.select.outputs.skipped }}
           MATRIX: ${{ steps.matrix.outputs.matrix }}
           BASE_VARIANTS: ${{ steps.matrix.outputs.base_variants }}
           REPO_OWNER: ${{ github.repository_owner }}
@@ -125,14 +168,25 @@ jobs:
           {
             echo "## Release: v${BUILD_DATE}"
             echo ""
+            if [ "$SCOPE" = "all" ]; then
+              echo "Scope: every image (${SCOPE_REASON})"
+            else
+              echo "Scope: images changed since ${LATEST_TAG}"
+            fi
+            echo ""
             if [ -n "$LATEST_TAG" ]; then
-              echo "### Image updates since ${LATEST_TAG}"
-              UPDATES=$(gh api "repos/${REPO}/compare/${LATEST_TAG}...${SHA}" \
-                --jq '.commits[] | select(.commit.message | split("\n")[0] | test("^image(\\([^)]*\\))?!?:")) | "- `" + .sha[:7] + "` " + (.commit.message | split("\n")[0])')
+              echo "### Image changes since ${LATEST_TAG}"
+              # The selection reads paths, so the log reads paths too. The
+              # exclusions mirror the patterns changed-images.sh drops.
+              PATHS=$(echo "$IMAGES" | jq -r '.[] + "/"')
+              mapfile -t IMAGE_PATHS <<< "$PATHS"
+              # shellcheck disable=SC2016  # backticks are literal Markdown code spans
+              UPDATES=$(git log --format='- `%h` %s' "${LATEST_TAG}..HEAD" \
+                -- "${IMAGE_PATHS[@]}" ':(exclude)*.md' ':(exclude)*/smoke-test.sh')
               if [ -n "$UPDATES" ]; then
                 echo "$UPDATES"
               else
-                echo "_No image updates since ${LATEST_TAG}._"
+                echo "_No file of these images changed since ${LATEST_TAG}._"
               fi
             else
               echo "_No previous release tag found._"
@@ -140,14 +194,24 @@ jobs:
             echo ""
             echo "### Images to be pushed"
             echo ""
-            echo "**Debian base:**"
-            echo "$BASE_VARIANTS" | jq -r '.[]' | while read -r variant; do
-              echo "- \`${BASE_IMAGE_REF}:${variant}-${BUILD_DATE}\`"
-            done
-            echo ""
-            echo "**Other images:**"
-            echo "$MATRIX" | jq -r \
-              '.[] | "- `ghcr.io/" + env.REPO_OWNER + "/" + .image + ":" + .primary_tag + "-" + env.BUILD_DATE + "`"'
+            if [ "$BASE_VARIANTS" != "[]" ]; then
+              echo "**Debian base:**"
+              echo "$BASE_VARIANTS" | jq -r '.[]' | while read -r variant; do
+                echo "- \`${BASE_IMAGE_REF}:${variant}-${BUILD_DATE}\`"
+              done
+              echo ""
+            fi
+            if [ "$MATRIX" != "[]" ]; then
+              echo "**Other images:**"
+              echo "$MATRIX" | jq -r \
+                '.[] | "- `ghcr.io/" + env.REPO_OWNER + "/" + .image + ":" + .primary_tag + "-" + env.BUILD_DATE + "`"'
+              echo ""
+            fi
+            if [ "$SKIPPED" != "[]" ]; then
+              echo "### Images left at their previous build"
+              echo ""
+              echo "$SKIPPED" | jq -r '.[] | "- `ghcr.io/" + env.REPO_OWNER + "/" + . + "`"'
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
 
   gate:
@@ -173,7 +237,7 @@ jobs:
       id-token: write
       packages: write
     needs: [setup, gate]
-    if: needs.setup.outputs.should_run == 'true'
+    if: needs.setup.outputs.should_run == 'true' && needs.setup.outputs.base_variants != '[]'
     strategy:
       fail-fast: false
       matrix:
@@ -194,8 +258,15 @@ jobs:
       contents: read
       id-token: write
       packages: write
-    needs: [setup, build-base, gate]
-    if: needs.setup.outputs.should_run == 'true'
+    needs: [setup, gate, build-base]
+    # !cancelled() lets this run when build-base was skipped, so every other
+    # needed result is checked explicitly.
+    if: >-
+      ${{ !cancelled() &&
+      needs.setup.outputs.should_run == 'true' &&
+      needs.gate.result == 'success' &&
+      (needs.build-base.result == 'success' || needs.build-base.result == 'skipped') &&
+      needs.setup.outputs.matrix != '[]' }}
     strategy:
       fail-fast: false
       matrix:
@@ -215,8 +286,14 @@ jobs:
     permissions:
       contents: read
       packages: read
-    needs: [setup, build-base, build-image]
-    if: needs.setup.outputs.should_run == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: [setup, gate, build-base, build-image]
+    if: >-
+      ${{ !cancelled() &&
+      needs.setup.outputs.should_run == 'true' &&
+      github.event_name != 'pull_request' && github.ref == 'refs/heads/main' &&
+      needs.gate.result == 'success' &&
+      (needs.build-base.result == 'success' || needs.build-base.result == 'skipped') &&
+      (needs.build-image.result == 'success' || needs.build-image.result == 'skipped') }}
     uses: ./.github/workflows/mirror.yml
     with:
       build_date: ${{ needs.setup.outputs.build_date }}
@@ -228,8 +305,14 @@ jobs:
     permissions:
       actions: write
       contents: write
-    needs: [setup, build-base, build-image]
-    if: needs.setup.outputs.should_run == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: [setup, gate, build-base, build-image]
+    if: >-
+      ${{ !cancelled() &&
+      needs.setup.outputs.should_run == 'true' &&
+      github.event_name != 'pull_request' && github.ref == 'refs/heads/main' &&
+      needs.gate.result == 'success' &&
+      (needs.build-base.result == 'success' || needs.build-base.result == 'skipped') &&
+      (needs.build-image.result == 'success' || needs.build-image.result == 'skipped') }}
     runs-on: ubuntu-slim
     timeout-minutes: 5
     steps:
@@ -292,7 +375,6 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           BUILD_DATE: ${{ needs.setup.outputs.build_date }}
         run: |
-          set -e
           bash scripts/housekeeper-pr.sh \
             --branch "housekeeper/update-readme-tags-${BUILD_DATE}" \
             --title "docs: update README tag tables" \

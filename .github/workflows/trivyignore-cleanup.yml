@@ -22,6 +22,10 @@ on:
 
 permissions: {}
 
+defaults:
+  run:
+    shell: bash -euo pipefail {0}
+
 env:
   # renovate: datasource=github-releases depName=aquasecurity/trivy
   TRIVY_VERSION: "v0.74.0"
@@ -59,7 +63,6 @@ jobs:
       - name: Build image matrix
         id: build
         run: |
-          set -eo pipefail
           # The base image is tagged after its variant, so both halves of the
           # matrix carry the same fields and scan as one job definition.
           BASE=$(bash scripts/build-config.sh variants debian \
@@ -131,7 +134,6 @@ jobs:
           REPORT_FILE: ${{ runner.temp }}/prune-report.txt
           REPORT_COUNT: ${{ needs.setup.outputs.report_count }}
         run: |
-          set -eo pipefail
           downloaded=$(find "$REPORTS_DIR" -type f -name '*.json' | wc -l)
           if [ "$downloaded" -ne "$REPORT_COUNT" ]; then
             echo "Expected ${REPORT_COUNT} Trivy reports but downloaded ${downloaded}." >&2
@@ -169,7 +171,6 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           REPORT_FILE: ${{ runner.temp }}/prune-report.txt
         run: |
-          set -eo pipefail
           body=$(printf '%s\n\n%s\n' \
             "Scanning the published images left these entries without a finding to suppress." \
             "$(sed 's/^/- /' "$REPORT_FILE")")

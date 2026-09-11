@@ -9,6 +9,10 @@ on:
 
 permissions: {}
 
+defaults:
+  run:
+    shell: bash -euo pipefail {0}
+
 jobs:
   check-title:
     runs-on: ubuntu-slim
