@@ -65,8 +65,7 @@ emit_header() {
   printf -- 'defaults:\n  parallel: %s\nsync:\n' "$PARALLEL"
 }
 
-# The entry both modes emit: regsync lists the tags the source repository holds
-# and each mode appends the filter that decides which of them are copied.
+# The lines both modes share; each appends its own tag filter below.
 emit_entry() {
   local image="$1"
   printf -- '  - source: %s/%s\n    target: %s/%s\n    type: repository\n' \

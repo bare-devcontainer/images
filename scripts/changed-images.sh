@@ -66,7 +66,7 @@ case "$MODE" in
   build)
     DEVCONTAINER_OWNED=true
     # build-checks.yml bind-mounts the debian smoke test into each image and
-    # runs it before the image's own one, so it is not that image's file alone.
+    # runs it before the image's own one.
     CROSS_IMAGE_PATHS='["debian/smoke-test.sh"]'
     CROSS_IMAGE_REASON="cross-image files changed"
     REPO_WIDE_PREFIX=""

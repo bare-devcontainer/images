@@ -100,8 +100,7 @@ jobs:
           CHANGED_FILES: ${{ runner.temp }}/changed-files.txt
         run: |
           # The diff is reported even when the scope is every image, so the
-          # release rules stay verifiable from the log; the matrix step logs
-          # what the run settles on building.
+          # release rules stay verifiable from the log.
           IMAGES='[]'
           SKIPPED='[]'
           if [ -n "$LATEST_TAG" ]; then
@@ -137,8 +136,8 @@ jobs:
         run: |
           MATRIX=$(bash scripts/build-config.sh all-matrix \
             | jq -c --argjson selected "$IMAGES" '[.[] | select(.image | IN($selected[]))]')
-          # A debian change selects every image, so the base variants are all
-          # or nothing.
+          # changed-images.sh selects every image for a debian change, so the
+          # base variants are all or nothing.
           if echo "$IMAGES" | jq -e 'any(. == "debian")' > /dev/null; then
             BASE_VARIANTS=$(bash scripts/build-config.sh variants debian | jq -c .)
           else
@@ -177,9 +176,8 @@ jobs:
             echo ""
             if [ -n "$LATEST_TAG" ]; then
               echo "### Image changes since ${LATEST_TAG}"
-              # The selection reads paths, so the log has to as well or it can
-              # name commits the release is not building, and miss the ones it
-              # is. The exclusion mirrors the pattern changed-images.sh drops.
+              # The selection reads paths, so the log reads paths too. The
+              # exclusion mirrors the pattern changed-images.sh drops.
               PATHS=$(echo "$IMAGES" | jq -r '.[] + "/"')
               mapfile -t IMAGE_PATHS <<< "$PATHS"
               # shellcheck disable=SC2016  # backticks are literal Markdown code spans
