@@ -27,11 +27,11 @@
 #         that configuration layers the Dev Container Features onto it.
 #       - Files under .devcontainer/sandbox-<image>/ affect that image, since
 #         that configuration builds it as a dev container.
-#       - The files listed in BUILD_CROSS_IMAGE_PATHS affect every image even
-#         though they live in one image's directory. Note that debian/Dockerfile
-#         is NOT one of them: build-checks.yml builds each derived image FROM
-#         the *published* ghcr.io debian tag, so a base image change in the
-#         working tree never reaches a derived image build there.
+#       - debian/smoke-test.sh affects every image even though it lives in one
+#         image's directory. Note that debian/Dockerfile does NOT:
+#         build-checks.yml builds each derived image FROM the *published*
+#         ghcr.io debian tag, so a base image change in the working tree never
+#         reaches a derived image build there.
 #       - Every path outside an image directory (the workflow definition
 #         itself, the shared scripts, the ignore lists, ...) is a
 #         repository-wide change and affects every image. This is the
@@ -52,11 +52,6 @@
 #         (a workflow, a shared script) alters in a published image.
 set -euo pipefail
 
-# Paths that live in one image's directory but are consumed by every build, so
-# the per-image rule does not apply to them. build-checks.yml bind-mounts the
-# debian smoke test into each image and runs it before the image's own one.
-BUILD_CROSS_IMAGE_PATHS='["debian/smoke-test.sh"]'
-
 # Paths that cannot reach any build the caller performs, matched as a regular
 # expression against each changed path. Markdown is documentation only; no
 # Dockerfile copies one in. Each mode adds what it alone cannot reach.
@@ -70,7 +65,9 @@ INPUT="${2:--}"
 case "$MODE" in
   build)
     DEVCONTAINER_OWNED=true
-    CROSS_IMAGE_PATHS="$BUILD_CROSS_IMAGE_PATHS"
+    # build-checks.yml bind-mounts the debian smoke test into each image and
+    # runs it before the image's own one, so it is not that image's file alone.
+    CROSS_IMAGE_PATHS='["debian/smoke-test.sh"]'
     CROSS_IMAGE_REASON="cross-image files changed"
     REPO_WIDE_PREFIX=""
     REPO_WIDE_REASON="repository-wide files changed"

@@ -65,11 +65,18 @@ emit_header() {
   printf -- 'defaults:\n  parallel: %s\nsync:\n' "$PARALLEL"
 }
 
-emit_repository() {
+# The entry both modes emit: regsync lists the tags the source repository holds
+# and each mode appends the filter that decides which of them are copied.
+emit_entry() {
   local image="$1"
   printf -- '  - source: %s/%s\n    target: %s/%s\n    type: repository\n' \
     "$SOURCE_PREFIX" "$image" "$TARGET_PREFIX" "$image"
-  printf -- '    tags:\n      deny:\n        - sha256-.*\n'
+  printf -- '    tags:\n'
+}
+
+emit_full() {
+  emit_entry "$1"
+  printf -- '      deny:\n        - sha256-.*\n'
 }
 
 # regsync compiles every allow pattern as a regular expression anchored with ^
@@ -88,9 +95,8 @@ emit_release() {
   variants=$(build_config variants "$image" | jq -r '.[]')
   [ -n "$variants" ] || fail "${image}/build.yaml defines no variant"
 
-  printf -- '  - source: %s/%s\n    target: %s/%s\n    type: repository\n' \
-    "$SOURCE_PREFIX" "$image" "$TARGET_PREFIX" "$image"
-  printf -- '    tags:\n      allow:\n'
+  emit_entry "$image"
+  printf -- '      allow:\n'
 
   while IFS= read -r variant; do
     tags=$(build_config tag-names "$image" "$variant")
@@ -120,7 +126,7 @@ case "$MODE" in
     ;;
   full)
     for IMAGE in "${IMAGES[@]}"; do
-      emit_repository "$IMAGE"
+      emit_full "$IMAGE"
     done
     ;;
   *)
