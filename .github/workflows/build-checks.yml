@@ -186,7 +186,6 @@ jobs:
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: ./debian
-          # The layout takes no name: check-image resolves it by path alone.
           outputs: |
             type=docker,name=debian:${{ matrix.variant }}
             type=oci,dest=${{ runner.temp }}/base,tar=false
@@ -338,7 +337,15 @@ jobs:
         run: |
           if [ "$BASE_BUILT" = "true" ]; then
             REF="${MIRROR_IMAGE_REF}:${DEBIAN_VARIANT}"
-            docker buildx imagetools create -t "$REF" "oci-layout://${OCI_LAYOUT}"
+            # The layout holds the image under the name check-base built it
+            # with, which no tag of this repository matches, so it is addressed
+            # by the digest index.json records for it.
+            LAYOUT_DIGEST=$(jq -r '.manifests[0].digest' "${OCI_LAYOUT}/index.json")
+            if [ -z "$LAYOUT_DIGEST" ] || [ "$LAYOUT_DIGEST" = "null" ]; then
+              echo "No manifest in ${OCI_LAYOUT}/index.json" >&2
+              exit 1
+            fi
+            docker buildx imagetools create -t "$REF" "oci-layout://${OCI_LAYOUT}@${LAYOUT_DIGEST}"
             # The Dev Container CLI reads the base through the Docker daemon,
             # which knows no mirror, so this image has to reach the daemon
             # under the name the Dockerfiles take their base FROM.
