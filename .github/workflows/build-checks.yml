@@ -4,16 +4,20 @@ on:
   pull_request:
     paths:
       - .github/workflows/build-checks.yml
-      - '*/Dockerfile'
-      - '*/build.yaml'
-      - '*/smoke-test.sh'
-      - '*/node-keyring.kbx'
-      - '*/opentofu-signing-key.asc'
-      - '*/tofu-ls-checksums.txt'
-      - '*/rustup-init-*.sha256'
-      - '*/uv-*.sha256'
-      - '*/pnpm-*.sha256'
-      - '*/adoptium-signing-key.asc'
+      - bun/**
+      - debian/**
+      - deno/**
+      - golang/**
+      - mise/**
+      - node/**
+      - opentofu/**
+      - pnpm/**
+      - rustup/**
+      - temurin/**
+      - terraform/**
+      - uv/**
+      - zig/**
+      - '!*/README.md'
       - .devcontainer/feature-**
       - .devcontainer/sandbox-**
       - scripts/build-config.sh
@@ -23,16 +27,20 @@ on:
     branches:
       - main
     paths:
-      - '*/Dockerfile'
-      - '*/build.yaml'
-      - '*/smoke-test.sh'
-      - '*/node-keyring.kbx'
-      - '*/opentofu-signing-key.asc'
-      - '*/tofu-ls-checksums.txt'
-      - '*/rustup-init-*.sha256'
-      - '*/uv-*.sha256'
-      - '*/pnpm-*.sha256'
-      - '*/adoptium-signing-key.asc'
+      - bun/**
+      - debian/**
+      - deno/**
+      - golang/**
+      - mise/**
+      - node/**
+      - opentofu/**
+      - pnpm/**
+      - rustup/**
+      - temurin/**
+      - terraform/**
+      - uv/**
+      - zig/**
+      - '!*/README.md'
       - .devcontainer/feature-**
       - .devcontainer/sandbox-**
       - scripts/build-config.sh
