@@ -25,11 +25,9 @@ RUN --mount=type=bind,source=uv-amd64.sha256,target=/tmp/uv-amd64.sha256,ro \
         *) echo "Unsupported TARGETARCH: ${TARGETARCH}" >&2; exit 1 ;; \
     esac \
     && TMPDIR="$(mktemp -d)" \
-    # Download uv and verify it against the committed checksum
     && UV_TARBALL="uv-${UV_ARCH}-unknown-linux-gnu.tar.gz" \
     && wget -q -T 30 -t 3 -P "${TMPDIR}" "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/${UV_TARBALL}" \
     && env --chdir="${TMPDIR}" sha256sum -c "${UV_SHA256_FILE}" \
-    # Install uv
     && tar xzf "${TMPDIR}/${UV_TARBALL}" -C "${TMPDIR}" \
     && mv "${TMPDIR}/uv-${UV_ARCH}-unknown-linux-gnu/uv" "${TMPDIR}/uv-${UV_ARCH}-unknown-linux-gnu/uvx" /usr/local/bin/ \
     && rm -rf "${TMPDIR}" \

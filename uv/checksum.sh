@@ -2,14 +2,12 @@
 # checksum.sh — print the sha256 line for a uv release tarball, after
 # confirming the tarball's build provenance.
 #
-# uv publishes a checksum next to each release tarball, but it is written by
-# the same workflow run and served from the same release, so it vouches for
-# nothing the tarball does not already assert about itself. This repository
-# derives its own trust anchor instead: the tarball is accepted only once
-# `gh attestation verify` has bound its digest to uv's release workflow at the
-# commit the version's tag points to. The digest is then committed as trust
-# material and is what the image build verifies against, the way every other
-# image here verifies a committed checksum.
+# The tarball is accepted only once `gh attestation verify` has bound its
+# digest to uv's release workflow at the commit the version's tag points to.
+# The digest is then committed as trust material and is what the image build
+# verifies against, the way every other image here verifies a committed
+# checksum. The checksum uv publishes beside the tarball is written by the
+# same workflow run, so it is not the material.
 #
 # Run by scripts/update-material.sh from the materials declared in
 # build.yaml, with UV_VERSION taken from the pinned build args. Needs `gh`
