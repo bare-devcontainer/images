@@ -7,14 +7,8 @@
 #
 #   image_ref  Tagged reference of an image the local Docker daemon holds
 #
-# A Dev Container client remaps dev to the host user's UID/GID when
-# updateRemoteUserUID is on, which it is by default on Linux. The remap
-# rewrites /etc/passwd and /etc/group and then chowns the home directory alone
-# (https://github.com/devcontainers/cli/blob/main/scripts/updateUID.Dockerfile),
-# so anything dev owns elsewhere is left behind under the old UID. tar running
-# as root restores the ownership its archive records, which is how an upstream
-# release archive built under uid 1000 ends up owned by dev; extract those with
-# --no-same-owner.
+# Such ownership does not survive the UID remap a Dev Container client applies
+# by default on Linux.
 set -euo pipefail
 
 IMAGE_REF="${1:?Usage: check-image-ownership.sh <image_ref>}"
@@ -31,9 +25,21 @@ OWNED=$(docker run --rm --user root "$IMAGE_REF" sh -c '
 
 if [ -n "$OWNED" ]; then
   mapfile -t PATHS <<< "$OWNED"
-  echo "⚠️ ${IMAGE_REF} ships ${#PATHS[@]} path(s) owned by dev outside its home directory" >&2
-  printf '%s\n' "${PATHS[@]:0:20}" >&2
-  [ "${#PATHS[@]}" -le 20 ] || echo "... and $(( ${#PATHS[@]} - 20 )) more" >&2
+  echo "⚠️ ${IMAGE_REF} ships ${#PATHS[@]} path(s) owned by dev outside its home directory:" >&2
+  printf '  %s\n' "${PATHS[@]:0:20}" >&2
+  [ "${#PATHS[@]}" -le 20 ] || echo "  ... and $(( ${#PATHS[@]} - 20 )) more" >&2
+  cat >&2 <<'REASON'
+
+On Linux a Dev Container client remaps dev to the host user's UID/GID by
+default (updateRemoteUserUID), and the remap chowns dev's home directory
+alone, so the paths above keep the old UID and end up owned by no user:
+https://github.com/devcontainers/cli/blob/main/scripts/updateUID.Dockerfile
+
+An upstream release archive whose entries record uid 1000 produces this,
+because tar restores the ownership it records when it runs as root. Extract
+such an archive with tar --no-same-owner, or install the files rather than
+moving them out of the extraction directory.
+REASON
   exit 1
 fi
 
