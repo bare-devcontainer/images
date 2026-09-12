@@ -1,17 +1,18 @@
 description: "Minimal Dev Container image for Python with uv: Debian, verified upstreams, SLSA provenance"
-# VERSION in each url is replaced with the build_args value named by
-# version_key; commit_to_pr files are pushed onto version-bump PRs.
 materials:
   - path: uv-amd64.sha256
-    url: https://releases.astral.sh/github/uv/releases/download/VERSION/uv-x86_64-unknown-linux-gnu.tar.gz.sha256
+    command: ["checksum.sh", "amd64"]
     version_key: UV_VERSION
     commit_to_pr: true
     description: >-
-      Checksum for uv's amd64 release tarball from releases.astral.sh, matching
-      the pinned UV_VERSION. This committed file is the trust anchor the
-      Dockerfile verifies the downloaded binary against.
+      Checksum for uv's amd64 release tarball, matching the pinned UV_VERSION.
+      The checksum uv publishes comes from the same release as the tarball, so
+      checksum.sh derives this one instead, accepting the tarball only after
+      `gh attestation verify` has bound its digest to uv's release workflow at
+      the commit that version's tag points to. This committed file is the
+      trust anchor the Dockerfile verifies the downloaded tarball against.
   - path: uv-arm64.sha256
-    url: https://releases.astral.sh/github/uv/releases/download/VERSION/uv-aarch64-unknown-linux-gnu.tar.gz.sha256
+    command: ["checksum.sh", "arm64"]
     version_key: UV_VERSION
     commit_to_pr: true
     description: >-
