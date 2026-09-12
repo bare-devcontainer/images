@@ -11,9 +11,9 @@
 #   [{"image": "node", "selected": true, "reason": "own files changed",
 #     "files": ["node/Dockerfile"]}, ...]
 #
-# "files" lists the changes under <image>/ plus the cross-image files that
-# select this image; changes that select every image are named by "reason"
-# instead, so the report does not repeat them for every image.
+# "files" lists the changes under <image>/; changes that select every image
+# are named by "reason" instead, so the report does not repeat them for every
+# image.
 #
 # The mode names the build the caller performs, since what a change can reach
 # differs between the two:
@@ -27,11 +27,11 @@
 #         that configuration layers the Dev Container Features onto it.
 #       - Files under .devcontainer/sandbox-<image>/ affect that image, since
 #         that configuration builds it as a dev container.
-#       - debian/smoke-test.sh affects every image even though it lives in one
-#         image's directory. Note that debian/Dockerfile does NOT:
-#         build-checks.yml builds each derived image FROM the *published*
-#         ghcr.io debian tag, so a base image change in the working tree never
-#         reaches a derived image build there.
+#       - Files under debian/ affect every image: build-checks.yml builds the
+#         debian base from the checkout and builds each other image FROM it,
+#         so a base image change reaches every image build. It also
+#         bind-mounts debian/smoke-test.sh into each image and runs it before
+#         the image's own one.
 #       - Every path outside an image directory (the workflow definition
 #         itself, the shared scripts, the ignore lists, ...) is a
 #         repository-wide change and affects every image. This is the
@@ -57,6 +57,10 @@ set -euo pipefail
 # Dockerfile copies one in. Each mode adds what it alone cannot reach.
 IGNORED_PATTERN='\.md$'
 
+# The image every other image is built FROM, so a change under it reaches
+# every image in both modes.
+BASE_IMAGE_DIR='debian/'
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 MODE="${1:?Usage: changed-images.sh <build|release> [<file>]}"
@@ -65,19 +69,11 @@ INPUT="${2:--}"
 case "$MODE" in
   build)
     DEVCONTAINER_OWNED=true
-    # build-checks.yml bind-mounts the debian smoke test into each image and
-    # runs it before the image's own one.
-    CROSS_IMAGE_PATHS='["debian/smoke-test.sh"]'
-    CROSS_IMAGE_REASON="cross-image files changed"
-    REPO_WIDE_PREFIX=""
-    REPO_WIDE_REASON="repository-wide files changed"
+    UNOWNED_REPO_WIDE=true
     ;;
   release)
     DEVCONTAINER_OWNED=false
-    CROSS_IMAGE_PATHS='[]'
-    CROSS_IMAGE_REASON=""
-    REPO_WIDE_PREFIX="debian/"
-    REPO_WIDE_REASON="base image changed"
+    UNOWNED_REPO_WIDE=false
     # No image copies its smoke test in; build-checks.yml bind-mounts them at
     # test time, so a change to one alters nothing that gets published.
     IGNORED_PATTERN="${IGNORED_PATTERN}|^[^/]+/smoke-test\.sh$"
@@ -97,13 +93,10 @@ fi
 
 IMAGES=$(bash "${SCRIPT_DIR}/build-config.sh" images)
 
-# $repo_wide_prefix selects the paths that affect every image: with no prefix,
-# every path no image owns; with one, the paths under it, which their own
-# image still counts as its own files.
-jq -n -c --argjson images "$IMAGES" --argjson cross_image "$CROSS_IMAGE_PATHS" \
+jq -n -c --argjson images "$IMAGES" \
   --argjson devcontainer_owned "$DEVCONTAINER_OWNED" \
-  --arg cross_image_reason "$CROSS_IMAGE_REASON" \
-  --arg repo_wide_prefix "$REPO_WIDE_PREFIX" --arg repo_wide_reason "$REPO_WIDE_REASON" \
+  --argjson unowned_repo_wide "$UNOWNED_REPO_WIDE" \
+  --arg base_image_dir "$BASE_IMAGE_DIR" \
   --arg ignored "$IGNORED_PATTERN" --arg changed "$CHANGED" '
   # Directory of the image a path belongs to, or null when it belongs to none.
   def owner($path):
@@ -114,26 +107,22 @@ jq -n -c --argjson images "$IMAGES" --argjson cross_image "$CROSS_IMAGE_PATHS" \
        else null end);
 
   ($changed | split("\n") | map(select(length > 0 and (test($ignored) | not)))) as $files
-  | ($files | map(select(IN($cross_image[])))) as $cross_image_changed
-  | ($files | map(select(
-      if $repo_wide_prefix == "" then owner(.) == null
-      else startswith($repo_wide_prefix) end))) as $repo_wide
+  | ($files | map(select(startswith($base_image_dir)))) as $base_image
+  | ($files | map(select($unowned_repo_wide and owner(.) == null))) as $repo_wide
   | $images | map(
       . as $image
       | ($files | map(select(owner(.) == $image))) as $own
-      # A cross-image path in this image own directory is covered by $own.
-      | ($cross_image_changed | map(select(owner(.) != $image))) as $inherited
       | {
           image: $image,
-          selected: (($own + $inherited + $repo_wide) | length > 0),
+          selected: (($own + $base_image + $repo_wide) | length > 0),
           reason: (
             if ($own | length) > 0 then "own files changed"
-            elif ($inherited | length) > 0 then $cross_image_reason
-            elif ($repo_wide | length) > 0 then $repo_wide_reason
+            elif ($base_image | length) > 0 then "base image changed"
+            elif ($repo_wide | length) > 0 then "repository-wide files changed"
             else "no relevant changes"
             end
           ),
-          files: ($own + $inherited)
+          files: $own
         }
     )
 '

@@ -257,6 +257,17 @@ jobs:
       fail-fast: false
       matrix:
         include: ${{ fromJson(needs.setup.outputs.matrix) }}
+    services:
+      # Holds the debian image this job builds, for the builder below to
+      # resolve the ghcr.io base of the language image to.
+      registry:
+        image: registry:3@sha256:1be55279f18a2fe1a74edf2664cac61c1bea305b7b4642dab412e7affdcb3e33
+        ports:
+          - 5000:5000
+    env:
+      # The path is the one the language Dockerfiles name after ghcr.io in
+      # their FROM, since a mirror keeps the repository path.
+      BASE_IMAGE_REF: localhost:5000/bare-devcontainer/debian
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -269,6 +280,10 @@ jobs:
             "${{ matrix.variant }}" debian_variant)
           DELIM="EOF_$(openssl rand -hex 8)"
           {
+            echo "debian_variant=${DEBIAN_VARIANT}"
+            echo "base_args<<${DELIM}"
+            bash scripts/build-config.sh build-args debian "$DEBIAN_VARIANT"
+            echo "${DELIM}"
             echo "image_args<<${DELIM}"
             bash scripts/build-config.sh build-args "${{ matrix.image }}" "${{ matrix.variant }}"
             echo "DEBIAN_TAG=${DEBIAN_VARIANT}"
@@ -283,6 +298,24 @@ jobs:
           } >> "$GITHUB_ENV"
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+        with:
+          # The builder shares the host network to reach the registry service,
+          # and BuildKit tries a registry's mirrors before the registry itself,
+          # so every build on this builder, the sandbox dev container's
+          # included, resolves the ghcr.io debian base to the image the step
+          # below pushes there rather than to the published one.
+          driver-opts: network=host
+          buildkitd-config-inline: |
+            [registry."ghcr.io"]
+              mirrors = ["localhost:5000"]
+      - name: Build debian image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: ./debian
+          push: true
+          tags: ${{ env.BASE_IMAGE_REF }}:${{ steps.read.outputs.debian_variant }}
+          build-args: ${{ steps.read.outputs.base_args }}
+          cache-from: type=gha,scope=debian-${{ steps.read.outputs.debian_variant }}-${{ matrix.arch }}
       - name: Build language image
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
@@ -295,6 +328,18 @@ jobs:
           # builds and release dry-runs share the same cache entries.
           cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.variant }}-${{ matrix.arch }}
           cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,scope={0}-{1}-{2},mode=max', matrix.image, matrix.variant, matrix.arch) || '' }}
+      - name: Verify the base image
+        # A base the mirror does not hold falls back to the published one, and
+        # a language image built on that passes every other check here.
+        env:
+          BASE_IMAGE: ${{ env.BASE_IMAGE_REF }}:${{ steps.read.outputs.debian_variant }}
+          IMAGE: ${{ matrix.image }}:${{ matrix.variant }}
+        run: |
+          docker pull "$BASE_IMAGE"
+          BASE_LAYERS=$(docker inspect --format '{{ json .RootFS.Layers }}' "$BASE_IMAGE")
+          docker inspect --format '{{ json .RootFS.Layers }}' "$IMAGE" \
+            | jq -e --argjson base "$BASE_LAYERS" '.[:($base | length)] == $base' > /dev/null \
+            || { echo "ERROR: ${IMAGE} does not extend the debian image built here" >&2; exit 1; }
       - name: Verify devcontainer.metadata label
         # Guards against a child image accidentally dropping the label
         # inherited from the debian base image.
