@@ -373,9 +373,11 @@ jobs:
             ${{ steps.read.outputs.image_args }}
             DEBIAN_TAG=${{ steps.base.outputs.debian_tag }}
           # The scope is the one publish-image.yml reads and writes for this
-          # image, variant and architecture.
+          # image, variant and architecture. That build takes the published
+          # base, so a run whose base came from check-base writes nothing to it.
           cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.variant }}-${{ matrix.arch }}
-          cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,scope={0}-{1}-{2},mode=max', matrix.image, matrix.variant, matrix.arch) || '' }}
+          cache-to: ${{ github.ref == 'refs/heads/main' && needs.check-base.result != 'success'
+            && format('type=gha,scope={0}-{1}-{2},mode=max', matrix.image, matrix.variant, matrix.arch) || '' }}
       - name: Verify devcontainer.metadata label
         # Guards against a child image accidentally dropping the label
         # inherited from the debian base image.
