@@ -34,11 +34,6 @@ On Linux a Dev Container client remaps dev to the host user's UID/GID by
 default (updateRemoteUserUID), and the remap chowns dev's home directory
 alone, so the paths above keep the old UID and end up owned by no user:
 https://github.com/devcontainers/cli/blob/main/scripts/updateUID.Dockerfile
-
-An upstream release archive whose entries record uid 1000 produces this,
-because tar restores the ownership it records when it runs as root. Extract
-such an archive with tar --no-same-owner, or install the files rather than
-moving them out of the extraction directory.
 REASON
   exit 1
 fi
