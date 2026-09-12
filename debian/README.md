@@ -55,11 +55,9 @@ The image runs as the non-root user `dev` (UID/GID 1000) and its working directo
 Container clients pick up the user without extra configuration. Every image built on this one
 inherits that label.
 
-`dev` owns its home directory and nothing else, so the image works with any host UID: a client
-that remaps `dev` to the UID and GID of the user running it re-owns the home directory and
-leaves nothing behind under the old one. `/workspaces` is created as root for that reason, and
-a dev container covers it with the workspace bind mount.
-[The `dev` user](../README.md#the-dev-user) covers what that guarantees.
+`dev` owns its home directory and nothing else, so a client that remaps it to the host user's
+UID leaves nothing behind: `/workspaces` is created as root and covered by the workspace bind
+mount. [The `dev` user](../README.md#the-dev-user) has the details.
 
 `dev`'s login shell is bash, which appends each command to `$HISTFILE` as it is entered rather
 than at exit. `HISTFILE` is `/home/dev/.local/state/bash/history` rather than the default

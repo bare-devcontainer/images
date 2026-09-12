@@ -6,9 +6,6 @@
 #   check-image-ownership.sh <image_ref>
 #
 #   image_ref  Tagged reference of an image the local Docker daemon holds
-#
-# Such ownership does not survive the UID remap a Dev Container client applies
-# by default on Linux.
 set -euo pipefail
 
 IMAGE_REF="${1:?Usage: check-image-ownership.sh <image_ref>}"
@@ -27,8 +24,8 @@ if [ -n "$OWNED" ]; then
   [ "${#PATHS[@]}" -le 20 ] || echo "  ... and $(( ${#PATHS[@]} - 20 )) more" >&2
   cat >&2 <<'REASON'
 
-A Dev Container client's updateRemoteUserUID chowns dev's home alone, so these
-keep the old UID and end up owned by nobody. Consider making them root-owned:
+updateRemoteUserUID chowns dev's home alone, so these keep the old UID and end
+up owned by nobody. Consider making them root-owned:
 https://github.com/devcontainers/cli/blob/main/scripts/updateUID.Dockerfile
 REASON
   exit 1
