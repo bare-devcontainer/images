@@ -31,7 +31,7 @@ if [ -n "$OWNED" ]; then
   cat >&2 <<'REASON'
 
 A Dev Container client's updateRemoteUserUID chowns dev's home alone, so these
-keep the old UID and end up owned by nobody. Make them root-owned instead:
+keep the old UID and end up owned by nobody. Consider making them root-owned:
 https://github.com/devcontainers/cli/blob/main/scripts/updateUID.Dockerfile
 REASON
   exit 1
