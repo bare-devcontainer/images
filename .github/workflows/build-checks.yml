@@ -17,12 +17,12 @@ on:
       - terraform/**
       - uv/**
       - zig/**
-      - '!*/README.md'
       - .devcontainer/feature-**
       - .devcontainer/sandbox-**
       - scripts/build-config.sh
       - scripts/changed-images.sh
       - .trivyignore.yaml
+      - '!**.md'
   push:
     branches:
       - main
@@ -40,11 +40,11 @@ on:
       - terraform/**
       - uv/**
       - zig/**
-      - '!*/README.md'
       - .devcontainer/feature-**
       - .devcontainer/sandbox-**
       - scripts/build-config.sh
       - scripts/changed-images.sh
+      - '!**.md'
 
 permissions: {}
 
