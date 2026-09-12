@@ -13,10 +13,10 @@ ARG TARGETARCH
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-# Deno publishes no signature for its release archives, so each archive is
-# verified against a checksum file committed to this repository (kept in
-# sync by .github/workflows/update-material.yml and reviewed like any other
-# change).
+# Deno publishes neither a signature nor build provenance for its release
+# archives, so each archive is verified against a checksum file committed to
+# this repository (kept in sync by .github/workflows/update-material.yml and
+# reviewed like any other change).
 RUN --mount=type=bind,source=deno-amd64.sha256,target=/tmp/deno-amd64.sha256,ro \
     --mount=type=bind,source=deno-arm64.sha256,target=/tmp/deno-arm64.sha256,ro \
     case "${TARGETARCH}" in \

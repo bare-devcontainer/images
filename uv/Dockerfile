@@ -14,10 +14,9 @@ USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# uv's release tarball is verified against a checksum committed to this repo
-# (downloaded from https://releases.astral.sh/, kept in sync by
-# .github/workflows/update-material.yml and reviewed like any other change)
-# instead of one fetched alongside the binary.
+# uv's release tarball is verified against a checksum committed to this
+# repository, which checksum.sh derives from the tarball's build provenance
+# and .github/workflows/update-material.yml keeps in sync with UV_VERSION.
 RUN --mount=type=bind,source=uv-amd64.sha256,target=/tmp/uv-amd64.sha256,ro \
     --mount=type=bind,source=uv-arm64.sha256,target=/tmp/uv-arm64.sha256,ro \
     case "${TARGETARCH}" in \

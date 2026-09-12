@@ -59,11 +59,13 @@ Completions are generated at build time with `deno completions bash` and install
 ## Supply chain
 
 `deno` is downloaded directly from [GitHub Releases](https://github.com/denoland/deno/releases).
-Deno publishes no signature for its release archives, so each archive is verified against a
-SHA-256 checksum file committed to this repository (`deno/deno-<arch>.sha256`) rather than one
-fetched from the same server as the binary. The checksum files are kept in sync with the pinned
-`DENO_VERSION` by an automated workflow and reviewed like any other change, so later tampering
-with the download channel cannot affect builds.
+Deno publishes neither a signature nor build provenance for its release archives, only a SHA-256
+checksum on the same release, so each archive is verified against a copy of that checksum
+committed to this repository (`deno/deno-<arch>.sha256`) rather than one fetched at build time.
+The checksum files are taken from the release when the pinned `DENO_VERSION` changes, by an
+automated workflow, and reviewed like any other change, so a build accepts only the archive that
+was published when the version was pinned, and later tampering with the download channel cannot
+affect builds.
 
 ## Verifying the image
 

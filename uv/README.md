@@ -84,11 +84,18 @@ setup does keep the two together.
 
 ## Supply chain
 
-`uv` is downloaded directly from [GitHub Releases](https://github.com/astral-sh/uv/releases)
-and verified before installation against a checksum committed to this repository.
-The checksum is sourced from [releases.astral.sh](https://releases.astral.sh/) and
-kept in sync with the pinned version by `.github/workflows/update-material.yml`, so it
-is reviewed like any other change rather than fetched alongside the binary at build time.
+`uv` is downloaded from [GitHub Releases](https://github.com/astral-sh/uv/releases) and verified
+against a checksum committed to this repository (`uv/uv-amd64.sha256`, `uv/uv-arm64.sha256`).
+
+uv publishes a checksum next to each release tarball, but it comes from the same release as the
+tarball, so that checksum is not what is committed — the committed one is derived here, and only
+from a tarball whose origin has been established. `.github/workflows/update-material.yml` runs
+`uv/checksum.sh` whenever the pinned version changes, and the script records a digest only after
+`gh attestation verify` has confirmed that the tarball's
+[build provenance](https://github.com/astral-sh/uv/blob/main/.github/workflows/release.yml) was
+signed by uv's release workflow at the commit the version's tag points to. The resulting checksum
+is committed and reviewed like any other change, so what the image build trusts is a digest this
+repository accepted, rather than one the release host served alongside the tarball.
 
 Note that this covers the `uv` binary only. Interpreters and packages that uv installs at
 runtime are fetched from their own upstreams under uv's own verification, outside this image's
