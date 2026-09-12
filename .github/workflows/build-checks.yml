@@ -48,6 +48,10 @@ on:
       - scripts/check-image-ownership.sh
       - '!**.md'
 
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('build-checks-pr-{0}', github.event.pull_request.number) || format('build-checks-{0}', github.sha) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions: {}
 
 defaults:
