@@ -208,6 +208,7 @@ jobs:
         with:
           name: base-${{ matrix.variant }}-${{ matrix.arch }}
           path: ${{ runner.temp }}/base
+          if-no-files-found: error
           retention-days: 1
       - name: Verify devcontainer.metadata label
         run: |
@@ -309,11 +310,10 @@ jobs:
           } >> "$GITHUB_OUTPUT"
           # The sandbox configuration reads the same values through
           # ${localEnv:...}. Exported rather than set per step because the keys
-          # differ per image. The Dev Container CLI inspects the base image
-          # through the Docker daemon, which pulls from ghcr.io itself, where
-          # a digest check-base produced does not exist; the tag resolves to
-          # the published image for that inspection and through the mirror
-          # for the build.
+          # differ per image. The Dev Container CLI reads the base through the
+          # Docker daemon, which knows no mirror and holds the base under its
+          # tag alone, so the sandbox takes the tag where the language image
+          # takes the digest.
           {
             bash scripts/build-config.sh build-args "${{ matrix.image }}" "${{ matrix.variant }}"
             echo "DEBIAN_TAG=${DEBIAN_VARIANT}"
@@ -349,6 +349,11 @@ jobs:
           if [ "$BASE_BUILT" = "true" ]; then
             REF="${MIRROR_IMAGE_REF}:${DEBIAN_VARIANT}"
             docker buildx imagetools create -t "$REF" "oci-layout://${OCI_LAYOUT}"
+            # The Dev Container CLI reads the base through the Docker daemon,
+            # which knows no mirror, so this image has to reach the daemon
+            # under the name the Dockerfiles take their base FROM.
+            docker pull "$REF"
+            docker tag "$REF" "${BASE_IMAGE_REF}:${DEBIAN_VARIANT}"
           else
             REF="${BASE_IMAGE_REF}:${DEBIAN_VARIANT}"
           fi
