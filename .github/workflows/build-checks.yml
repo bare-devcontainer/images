@@ -309,23 +309,28 @@ jobs:
       - name: Read build args
         id: read
         env:
-          # Pinned to the digest of the image just pushed, which only the
-          # registry service holds, so the FROM can resolve to no other image.
-          DEBIAN_TAG: ${{ steps.base-args.outputs.debian_variant }}@${{ steps.base.outputs.digest }}
+          DEBIAN_VARIANT: ${{ steps.base-args.outputs.debian_variant }}
+          BASE_DIGEST: ${{ steps.base.outputs.digest }}
         run: |
           DELIM="EOF_$(openssl rand -hex 8)"
+          # Pinned to the digest of the image just pushed, which only the
+          # registry service holds, so the FROM can resolve to no other image.
           {
             echo "image_args<<${DELIM}"
             bash scripts/build-config.sh build-args "${{ matrix.image }}" "${{ matrix.variant }}"
-            echo "DEBIAN_TAG=${DEBIAN_TAG}"
+            echo "DEBIAN_TAG=${DEBIAN_VARIANT}@${BASE_DIGEST}"
             echo "${DELIM}"
           } >> "$GITHUB_OUTPUT"
           # The sandbox configuration reads the same values through
           # ${localEnv:...}. Exported rather than set per step because the keys
-          # differ per image.
+          # differ per image. The Dev Container CLI inspects the base image
+          # through the Docker daemon, which pulls from ghcr.io itself and so
+          # cannot find that digest; named by tag, the base resolves to the
+          # published image for that inspection and through the mirror for
+          # the build.
           {
             bash scripts/build-config.sh build-args "${{ matrix.image }}" "${{ matrix.variant }}"
-            echo "DEBIAN_TAG=${DEBIAN_TAG}"
+            echo "DEBIAN_TAG=${DEBIAN_VARIANT}"
           } >> "$GITHUB_ENV"
       - name: Build language image
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
