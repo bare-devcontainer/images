@@ -94,11 +94,8 @@ and `containerUser` through the
 [`devcontainer.metadata` label](https://containers.dev/implementors/reference/#labels), so a
 Dev Container client picks the user up on its own.
 
-`dev` owns its home directory and nothing else. What an image installs is owned by root, so no
-code the container runs can modify the toolchain running it.
-
-Nothing else is tied to UID 1000 either, so the images work with any host UID: a client that
-remaps `dev` to the host user's
+`dev` owns its home directory and nothing else, so the images work with any host UID: a client
+that remaps `dev` to the host user's
 ([`updateRemoteUserUID`](https://containers.dev/implementors/json_reference/), on by default on
 Linux) re-owns the home directory and leaves no file behind under the old UID. CI asserts this
 on every image.
