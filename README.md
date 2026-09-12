@@ -39,6 +39,7 @@ contents auditable:
 
 - **Dev Container ready** — Each image comes with standard Dev Container configuration pre-applied, so it works out of the box.
 - **Minimal attack surface** — Each image includes only the packages and configuration required for its target stack. Keeping installed software to a minimum helps reduce the potential vulnerability surface of each development environment.
+- **Unprivileged by default** — Each image runs as a non-root user that owns nothing beyond its own home directory, with no `sudo` and no root shell to escalate through. A dependency's install script, or anything else the container runs, cannot reach the toolchain running it, so what a compromised package can damage stops at the project's own files. See [The `dev` user](#the-dev-user).
 - **Minimal trusted upstreams** — Software is sourced only from the official Debian package archive, Docker Official Images, and the official distribution channels for each language runtime or package manager. Packages are verified using the officially recommended methods for each upstream, such as GPG or minisign.
 - **Secure build pipeline** — All dependencies are pinned to specific versions and content digests. Published images include SLSA provenance attestations, making the build process verifiable.
 - **Regular base updates** — Debian base images are updated regularly with Renovate so upstream security patches can be incorporated promptly.
@@ -85,6 +86,26 @@ There are two ways to add what a project needs on top:
 
    See [Using with a Dockerfile](#using-with-a-dockerfile) for how to wire that into
    `devcontainer.json`.
+
+## The `dev` user
+
+Every image runs as `dev` (UID/GID 1000), starts in `/workspaces`, and declares `remoteUser`
+and `containerUser` through the
+[`devcontainer.metadata` label](https://containers.dev/implementors/reference/#labels), so a
+Dev Container client picks the user up with no configuration of its own.
+
+`dev` owns its home directory and nothing else. Every language runtime, package manager, and
+binary an image installs is owned by root and is not writable by `dev`, which is what stops a
+package's install script, a build hook, or any other code the container runs from modifying
+the toolchain that runs it.
+
+That also means these images work with any host UID. On Linux a Dev Container client remaps
+`dev` to the UID and GID of the user running it, by default and without being asked
+([`updateRemoteUserUID`](https://containers.dev/implementors/json_reference/)), so that files
+in a bind-mounted workspace stay writable. The remap rewrites `/etc/passwd` and `/etc/group`
+and re-owns the home directory, and nothing in these images depends on the UID it replaces, so
+it leaves no file or directory behind under the old one. CI asserts that on every image and
+both architectures.
 
 ## Images
 

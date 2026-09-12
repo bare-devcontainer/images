@@ -45,7 +45,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
                 bash-completion lsb-release locales man-db manpages \
         && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen \
         && groupadd --gid "${USER_GID}" "${USERNAME}" \
-        && useradd -l -m -s /bin/bash -u "${USER_UID}" -g "${USER_GID}" "${USERNAME}"
+        && useradd -l -m -s /bin/bash -u "${USER_UID}" -g "${USER_GID}" "${USERNAME}" \
+        # Created here rather than left to WORKDIR below, which would run as
+        # ${USERNAME} and leave the directory owned by a UID that a Dev Container
+        # client's remap does not update. A workspace bind mount covers it.
+        && mkdir /workspaces
 
 COPY --chown=${USERNAME}:${USERNAME} assets/.bashrc /home/${USERNAME}/.bashrc
 

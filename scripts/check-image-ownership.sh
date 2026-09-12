@@ -13,15 +13,12 @@ set -euo pipefail
 
 IMAGE_REF="${1:?Usage: check-image-ownership.sh <image_ref>}"
 
-# /workspaces is created by WORKDIR after USER, and a dev container covers it
-# with the workspace bind mount, so dev owning it reaches no consumer.
 OWNED=$(docker run --rm --user root "$IMAGE_REF" sh -c '
   set -eu
   DEV_UID=$(id -u dev)
   DEV_GID=$(id -g dev)
   find / -xdev \( -uid "$DEV_UID" -o -gid "$DEV_GID" \) \
-    -not -path /home/dev -not -path "/home/dev/*" \
-    -not -path /workspaces')
+    -not -path /home/dev -not -path "/home/dev/*"')
 
 if [ -n "$OWNED" ]; then
   mapfile -t PATHS <<< "$OWNED"
