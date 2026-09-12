@@ -275,7 +275,7 @@ jobs:
       # Holds the debian image check-base built, for the builder below to
       # resolve the ghcr.io base of the language image to.
       registry:
-        image: registry:3@sha256:1be55279f18a2fe1a74edf2664cac61c1bea305b7b4642dab412e7affdcb3e33
+        image: registry:3.1.1@sha256:1be55279f18a2fe1a74edf2664cac61c1bea305b7b4642dab412e7affdcb3e33
         ports:
           - 5000:5000
     env:
