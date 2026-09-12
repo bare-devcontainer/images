@@ -35,10 +35,10 @@ volume mounts that persist cache directories for faster rebuilds.
 <!-- tags:begin -->
 | Tags | Debian variant |
 |------|----------------|
-| `12.4.0-trixie`, `12-trixie`, `12.4.0`, `12`, `trixie` | trixie |
-| `12.4.0-bookworm`, `12-bookworm`, `bookworm` | bookworm |
+| `12.4.1-trixie`, `12-trixie`, `12.4.1`, `12`, `trixie` | trixie |
+| `12.4.1-bookworm`, `12-bookworm`, `bookworm` | bookworm |
 
-Tags are also published with a date suffix on each build (e.g., `12.4.0-trixie-<YYYYMMDD>`).
+Tags are also published with a date suffix on each build (e.g., `12.4.1-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
 The version in these tags is the version of pnpm itself, not of any Node.js runtime.
