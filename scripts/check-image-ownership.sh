@@ -25,7 +25,8 @@ if [ -n "$OWNED" ]; then
   cat >&2 <<'REASON'
 
 updateRemoteUserUID chowns dev's home alone, so these keep the old UID and end
-up owned by nobody. Consider making them root-owned:
+up owned by nobody. Own them root:root, or root:<group> with chmod 2775 and dev
+in the group where dev has to write:
 https://github.com/devcontainers/cli/blob/main/scripts/updateUID.Dockerfile
 REASON
   exit 1
