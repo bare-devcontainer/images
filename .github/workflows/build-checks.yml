@@ -140,17 +140,50 @@ jobs:
             done
           done
           exit "$STATUS"
+      - name: Compare the base with the published one
+        id: published
+        # The published debian image is built from debian/ as of the latest
+        # release tag: release.yml rebuilds it whenever that directory changed
+        # since the previous tag, judged by the release rules, and leaves it
+        # alone otherwise. So the published base can stand in for the checkout's
+        # only while those rules find no change since the tag; a base change
+        # merged on main but not released yet is one the next release builds
+        # every image on, so the checks build on it too.
+        run: |
+          LATEST_TAG=$(git tag --list 'v[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]' | sort | tail -1)
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No release tag found; the published debian base is not known to match the checkout."
+            echo "base_matches=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "=== Base changes since ${LATEST_TAG} ==="
+          BASE_CHANGED=$(git diff --name-only "$LATEST_TAG" HEAD \
+            | bash scripts/changed-images.sh release - \
+            | jq -r '.[] | select(.image == "debian") | .selected, (.files[] | "  " + .)')
+          if [ "$BASE_CHANGED" = "false" ]; then
+            echo "None; the published debian base matches the checkout."
+            echo "base_matches=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "$BASE_CHANGED" | tail -n +2
+            echo "The published debian base does not match the checkout."
+            echo "base_matches=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Build matrix
         id: build
         # Expand each entry across both architectures so images are
         # smoke-tested on the same platforms they are published for.
         env:
           REPORT: ${{ steps.changed.outputs.report }}
+          BASE_MATCHES: ${{ steps.published.outputs.base_matches }}
         run: |
           SELECTED=$(echo "$REPORT" | jq -c '[.[] | select(.selected) | .image]')
 
+          # The base is built from the checkout when it is checked itself or
+          # when the published one differs from it, so that every image is
+          # built on the base the release builds it on.
           BASE_MATRIX='[]'
-          if echo "$SELECTED" | jq -e 'any(. == "debian")' > /dev/null; then
+          if echo "$SELECTED" | jq -e 'any(. == "debian")' > /dev/null || [ "$BASE_MATCHES" != "true" ]; then
             BASE_MATRIX=$(bash scripts/build-config.sh variants debian \
               | jq -c '[.[] as $v | ("amd64", "arm64") | {variant: $v, arch: .}]')
           fi
