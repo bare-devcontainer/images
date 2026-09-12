@@ -186,9 +186,7 @@ jobs:
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: ./debian
-          # Both exporters take the one build, so the image the steps below
-          # check is the image check-image builds the language images FROM.
-          # The layout carries no name, which is how check-image resolves it.
+          # The layout takes no name: check-image resolves it by path alone.
           outputs: |
             type=docker,name=debian:${{ matrix.variant }}
             type=oci,dest=${{ runner.temp }}/base,tar=false
@@ -304,10 +302,8 @@ jobs:
           } >> "$GITHUB_OUTPUT"
           # The sandbox configuration reads the same values through
           # ${localEnv:...}. Exported rather than set per step because the keys
-          # differ per image. The Dev Container CLI reads the base through the
-          # Docker daemon, which knows no mirror and holds the base under its
-          # tag alone, so the sandbox takes the tag where the language image
-          # takes the digest.
+          # differ per image. DEBIAN_TAG is the tag where the language image
+          # takes the digest, since the daemon holds the base under the tag.
           {
             bash scripts/build-config.sh build-args "${{ matrix.image }}" "${{ matrix.variant }}"
             echo "DEBIAN_TAG=${DEBIAN_VARIANT}"
