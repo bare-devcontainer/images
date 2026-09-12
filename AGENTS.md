@@ -69,6 +69,7 @@ renovate.jsonc               # Renovate config
   - Inline comments: one of exactly three things — a behaviour of an external system, a coupling to another file, or a constraint a plausible edit would silently break. Anything else: delete it.
 - Comments describe the code as it is, never how it came to be. A decision, an alternative, a past incident, or an answer to review feedback is how it came to be, and belongs in the commit message and the pull request.
 - Default to no comment. Re-read every comment you added or reworded before committing.
+- Sign every commit with the signing key the environment configures, and commit under the identity that key belongs to. Never pass another user's name or email to `git commit`: a commit whose author does not match the signing key goes out unsigned and GitHub cannot verify it.
 - PR titles must follow Conventional Commits format:
   - Allowed types: `image`, `ci`, `chore`, `test`, `docs`
   - The scope is optional. Examples:
