@@ -267,6 +267,7 @@ jobs:
     # needed result is checked explicitly.
     if: >-
       ${{ !cancelled() &&
+      needs.setup.result == 'success' &&
       needs.setup.outputs.matrix != '[]' &&
       (needs.check-base.result == 'success' || needs.check-base.result == 'skipped') }}
     permissions:
@@ -369,8 +370,8 @@ jobs:
           build-args: |
             ${{ steps.read.outputs.image_args }}
             DEBIAN_TAG=${{ steps.base.outputs.debian_tag }}
-          # Cache scopes are arch-suffixed to match publish-image.yml so PR
-          # builds and release dry-runs share the same cache entries.
+          # The scope is the one publish-image.yml reads and writes for this
+          # image, variant and architecture.
           cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.variant }}-${{ matrix.arch }}
           cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,scope={0}-{1}-{2},mode=max', matrix.image, matrix.variant, matrix.arch) || '' }}
       - name: Verify devcontainer.metadata label
