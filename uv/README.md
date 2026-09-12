@@ -18,7 +18,7 @@ Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well 
 
 ```json
 {
-  "image": "ghcr.io/bare-devcontainer/uv:0.11.32@sha256:<digest>"
+  "image": "ghcr.io/bare-devcontainer/uv:trixie@sha256:<digest>"
 }
 ```
 
