@@ -30,9 +30,8 @@ if [ -n "$OWNED" ]; then
   [ "${#PATHS[@]}" -le 20 ] || echo "  ... and $(( ${#PATHS[@]} - 20 )) more" >&2
   cat >&2 <<'REASON'
 
-On Linux a Dev Container client remaps dev to the host user's UID/GID by
-default (updateRemoteUserUID), and the remap chowns dev's home directory
-alone, so the paths above keep the old UID and end up owned by no user:
+A Dev Container client's updateRemoteUserUID chowns dev's home alone, so these
+keep the old UID and end up owned by nobody. Make them root-owned instead:
 https://github.com/devcontainers/cli/blob/main/scripts/updateUID.Dockerfile
 REASON
   exit 1
