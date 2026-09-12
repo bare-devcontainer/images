@@ -186,23 +186,17 @@ jobs:
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: ./debian
-          push: false
-          load: true
-          tags: debian:${{ matrix.variant }}
+          # Both exporters take the one build, so the image the steps below
+          # check is the image check-image builds the language images FROM.
+          # The layout carries no name, which is how check-image resolves it.
+          outputs: |
+            type=docker,name=debian:${{ matrix.variant }}
+            type=oci,dest=${{ runner.temp }}/base,tar=false
           build-args: ${{ steps.read.outputs.build_args }}
           # Cache scopes are arch-suffixed to match publish-image.yml so PR
           # builds and release dry-runs share the same cache entries.
           cache-from: type=gha,scope=debian-${{ matrix.variant }}-${{ matrix.arch }}
           cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,scope=debian-{0}-{1},mode=max', matrix.variant, matrix.arch) || '' }}
-      - name: Export debian image
-        # The image built above, written as the OCI layout check-image builds
-        # the language images FROM.
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
-        with:
-          context: ./debian
-          push: false
-          outputs: type=oci,dest=${{ runner.temp }}/base,tar=false
-          build-args: ${{ steps.read.outputs.build_args }}
       - name: Upload debian image
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
