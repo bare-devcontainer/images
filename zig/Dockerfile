@@ -48,7 +48,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         *"file:${ZIG_TARBALL}"*) ;; \
         *) echo "Trusted comment does not match requested file" >&2; exit 1 ;; \
        esac \
-    && tar xJf "${ZIG_TMPDIR}/${ZIG_TARBALL}" -C "${ZIG_TMPDIR}" \
+    && tar --no-same-owner -xJf "${ZIG_TMPDIR}/${ZIG_TARBALL}" -C "${ZIG_TMPDIR}" \
     && mv "${ZIG_TMPDIR}/zig-${ZIG_ARCH}-linux-${ZIG_VERSION}" /usr/local/zig \
     # Install ZLS
     && ZLS_TARBALL="zls-${ZIG_ARCH}-linux-${ZLS_VERSION}.tar.xz" \
@@ -59,7 +59,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         *"file:${ZLS_TARBALL}"*) ;; \
         *) echo "Trusted comment does not match requested file" >&2; exit 1 ;; \
        esac \
-    && tar xJf "${ZIG_TMPDIR}/${ZLS_TARBALL}" -C "${ZIG_TMPDIR}" \
+    && tar --no-same-owner -xJf "${ZIG_TMPDIR}/${ZLS_TARBALL}" -C "${ZIG_TMPDIR}" \
     && mv "${ZIG_TMPDIR}/zls" /usr/local/bin/zls \
     # Install shell completions for Zig. Fetched via git rather than a raw
     # file URL so the content is cryptographically bound to the pinned commit
