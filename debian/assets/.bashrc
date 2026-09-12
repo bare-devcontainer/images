@@ -9,6 +9,9 @@ HISTCONTROL=ignoreboth
 HISTSIZE=${HISTSIZE:-10000}
 HISTFILESIZE=${HISTFILESIZE:-20000}
 shopt -s histappend
+# Append each command to HISTFILE as it is entered. Waiting for the shell to exit
+# loses the session when the container is stopped before bash gets to write it.
+PROMPT_COMMAND=${PROMPT_COMMAND:+${PROMPT_COMMAND}$'\n'}'history -a'
 
 # Check terminal size after each command.
 shopt -s checkwinsize

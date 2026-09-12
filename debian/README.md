@@ -55,6 +55,12 @@ The image runs as the non-root user `dev` (UID/GID 1000) and its working directo
 Container clients pick up the user without extra configuration. Every image built on this one
 inherits that label.
 
+`dev`'s login shell is bash, which appends each command to `$HISTFILE` as it is entered rather
+than at exit. `HISTFILE` is `/home/dev/.local/state/bash/history` rather than the default
+`~/.bash_history`, and that directory is created in the image, so mounting a volume on it keeps
+the shell history across container rebuilds, which is what the
+[Dev Container template](#dev-container-template) does.
+
 ## Not installed
 
 - **No development headers beyond libc.** `build-essential` covers the compiler, linker, and

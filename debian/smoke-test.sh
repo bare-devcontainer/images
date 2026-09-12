@@ -7,6 +7,9 @@ git --version
 cc --version
 make --version
 
+echo "=== Verifying the shell history directory is writable ==="
+[ -w "${HISTFILE%/*}" ]
+
 echo "=== Verifying the C toolchain compiles and links ==="
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT

@@ -51,3 +51,6 @@ COPY --chown=${USERNAME}:${USERNAME} assets/.bashrc /home/${USERNAME}/.bashrc
 
 USER ${USERNAME}
 WORKDIR /workspaces
+
+ENV HISTFILE=/home/${USERNAME}/.local/state/bash/history
+RUN mkdir -p "${HISTFILE%/*}"
