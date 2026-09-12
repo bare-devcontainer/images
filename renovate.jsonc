@@ -186,6 +186,18 @@
         "patch",
         "digest"
       ]
+    },
+    {
+      // Its own group, so the schedule applies to a branch of its own: the
+      // Dev Container rule above matches this dependency's file too.
+      "description": "Limit Claude Code updates to one pull request a week, since upstream tags releases several times a day. Thursday is free of this repository's scheduled workflows.",
+      "groupName": "Claude Code",
+      "matchPackageNames": [
+        "anthropics/claude-code"
+      ],
+      "schedule": [
+        "* * * * 4"
+      ]
     }
   ]
 }
