@@ -195,8 +195,8 @@ jobs:
           cache-from: type=gha,scope=debian-${{ matrix.variant }}-${{ matrix.arch }}
           cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,scope=debian-{0}-{1},mode=max', matrix.variant, matrix.arch) || '' }}
       - name: Export debian image
-        # The same build again, served from the builder's cache, written as
-        # the OCI layout check-image builds the language images FROM.
+        # The image built above, written as the OCI layout check-image builds
+        # the language images FROM.
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: ./debian
@@ -338,9 +338,8 @@ jobs:
           path: ${{ runner.temp }}/base
       - name: Resolve base image
         id: base
-        # The base is named by digest, in the form publish-image.yml resolves
-        # the published one to. A digest from check-base exists only in the
-        # registry service, so the FROM can resolve to no other image.
+        # A digest from check-base exists only in the registry service, so the
+        # FROM can resolve to no other image.
         env:
           BASE_BUILT: ${{ needs.check-base.result == 'success' }}
           DEBIAN_VARIANT: ${{ steps.read.outputs.debian_variant }}
