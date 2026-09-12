@@ -21,6 +21,7 @@ on:
       - .devcontainer/sandbox-**
       - scripts/build-config.sh
       - scripts/changed-images.sh
+      - scripts/check-image-ownership.sh
       - .trivyignore.yaml
       - '!**.md'
   push:
@@ -44,6 +45,7 @@ on:
       - .devcontainer/sandbox-**
       - scripts/build-config.sh
       - scripts/changed-images.sh
+      - scripts/check-image-ownership.sh
       - '!**.md'
 
 permissions: {}
@@ -247,6 +249,8 @@ jobs:
           docker inspect --format '{{ index .Config.Labels "devcontainer.metadata" }}' \
             "debian:${{ matrix.variant }}" \
             | jq -e 'map(select(.remoteUser == "dev")) | length > 0'
+      - name: Verify image ownership
+        run: bash scripts/check-image-ownership.sh "debian:${{ matrix.variant }}"
       - name: Run smoke test
         run: |
           docker run --rm \
@@ -426,6 +430,8 @@ jobs:
           docker inspect --format '{{ index .Config.Labels "devcontainer.metadata" }}' \
             "${{ matrix.image }}:${{ matrix.variant }}" \
             | jq -e 'map(select(.remoteUser == "dev")) | length > 0'
+      - name: Verify image ownership
+        run: bash scripts/check-image-ownership.sh "${{ matrix.image }}:${{ matrix.variant }}"
       - name: Run smoke test
         env:
           MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}

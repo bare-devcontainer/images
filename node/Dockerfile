@@ -31,7 +31,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && wget -q -T 30 -t 3 -P "${NODE_TMPDIR}" "https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt.asc" \
     && gpgv --keyring=/tmp/node-keyring.kbx --output "${NODE_TMPDIR}/SHASUMS256.txt" < "${NODE_TMPDIR}/SHASUMS256.txt.asc" \
     && grep "  ${NODE_TARBALL}$" "${NODE_TMPDIR}/SHASUMS256.txt" | sed "s|  ${NODE_TARBALL}\$|  ${NODE_TMPDIR}/${NODE_TARBALL}|" | sha256sum -c - \
-    && tar xJf "${NODE_TMPDIR}/${NODE_TARBALL}" -C /usr/local --strip-components=1 \
+    && tar --no-same-owner -xJf "${NODE_TMPDIR}/${NODE_TARBALL}" -C /usr/local --strip-components=1 \
     && rm -rf "${NODE_TMPDIR}" \
     && npm install -g "corepack@${COREPACK_VERSION}" \
     && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
