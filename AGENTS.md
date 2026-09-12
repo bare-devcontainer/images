@@ -11,7 +11,7 @@ scripts/                     # CLI helpers CI calls; each script's header commen
 .github/workflows/
   release.yml                # builds and pushes images to GHCR
   mirror.yml                 # copies published images from GHCR to Docker Hub and sets the description of each Docker Hub repository; called by release.yml, or run by hand for a full sync
-  build-checks.yml           # for each changed image: builds it on the debian base built from the same checkout, smoke-tests it, builds its sandbox dev container, and runs the Dev Container Feature tests on the base
+  build-checks.yml           # for each changed image: builds it on the debian base built from the same checkout when the base changed and on the published one otherwise, smoke-tests it, builds its sandbox dev container, and runs the Dev Container Feature tests on the base
   trivyignore-cleanup.yml    # scans the published images with no ignore file in play and opens a pull request removing the .trivyignore.yaml entries left without a finding
 .devcontainer/
   default/                   # dev container for working in this repo

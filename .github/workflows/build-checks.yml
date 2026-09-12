@@ -194,6 +194,21 @@ jobs:
           # builds and release dry-runs share the same cache entries.
           cache-from: type=gha,scope=debian-${{ matrix.variant }}-${{ matrix.arch }}
           cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,scope=debian-{0}-{1},mode=max', matrix.variant, matrix.arch) || '' }}
+      - name: Export debian image
+        # The same build again, served from the builder's cache, written as
+        # the OCI layout check-image builds the language images FROM.
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: ./debian
+          push: false
+          outputs: type=oci,dest=${{ runner.temp }}/base,tar=false
+          build-args: ${{ steps.read.outputs.build_args }}
+      - name: Upload debian image
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: base-${{ matrix.variant }}-${{ matrix.arch }}
+          path: ${{ runner.temp }}/base
+          retention-days: 1
       - name: Verify devcontainer.metadata label
         run: |
           docker inspect --format '{{ index .Config.Labels "devcontainer.metadata" }}' \
@@ -247,8 +262,13 @@ jobs:
             bash .devcontainer/feature-debian/test.sh
 
   check-image:
-    needs: setup
-    if: needs.setup.outputs.matrix != '[]'
+    needs: [setup, check-base]
+    # !cancelled() lets this run when check-base was skipped, so every other
+    # needed result is checked explicitly.
+    if: >-
+      ${{ !cancelled() &&
+      needs.setup.outputs.matrix != '[]' &&
+      (needs.check-base.result == 'success' || needs.check-base.result == 'skipped') }}
     permissions:
       contents: read
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
@@ -258,79 +278,88 @@ jobs:
       matrix:
         include: ${{ fromJson(needs.setup.outputs.matrix) }}
     services:
-      # Holds the debian image this job builds, for the builder below to
+      # Holds the debian image check-base built, for the builder below to
       # resolve the ghcr.io base of the language image to.
       registry:
         image: registry:3@sha256:1be55279f18a2fe1a74edf2664cac61c1bea305b7b4642dab412e7affdcb3e33
         ports:
           - 5000:5000
     env:
-      # The path is the one the language Dockerfiles name after ghcr.io in
-      # their FROM, since a mirror keeps the repository path.
-      BASE_IMAGE_REF: localhost:5000/bare-devcontainer/debian
+      # Both name the repository the language Dockerfiles take their base
+      # FROM, since a mirror keeps the path after the host.
+      BASE_IMAGE_REF: ghcr.io/bare-devcontainer/debian
+      MIRROR_IMAGE_REF: localhost:5000/bare-devcontainer/debian
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Read base build args
-        id: base-args
+      - name: Read build args
+        id: read
         run: |
           DEBIAN_VARIANT=$(bash scripts/build-config.sh get-field "${{ matrix.image }}" \
             "${{ matrix.variant }}" debian_variant)
           DELIM="EOF_$(openssl rand -hex 8)"
           {
             echo "debian_variant=${DEBIAN_VARIANT}"
-            echo "build_args<<${DELIM}"
-            bash scripts/build-config.sh build-args debian "$DEBIAN_VARIANT"
-            echo "${DELIM}"
-          } >> "$GITHUB_OUTPUT"
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
-        with:
-          # The builder shares the host network to reach the registry service,
-          # and BuildKit tries a registry's mirrors before the registry itself,
-          # so every build on this builder, the sandbox dev container's
-          # included, resolves the ghcr.io debian base to the image the step
-          # below pushes there.
-          driver-opts: network=host
-          buildkitd-config-inline: |
-            [registry."ghcr.io"]
-              mirrors = ["localhost:5000"]
-      - name: Build debian image
-        id: base
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
-        with:
-          context: ./debian
-          push: true
-          tags: ${{ env.BASE_IMAGE_REF }}:${{ steps.base-args.outputs.debian_variant }}
-          build-args: ${{ steps.base-args.outputs.build_args }}
-          cache-from: type=gha,scope=debian-${{ steps.base-args.outputs.debian_variant }}-${{ matrix.arch }}
-      - name: Read build args
-        id: read
-        env:
-          DEBIAN_VARIANT: ${{ steps.base-args.outputs.debian_variant }}
-          BASE_DIGEST: ${{ steps.base.outputs.digest }}
-        run: |
-          DELIM="EOF_$(openssl rand -hex 8)"
-          # Pinned to the digest of the image just pushed, which only the
-          # registry service holds, so the FROM can resolve to no other image.
-          {
             echo "image_args<<${DELIM}"
             bash scripts/build-config.sh build-args "${{ matrix.image }}" "${{ matrix.variant }}"
-            echo "DEBIAN_TAG=${DEBIAN_VARIANT}@${BASE_DIGEST}"
             echo "${DELIM}"
           } >> "$GITHUB_OUTPUT"
           # The sandbox configuration reads the same values through
           # ${localEnv:...}. Exported rather than set per step because the keys
           # differ per image. The Dev Container CLI inspects the base image
           # through the Docker daemon, which pulls from ghcr.io itself, where
-          # that digest does not exist; the tag resolves to the published
-          # image for that inspection and through the mirror for the build.
+          # a digest check-base produced does not exist; the tag resolves to
+          # the published image for that inspection and through the mirror
+          # for the build.
           {
             bash scripts/build-config.sh build-args "${{ matrix.image }}" "${{ matrix.variant }}"
             echo "DEBIAN_TAG=${DEBIAN_VARIANT}"
           } >> "$GITHUB_ENV"
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+        with:
+          # The builder shares the host network to reach the registry service,
+          # and BuildKit tries a registry's mirrors before the registry itself,
+          # so every build on this builder, the sandbox dev container's
+          # included, takes the ghcr.io debian base from the registry service
+          # once the step below has put the image check-base built there, and
+          # from ghcr.io otherwise.
+          driver-opts: network=host
+          buildkitd-config-inline: |
+            [registry."ghcr.io"]
+              mirrors = ["localhost:5000"]
+      - name: Download debian image
+        if: needs.check-base.result == 'success'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: base-${{ steps.read.outputs.debian_variant }}-${{ matrix.arch }}
+          path: ${{ runner.temp }}/base
+      - name: Resolve base image
+        id: base
+        # The base is named by digest, in the form publish-image.yml resolves
+        # the published one to. A digest from check-base exists only in the
+        # registry service, so the FROM can resolve to no other image.
+        env:
+          BASE_BUILT: ${{ needs.check-base.result == 'success' }}
+          DEBIAN_VARIANT: ${{ steps.read.outputs.debian_variant }}
+          OCI_LAYOUT: ${{ runner.temp }}/base
+        run: |
+          if [ "$BASE_BUILT" = "true" ]; then
+            REF="${MIRROR_IMAGE_REF}:${DEBIAN_VARIANT}"
+            docker buildx imagetools create -t "$REF" "oci-layout://${OCI_LAYOUT}"
+          else
+            REF="${BASE_IMAGE_REF}:${DEBIAN_VARIANT}"
+          fi
+          DIGEST=$(docker buildx imagetools inspect "$REF" --format '{{json .Manifest}}' | jq -r '.digest')
+          if [ -z "$DIGEST" ] || [ "$DIGEST" = "null" ]; then
+            echo "Failed to get digest for ${REF}" >&2
+            exit 1
+          fi
+          echo "=== Base image ==="
+          echo "${REF}@${DIGEST}"
+          echo "debian_tag=${DEBIAN_VARIANT}@${DIGEST}" >> "$GITHUB_OUTPUT"
       - name: Build language image
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
@@ -338,7 +367,9 @@ jobs:
           push: false
           load: true
           tags: ${{ matrix.image }}:${{ matrix.variant }}
-          build-args: ${{ steps.read.outputs.image_args }}
+          build-args: |
+            ${{ steps.read.outputs.image_args }}
+            DEBIAN_TAG=${{ steps.base.outputs.debian_tag }}
           # Cache scopes are arch-suffixed to match publish-image.yml so PR
           # builds and release dry-runs share the same cache entries.
           cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.variant }}-${{ matrix.arch }}
