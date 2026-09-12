@@ -58,7 +58,7 @@ set -euo pipefail
 IGNORED_PATTERN='\.md$'
 
 # The image every other image is built FROM, so a change under it reaches
-# every image in both modes.
+# every image.
 BASE_IMAGE_DIR='debian/'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

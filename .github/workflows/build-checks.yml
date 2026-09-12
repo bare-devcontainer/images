@@ -292,7 +292,7 @@ jobs:
           # and BuildKit tries a registry's mirrors before the registry itself,
           # so every build on this builder, the sandbox dev container's
           # included, resolves the ghcr.io debian base to the image the step
-          # below pushes there rather than to the published one.
+          # below pushes there.
           driver-opts: network=host
           buildkitd-config-inline: |
             [registry."ghcr.io"]
@@ -324,10 +324,9 @@ jobs:
           # The sandbox configuration reads the same values through
           # ${localEnv:...}. Exported rather than set per step because the keys
           # differ per image. The Dev Container CLI inspects the base image
-          # through the Docker daemon, which pulls from ghcr.io itself and so
-          # cannot find that digest; named by tag, the base resolves to the
-          # published image for that inspection and through the mirror for
-          # the build.
+          # through the Docker daemon, which pulls from ghcr.io itself, where
+          # that digest does not exist; the tag resolves to the published
+          # image for that inspection and through the mirror for the build.
           {
             bash scripts/build-config.sh build-args "${{ matrix.image }}" "${{ matrix.variant }}"
             echo "DEBIAN_TAG=${DEBIAN_VARIANT}"
