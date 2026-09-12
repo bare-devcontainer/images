@@ -45,7 +45,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
                 bash-completion lsb-release locales man-db manpages \
         && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen \
         && groupadd --gid "${USER_GID}" "${USERNAME}" \
-        && useradd -l -m -s /bin/bash -u "${USER_UID}" -g "${USER_GID}" "${USERNAME}"
+        && useradd -l -m -s /bin/bash -u "${USER_UID}" -g "${USER_GID}" "${USERNAME}" \
+        && mkdir /workspaces
 
 COPY --chown=${USERNAME}:${USERNAME} assets/.bashrc /home/${USERNAME}/.bashrc
 

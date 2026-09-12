@@ -39,6 +39,7 @@ contents auditable:
 
 - **Dev Container ready** — Each image comes with standard Dev Container configuration pre-applied, so it works out of the box.
 - **Minimal attack surface** — Each image includes only the packages and configuration required for its target stack. Keeping installed software to a minimum helps reduce the potential vulnerability surface of each development environment.
+- **Unprivileged by default** — Each image runs as a non-root user that owns nothing outside its home directory, so no code the container runs can modify the toolchain running it, and `updateRemoteUserUID` remaps that user to any host UID with nothing left behind. See [The `dev` user](#the-dev-user).
 - **Minimal trusted upstreams** — Software is sourced only from the official Debian package archive, Docker Official Images, and the official distribution channels for each language runtime or package manager. Packages are verified using the officially recommended methods for each upstream, such as GPG or minisign.
 - **Secure build pipeline** — All dependencies are pinned to specific versions and content digests. Published images include SLSA provenance attestations, making the build process verifiable.
 - **Regular base updates** — Debian base images are updated regularly with Renovate so upstream security patches can be incorporated promptly.
@@ -85,6 +86,19 @@ There are two ways to add what a project needs on top:
 
    See [Using with a Dockerfile](#using-with-a-dockerfile) for how to wire that into
    `devcontainer.json`.
+
+## The `dev` user
+
+Every image runs as `dev` (UID/GID 1000), starts in `/workspaces`, and declares `remoteUser`
+and `containerUser` through the
+[`devcontainer.metadata` label](https://containers.dev/implementors/reference/#labels), so a
+Dev Container client picks the user up on its own.
+
+`dev` owns its home directory and nothing else, so the images work with any host UID: a client
+that remaps `dev` to the host user's
+([`updateRemoteUserUID`](https://containers.dev/implementors/json_reference/), on by default on
+Linux) re-owns the home directory and leaves no file behind under the old UID. CI asserts this
+on every image.
 
 ## Images
 

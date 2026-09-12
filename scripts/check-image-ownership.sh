@@ -6,22 +6,16 @@
 #   check-image-ownership.sh <image_ref>
 #
 #   image_ref  Tagged reference of an image the local Docker daemon holds
-#
-# Such ownership does not survive the UID remap a Dev Container client applies
-# by default on Linux.
 set -euo pipefail
 
 IMAGE_REF="${1:?Usage: check-image-ownership.sh <image_ref>}"
 
-# /workspaces is created by WORKDIR after USER, and a dev container covers it
-# with the workspace bind mount, so dev owning it reaches no consumer.
 OWNED=$(docker run --rm --user root "$IMAGE_REF" sh -c '
   set -eu
   DEV_UID=$(id -u dev)
   DEV_GID=$(id -g dev)
   find / -xdev \( -uid "$DEV_UID" -o -gid "$DEV_GID" \) \
-    -not -path /home/dev -not -path "/home/dev/*" \
-    -not -path /workspaces')
+    -not -path /home/dev -not -path "/home/dev/*"')
 
 if [ -n "$OWNED" ]; then
   mapfile -t PATHS <<< "$OWNED"
@@ -30,8 +24,9 @@ if [ -n "$OWNED" ]; then
   [ "${#PATHS[@]}" -le 20 ] || echo "  ... and $(( ${#PATHS[@]} - 20 )) more" >&2
   cat >&2 <<'REASON'
 
-A Dev Container client's updateRemoteUserUID chowns dev's home alone, so these
-keep the old UID and end up owned by nobody. Consider making them root-owned:
+updateRemoteUserUID chowns dev's home alone, so these keep the old UID and end
+up owned by nobody. Own them root:root. Where dev has to write, own them
+root:<group> with chmod 2775 and put dev in that group:
 https://github.com/devcontainers/cli/blob/main/scripts/updateUID.Dockerfile
 REASON
   exit 1
