@@ -10,6 +10,14 @@
     "EDITOR": "code --wait",
     "VISUAL": "code --wait"
   },
+  "mounts": [
+    // Persist the shell history the image keeps in this directory.
+    {
+      "source": "${devcontainerId}-bash-history",
+      "target": "/home/dev/.local/state/bash",
+      "type": "volume"
+    }
+  ],
   "customizations": {
     "vscode": {
       "extensions": [
