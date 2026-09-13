@@ -1,4 +1,49 @@
 vulnerabilities:
+  - id: CVE-2026-41992
+    purls:
+      - "pkg:deb/debian/gzip"
+    expired_at: 2026-09-30
+    statement: |
+      debian:trixie-20260824, the newest Docker Official Image build, carries
+      gzip 1.13-1. The fix is in 1.13-1+deb13u1, which trixie has released, so
+      it reaches the image with the next base build Renovate pins.
+
+  - id: CVE-2026-86145
+    purls:
+      - "pkg:deb/debian/libpcre2-8-0"
+    expired_at: 2026-09-30
+    statement: |
+      debian:trixie-20260824, the newest Docker Official Image build, carries
+      pcre2 10.46-1~deb13u1. The fix is in 10.46-1~deb13u2, which trixie has
+      released, so it reaches the image with the next base build Renovate pins.
+  - id: CVE-2026-89161
+    purls:
+      - "pkg:deb/debian/libpcre2-8-0"
+    expired_at: 2026-09-30
+    statement: |
+      debian:trixie-20260824, the newest Docker Official Image build, carries
+      pcre2 10.46-1~deb13u1. The fix is in 10.46-1~deb13u2, which trixie has
+      released, so it reaches the image with the next base build Renovate pins.
+
+  - id: CVE-2026-11822
+    purls:
+      - "pkg:deb/debian/libsqlite3-0"
+    expired_at: 2026-09-30
+    statement: |
+      debian:trixie-20260824, the newest Docker Official Image build, carries
+      sqlite3 3.46.1-7+deb13u1. The fix is in 3.46.1-7+deb13u2, which trixie
+      has released, so it reaches the image with the next base build Renovate
+      pins.
+  - id: CVE-2026-11824
+    purls:
+      - "pkg:deb/debian/libsqlite3-0"
+    expired_at: 2026-09-30
+    statement: |
+      debian:trixie-20260824, the newest Docker Official Image build, carries
+      sqlite3 3.46.1-7+deb13u1. The fix is in 3.46.1-7+deb13u2, which trixie
+      has released, so it reaches the image with the next base build Renovate
+      pins.
+
   - id: CVE-2026-56852
     paths:
       - "usr/local/bin/gopls"
