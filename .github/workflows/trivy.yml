@@ -9,6 +9,7 @@ on:
   workflow_dispatch:
 
 permissions: {}
+cache-mode: none
 
 defaults:
   run:
@@ -59,6 +60,7 @@ jobs:
     needs: setup
     permissions:
       security-events: write
+    cache-mode: write
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -95,6 +97,7 @@ jobs:
     needs: setup
     permissions:
       security-events: write
+    cache-mode: write
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
