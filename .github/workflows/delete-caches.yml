@@ -9,6 +9,7 @@ on:
         type: string
 
 permissions: {}
+cache-mode: none
 
 defaults:
   run:

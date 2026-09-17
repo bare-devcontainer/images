@@ -27,6 +27,7 @@ on:
   workflow_dispatch:
 
 permissions: {}
+cache-mode: none
 
 defaults:
   run:

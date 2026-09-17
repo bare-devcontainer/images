@@ -28,6 +28,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions: {}
+cache-mode: none
 
 defaults:
   run:
@@ -236,6 +237,7 @@ jobs:
       contents: read
       id-token: write
       packages: write
+    cache-mode: write
     needs: [setup, gate]
     if: needs.setup.outputs.should_run == 'true' && needs.setup.outputs.base_variants != '[]'
     strategy:
@@ -258,6 +260,7 @@ jobs:
       contents: read
       id-token: write
       packages: write
+    cache-mode: write
     needs: [setup, gate, build-base]
     # !cancelled() lets this run when build-base was skipped, so every other
     # needed result is checked explicitly.

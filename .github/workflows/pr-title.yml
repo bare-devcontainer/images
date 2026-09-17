@@ -8,6 +8,7 @@ on:
       - synchronize
 
 permissions: {}
+cache-mode: none
 
 defaults:
   run:
