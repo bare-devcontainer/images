@@ -16,6 +16,16 @@ vulnerabilities:
       debian:trixie-20260824, the newest Docker Official Image build, carries
       pcre2 10.46-1~deb13u1. The fix is in 10.46-1~deb13u2, which trixie has
       released, so it reaches the image with the next base build Renovate pins.
+  - id: CVE-2026-89157
+    purls:
+      - "pkg:deb/debian/libpcre2-8-0"
+    expired_at: 2026-09-30
+    statement: |
+      debian:trixie-20260824 and debian:bookworm-20260824, the newest Docker
+      Official Image builds, carry pcre2 10.46-1~deb13u1 and 10.42-1. The fix
+      is in 10.46-1~deb13u2 and 10.42-1+deb12u1, which trixie and bookworm have
+      released, so it reaches the images with the next base build Renovate
+      pins.
   - id: CVE-2026-89161
     purls:
       - "pkg:deb/debian/libpcre2-8-0"
