@@ -83,7 +83,7 @@ jobs:
           fi
 
           # release.yml passes build_date and calls this workflow from the
-          # commit it just published, before create-tag pushes v${BUILD_DATE}.
+          # commit it just published, before create-release pushes v${BUILD_DATE}.
           if [ -n "$BUILD_DATE" ]; then
             echo "build_date=${BUILD_DATE}" >> "$GITHUB_OUTPUT"
             exit 0

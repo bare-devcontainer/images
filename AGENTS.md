@@ -9,7 +9,7 @@ This repository builds and publishes minimal Debian-based Docker images for use 
   README.md     # image docs; the Tags table between <!-- tags:begin/end --> markers is generated
 scripts/                     # CLI helpers CI calls; each script's header comment documents it
 .github/workflows/
-  release.yml                # builds and pushes images to GHCR
+  release.yml                # builds and pushes images to GHCR, then tags the release and publishes a GitHub Release whose notes list the images it rebuilt
   mirror.yml                 # copies published images from GHCR to Docker Hub and sets the description of each Docker Hub repository; called by release.yml, or run by hand for a full sync
   build-checks.yml           # for each changed image: builds it on the debian base built from the same checkout when the checkout's debian/ differs from the published base (changed in the pull request, or on main since the last release) and on the published one otherwise, smoke-tests it, builds its sandbox dev container, and runs the Dev Container Feature tests on the base
   trivyignore-cleanup.yml    # scans the published images with no ignore file in play and opens a pull request removing the .trivyignore.yaml entries left without a finding

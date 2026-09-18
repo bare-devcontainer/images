@@ -152,7 +152,7 @@ jobs:
           echo "$BASE_VARIANTS" | jq -r '.[] | "  " + .'
           echo "Other images:"
           echo "$MATRIX" | jq -r '.[] | "  " + .image + ":" + .primary_tag'
-      - name: Write release summary
+      - name: Write release notes
         if: steps.select.outputs.should_run == 'true'
         env:
           BUILD_DATE: ${{ steps.init.outputs.build_date }}
@@ -165,10 +165,9 @@ jobs:
           BASE_VARIANTS: ${{ steps.matrix.outputs.base_variants }}
           REPO_OWNER: ${{ github.repository_owner }}
           BASE_IMAGE_REF: ${{ env.BASE_IMAGE_REF }}
+          RELEASE_NOTES: ${{ runner.temp }}/release-notes.md
         run: |
           {
-            echo "## Release: v${BUILD_DATE}"
-            echo ""
             if [ "$SCOPE" = "all" ]; then
               echo "Scope: every image (${SCOPE_REASON})"
             else
@@ -213,7 +212,20 @@ jobs:
               echo ""
               echo "$SKIPPED" | jq -r '.[] | "- `ghcr.io/" + env.REPO_OWNER + "/" + . + "`"'
             fi
+          } > "$RELEASE_NOTES"
+          {
+            echo "## Release: v${BUILD_DATE}"
+            echo ""
+            cat "$RELEASE_NOTES"
           } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload release notes
+        if: steps.select.outputs.should_run == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-notes
+          path: ${{ runner.temp }}/release-notes.md
+          if-no-files-found: error
+          retention-days: 1
 
   gate:
     permissions: {}
@@ -283,8 +295,8 @@ jobs:
       overwrite: ${{ inputs.overwrite || false }}
       dryrun: ${{ github.event_name == 'pull_request' }}
 
-  # Not a dependency of create-tag: the images are published once they reach
-  # GHCR, so a mirror failure must not hold back the release tag.
+  # Not a dependency of create-release: the images are published once they
+  # reach GHCR, so a mirror failure must not hold back the release.
   mirror:
     permissions:
       contents: read
@@ -304,7 +316,7 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_PAT: ${{ secrets.DOCKERHUB_PAT }}
 
-  create-tag:
+  create-release:
     permissions:
       actions: write
       contents: write
@@ -319,21 +331,29 @@ jobs:
     runs-on: ubuntu-slim
     timeout-minutes: 5
     steps:
-      - name: Create release tag
+      - name: Download release notes
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-notes
+          path: ${{ runner.temp }}
+      - name: Create release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           SHA: ${{ github.sha }}
           BUILD_DATE: ${{ needs.setup.outputs.build_date }}
+          RELEASE_NOTES: ${{ runner.temp }}/release-notes.md
         run: |
           if gh api "repos/${REPO}/git/ref/tags/v${BUILD_DATE}" > /dev/null 2>&1; then
             echo "Tag v${BUILD_DATE} already exists, skipping."
           else
-            gh api "repos/${REPO}/git/refs" \
-              --method POST \
-              -f ref="refs/tags/v${BUILD_DATE}" \
-              -f sha="${SHA}"
-            echo "Created release tag v${BUILD_DATE}."
+            # gh creates the tag at --target when it does not exist yet.
+            gh release create "v${BUILD_DATE}" \
+              --repo "${REPO}" \
+              --target "${SHA}" \
+              --title "v${BUILD_DATE}" \
+              --notes-file "${RELEASE_NOTES}"
+            echo "Created release v${BUILD_DATE}."
             gh workflow run trivy.yml \
               --repo "${REPO}" \
               --ref main
@@ -342,12 +362,12 @@ jobs:
   update-readme:
     permissions:
       contents: read
-    needs: [setup, create-tag]
+    needs: [setup, create-release]
     if: >-
       ${{ !cancelled() &&
       needs.setup.outputs.should_run == 'true' &&
       github.event_name != 'pull_request' && github.ref == 'refs/heads/main' &&
-      needs.create-tag.result == 'success' }}
+      needs.create-release.result == 'success' }}
     runs-on: ubuntu-slim
     timeout-minutes: 10
     steps:
