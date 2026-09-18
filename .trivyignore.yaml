@@ -334,6 +334,15 @@ vulnerabilities:
       v2.6.2. The v1.12 branch the next patch release comes from still carries
       v2.6.1, and the v1.13 branch 1.13.0-beta1 was cut from carries v2.6.2, so
       the fix is expected in OpenTofu 1.13.0.
+  - id: CVE-2026-85731
+    paths:
+      - "usr/local/bin/tofu"
+    expired_at: 2026-10-31
+    statement: |
+      OpenTofu 1.12.6 depends on oras.land/oras-go/v2 v2.6.1, and the fix is in
+      v2.6.2. The v1.12 branch the next patch release comes from still carries
+      v2.6.1, and the v1.13 branch 1.13.0-rc1 was cut from carries v2.6.2, so
+      the fix is expected in OpenTofu 1.13.0.
   - id: CVE-2026-25679
     paths:
       - "usr/local/bin/tofu-ls"
