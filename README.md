@@ -25,10 +25,10 @@ Only the name and tag change between images — `node:26`, `uv:0.11.32`, `rustup
 `dev` and starts in `/workspaces`.
 
 For anything beyond a trial, pin the digest as well — see [Tags and pinning](#tags-and-pinning)
-— or start from the matching template in
-[bare-devcontainer/templates](https://github.com/bare-devcontainer/templates), which adds that
-pin, security hardening (all Linux capabilities dropped, `no-new-privileges`), and volume mounts
-that persist the language and package manager caches across rebuilds.
+— and consider starting from the matching template in
+[bare-devcontainer/templates](https://github.com/bare-devcontainer/templates), which adds
+security hardening (all Linux capabilities dropped, `no-new-privileges`) and volume mounts that
+persist the language and package manager caches across rebuilds.
 
 ## Why these images
 
