@@ -63,6 +63,11 @@ fi
 
 IMAGE_REPORT=$(bash "${SCRIPT_DIR}/changed-images.sh" release - <<< "$CHANGED")
 
+# A build.yaml missing from <base-ref> is read from the failure of git show
+# below, so a ref that resolves to nothing would read as every image being new.
+git rev-parse --verify --quiet "${BASE_REF}^{commit}" > /dev/null \
+  || fail "unknown base ref: ${BASE_REF}"
+
 # Captured by assignment before it is read. mapfile reading a process
 # substitution succeeds even when the command inside it failed, which would
 # drop images from the report instead of stopping the script.
