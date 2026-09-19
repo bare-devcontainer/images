@@ -144,6 +144,11 @@ why a tag alone is not a reproducible reference.
 
 ## Usage
 
+The common case — an image referenced directly, or the matching template from
+[bare-devcontainer/templates](https://github.com/bare-devcontainer/templates) applied to the
+project — is covered in [Quick start](#quick-start). A project that builds on top of an image,
+or that runs more than one container, uses one of the two setups below instead.
+
 ### With a Dockerfile
 
 Create a `Dockerfile` that extends one of the images, then reference it from
