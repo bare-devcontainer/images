@@ -18,7 +18,7 @@ paths:
 For example:
 
 ```dockerfile
-FROM debian:trixie-20260918@sha256:a792639161fbe8a4249347e72ea43d0fa6039c97413097e3aa225406173ec1ec
+FROM debian:trixie-20260918@sha256:9cc080028c43b27d2074d63a5f9caf7166d731494965616c1a6d2827a004585c
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
