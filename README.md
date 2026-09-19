@@ -126,11 +126,11 @@ Each image publishes several tags per build. Using `golang` as an example:
 | `1.27.0`, `1.27`, `1` | The same as the `-trixie` form; the default Debian release is implied | Same as the `-trixie` form |
 | `1.27.0-trixie-20260727` | One specific build, by date | Never |
 
-An image is rebuilt when its own definition or the shared Debian base changes, and every image
-is rebuilt at least once a week. Because the base image and its packages are refreshed on every
-build, **every tag except the date-suffixed ones is mutable**: the same tag resolves to
-different content over time. That is what makes security patches arrive automatically, and also
-why a tag alone is not a reproducible reference.
+A tag is rebuilt when the definition behind it or the Debian base it is built on changes, and
+every tag is rebuilt at least once a week. Because the base image and its packages are
+refreshed on every build, **every tag except the date-suffixed ones is mutable**: the same tag
+resolves to different content over time. That is what makes security patches arrive
+automatically, and also why a tag alone is not a reproducible reference.
 
 > [!TIP]
 > Pin the digest as well as the tag (`image:tag@sha256:...`). The tag stays readable, the

@@ -154,8 +154,8 @@ jobs:
         # since the previous tag, judged by the release rules, and leaves it
         # alone otherwise. So the published base can stand in for the checkout's
         # only while those rules find no change since the tag; a base change
-        # merged on main but not released yet is one the next release builds
-        # every image on, so the checks build on it too.
+        # merged on main but not released yet is one the next release rebuilds
+        # the base for, so the checks build every image on the checkout's base.
         run: |
           LATEST_TAG=$(git tag --list 'v[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]' | sort | tail -1)
           if [ -z "$LATEST_TAG" ]; then
