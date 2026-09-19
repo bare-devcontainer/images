@@ -49,8 +49,10 @@ fail() {
   exit 1
 }
 
-build_config() {
-  bash "${SCRIPT_DIR}/build-config.sh" "$@"
+# One line of JSON out of a build.yaml, read from the file named or from stdin,
+# so the rules below are one jq program over both revisions of it.
+config_json() {
+  yq -o json -I 0 '.' "$@"
 }
 
 if [ "$INPUT" = "-" ]; then
@@ -60,11 +62,6 @@ else
 fi
 
 IMAGE_REPORT=$(bash "${SCRIPT_DIR}/changed-images.sh" release - <<< "$CHANGED")
-
-# The build.yaml files of <base-ref>, laid out as the image directories
-# build-config.sh expects, so one parser produces both sides of the comparison.
-BASE_TREE=$(mktemp -d)
-trap 'rm -rf "$BASE_TREE"' EXIT
 
 # Captured by assignment before it is read. mapfile reading a process
 # substitution succeeds even when the command inside it failed, which would
@@ -76,11 +73,11 @@ mapfile -t ENTRIES <<< "$REPORT_ENTRIES"
 RECORDS=()
 for ENTRY in "${ENTRIES[@]}"; do
   IMAGE=$(echo "$ENTRY" | jq -r '.image')
-  NEW=$(build_config config-json "$IMAGE")
+  NEW=$(config_json "${IMAGE}/build.yaml")
   OLD=null
-  mkdir -p "${BASE_TREE}/${IMAGE}"
-  if git show "${BASE_REF}:${IMAGE}/build.yaml" > "${BASE_TREE}/${IMAGE}/build.yaml" 2> /dev/null; then
-    OLD=$(cd "$BASE_TREE" && build_config config-json "$IMAGE")
+  # The build.yaml of an earlier revision is not on disk, so git supplies it.
+  if OLD_YAML=$(git show "${BASE_REF}:${IMAGE}/build.yaml" 2> /dev/null); then
+    OLD=$(config_json <<< "$OLD_YAML")
   fi
   RECORDS+=("$(jq -c -n --argjson entry "$ENTRY" --argjson new "$NEW" --argjson old "$OLD" \
     '{image: $entry.image, files: $entry.files, new: $new, old: $old}')")

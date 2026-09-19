@@ -18,11 +18,6 @@
 #   description <image>
 #       Print the human-readable image description.
 #
-#   config-json <image>
-#       Output the whole of <image>/build.yaml as a single line of JSON. Used
-#       by changed-variants.sh, which compares the definitions of two
-#       revisions and needs the file as a whole rather than a field of it.
-#
 #   variants <image>
 #       Output all variant names for <image> as a JSON array.
 #
@@ -61,9 +56,6 @@ case "$COMMAND" in
   description)
     yq '.description // ""' "$FILE"
     ;;
-  config-json)
-    yq -o json -I 0 '.' "$FILE"
-    ;;
   tags)
     VARIANT="${3:?Missing variant}" REF="${4:?Missing image_ref}" yq \
       '.variants[] | select(.variant == strenv(VARIANT)) | .tags[] | strenv(REF) + ":" + .' \
@@ -99,7 +91,7 @@ case "$COMMAND" in
     ;;
   *)
     echo "Unknown command: $COMMAND" >&2
-    echo "Available commands: images, variants, description, config-json, tags, tag-names, primary-tag, get-field, build-args, all-matrix" >&2
+    echo "Available commands: images, variants, description, tags, tag-names, primary-tag, get-field, build-args, all-matrix" >&2
     exit 1
     ;;
 esac
