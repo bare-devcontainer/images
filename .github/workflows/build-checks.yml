@@ -187,8 +187,11 @@ jobs:
           SELECTED=$(echo "$REPORT" | jq -c '[.[] | select(.selected) | .image]')
 
           # The base is built from the checkout when it is checked itself or
-          # when the published one differs from it, so that every image is
-          # built on the base the release builds it on.
+          # when the published one differs from it, so that no image is checked
+          # on a base older than the one it will be published on. The release
+          # is finer grained, rebuilding the variants that name a changed
+          # debian variant, so an image may be checked on a base here that the
+          # next release leaves alone.
           BASE_MATRIX='[]'
           if echo "$SELECTED" | jq -e 'any(. == "debian")' > /dev/null || [ "$BASE_MATCHES" != "true" ]; then
             BASE_MATRIX=$(bash scripts/build-config.sh variants debian \
