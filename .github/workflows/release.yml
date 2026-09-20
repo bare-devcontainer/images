@@ -9,6 +9,7 @@ on:
       - .github/workflows/publish-image.yml
       - scripts/build-config.sh
       - scripts/changed-images.sh
+      - scripts/changed-variants.sh
   workflow_dispatch:
     inputs:
       overwrite:
@@ -17,7 +18,7 @@ on:
         type: boolean
         default: false
       force:
-        description: 'Build every image, even those unchanged since the last release'
+        description: 'Build every variant, even those unchanged since the last release'
         required: true
         type: boolean
         default: false
@@ -46,8 +47,8 @@ jobs:
     outputs:
       build_date: ${{ steps.init.outputs.build_date }}
       should_run: ${{ steps.select.outputs.should_run }}
-      matrix: ${{ steps.matrix.outputs.matrix }}
-      base_variants: ${{ steps.matrix.outputs.base_variants }}
+      matrix: ${{ steps.select.outputs.matrix }}
+      base_variants: ${{ steps.select.outputs.base_variants }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -68,84 +69,74 @@ jobs:
           LATEST_TAG=$(git tag --list 'v[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]' | sort | tail -1)
           echo "latest_tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
 
-          every_image() {
-            echo "Building every image: $1."
+          every_variant() {
+            echo "Building every variant: $1."
             echo "scope=all" >> "$GITHUB_OUTPUT"
             echo "scope_reason=$1" >> "$GITHUB_OUTPUT"
             exit 0
           }
 
           if [ "${EVENT_NAME}" = "pull_request" ]; then
-            every_image "pull request dry run"
+            every_variant "pull request dry run"
           fi
           if [ "${FORCE}" = "true" ]; then
-            every_image "force run requested"
+            every_variant "force run requested"
           fi
           # Guarantee at least one release per week so Debian security
           # updates from the package archive are picked up even when no
-          # image has changed since the last release.
+          # variant has changed since the last release.
           if [ "${EVENT_NAME}" = "schedule" ] && [ "$(date -u +%u)" = "1" ]; then
-            every_image "weekly scheduled rebuild"
+            every_variant "weekly scheduled rebuild"
           fi
           if [ -z "$LATEST_TAG" ]; then
-            every_image "no release tag found"
+            every_variant "no release tag found"
           fi
 
-          echo "Building the images changed since ${LATEST_TAG}."
+          echo "Building the variants changed since ${LATEST_TAG}."
           echo "scope=changed" >> "$GITHUB_OUTPUT"
-      - name: Select images
+      - name: Select variants
         id: select
         env:
           SCOPE: ${{ steps.init.outputs.scope }}
           LATEST_TAG: ${{ steps.init.outputs.latest_tag }}
           CHANGED_FILES: ${{ runner.temp }}/changed-files.txt
         run: |
-          # The diff is reported even when the scope is every image, so the
+          # The diff is reported even when the scope is every variant, so the
           # release rules stay verifiable from the log.
-          IMAGES='[]'
+          MATRIX='[]'
+          BASE_VARIANTS='[]'
           SKIPPED='[]'
           if [ -n "$LATEST_TAG" ]; then
             echo "=== Changed files (${LATEST_TAG}..HEAD) ==="
             git diff --name-only "$LATEST_TAG" HEAD | tee "$CHANGED_FILES"
 
-            REPORT=$(bash scripts/changed-images.sh release "$CHANGED_FILES")
-            echo "=== Images changed since ${LATEST_TAG} ==="
+            REPORT=$(bash scripts/changed-variants.sh "$LATEST_TAG" "$CHANGED_FILES")
+            echo "=== Variants changed since ${LATEST_TAG} ==="
             echo "$REPORT" | jq -r '.[] |
-              "[" + (if .selected then "CHANGED" else "       " end) + "] " + .image + ": " + .reason,
-              (.files[] | "            " + .)'
-            IMAGES=$(echo "$REPORT" | jq -c '[.[] | select(.selected) | .image]')
-            SKIPPED=$(echo "$REPORT" | jq -c '[.[] | select(.selected | not) | .image]')
+              "[" + (if .selected then "CHANGED" else "       " end) + "] "
+              + .image + ":" + .variant + ": " + .reason'
+            # build-base publishes the base before build-image builds anything
+            # FROM it, so the debian variants go into a matrix of their own.
+            BASE_VARIANTS=$(echo "$REPORT" | jq -c '[.[] | select(.selected and .image == "debian") | .variant]')
+            MATRIX=$(echo "$REPORT" | jq -c '[.[] | select(.selected and .image != "debian") | {image, variant, primary_tag}]')
+            SKIPPED=$(echo "$REPORT" | jq -c '[.[] | select(.selected | not) | {image, primary_tag}]')
           fi
 
           if [ "$SCOPE" = "all" ]; then
-            IMAGES=$(bash scripts/build-config.sh images)
+            BASE_VARIANTS=$(bash scripts/build-config.sh variants debian | jq -c .)
+            MATRIX=$(bash scripts/build-config.sh all-matrix)
             SKIPPED='[]'
           fi
-          echo "images=${IMAGES}" >> "$GITHUB_OUTPUT"
+          echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
+          echo "base_variants=${BASE_VARIANTS}" >> "$GITHUB_OUTPUT"
           echo "skipped=${SKIPPED}" >> "$GITHUB_OUTPUT"
 
-          if [ "$IMAGES" = "[]" ]; then
-            echo "No image changed since ${LATEST_TAG}, skipping."
+          if [ "$MATRIX" = "[]" ] && [ "$BASE_VARIANTS" = "[]" ]; then
+            echo "No variant changed since ${LATEST_TAG}, skipping."
             echo "should_run=false" >> "$GITHUB_OUTPUT"
           else
             echo "should_run=true" >> "$GITHUB_OUTPUT"
           fi
-      - name: Build image matrix
-        id: matrix
-        env:
-          IMAGES: ${{ steps.select.outputs.images }}
-        run: |
-          MATRIX=$(bash scripts/build-config.sh all-matrix \
-            | jq -c --argjson selected "$IMAGES" '[.[] | select(.image | IN($selected[]))]')
-          # changed-images.sh selects every image for a debian change, so the
-          # base variants are all or nothing.
-          if echo "$IMAGES" | jq -e 'any(. == "debian")' > /dev/null; then
-            BASE_VARIANTS=$(bash scripts/build-config.sh variants debian | jq -c .)
-          else
-            BASE_VARIANTS='[]'
-          fi
-          echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
-          echo "base_variants=${BASE_VARIANTS}" >> "$GITHUB_OUTPUT"
 
           echo "=== Build targets ==="
           echo "Base variants:"
@@ -159,26 +150,29 @@ jobs:
           LATEST_TAG: ${{ steps.init.outputs.latest_tag }}
           SCOPE: ${{ steps.init.outputs.scope }}
           SCOPE_REASON: ${{ steps.init.outputs.scope_reason }}
-          IMAGES: ${{ steps.select.outputs.images }}
           SKIPPED: ${{ steps.select.outputs.skipped }}
-          MATRIX: ${{ steps.matrix.outputs.matrix }}
-          BASE_VARIANTS: ${{ steps.matrix.outputs.base_variants }}
+          MATRIX: ${{ steps.select.outputs.matrix }}
+          BASE_VARIANTS: ${{ steps.select.outputs.base_variants }}
           REPO_OWNER: ${{ github.repository_owner }}
           BASE_IMAGE_REF: ${{ env.BASE_IMAGE_REF }}
           RELEASE_NOTES: ${{ runner.temp }}/release-notes.md
         run: |
           {
             if [ "$SCOPE" = "all" ]; then
-              echo "Scope: every image (${SCOPE_REASON})"
+              echo "Scope: every variant (${SCOPE_REASON})"
             else
-              echo "Scope: images changed since ${LATEST_TAG}"
+              echo "Scope: variants changed since ${LATEST_TAG}"
             fi
             echo ""
             if [ -n "$LATEST_TAG" ]; then
               echo "### Image changes since ${LATEST_TAG}"
-              # The selection reads paths, so the log reads paths too. The
+              # git log takes paths, so this is the coarser view of a selection
+              # that reads the variant definitions as well: a commit that
+              # changed another variant of a selected image is listed too. The
               # exclusions mirror the patterns changed-images.sh drops.
-              PATHS=$(echo "$IMAGES" | jq -r '.[] + "/"')
+              PATHS=$(jq -r -n --argjson matrix "$MATRIX" --argjson base "$BASE_VARIANTS" \
+                '[$matrix[].image] + (if ($base | length) > 0 then ["debian"] else [] end)
+                 | unique | .[] + "/"')
               mapfile -t IMAGE_PATHS <<< "$PATHS"
               # shellcheck disable=SC2016  # backticks are literal Markdown code spans
               UPDATES=$(git log --format='- `%h` %s' "${LATEST_TAG}..HEAD" \
@@ -192,7 +186,7 @@ jobs:
               echo "_No previous release tag found._"
             fi
             echo ""
-            echo "### Images to be pushed"
+            echo "### Variants to be pushed"
             echo ""
             if [ "$BASE_VARIANTS" != "[]" ]; then
               echo "**Debian base:**"
@@ -208,9 +202,11 @@ jobs:
               echo ""
             fi
             if [ "$SKIPPED" != "[]" ]; then
-              echo "### Images left at their previous build"
+              echo "### Variants left at their previous build"
               echo ""
-              echo "$SKIPPED" | jq -r '.[] | "- `ghcr.io/" + env.REPO_OWNER + "/" + . + "`"'
+              echo "$SKIPPED" | jq -r \
+                'group_by(.image)[] | "- `ghcr.io/" + env.REPO_OWNER + "/" + .[0].image + "`: "
+                 + (map(.primary_tag) | join(", "))'
             fi
           } > "$RELEASE_NOTES"
           {

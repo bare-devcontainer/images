@@ -41,7 +41,7 @@ renovate.jsonc               # Renovate config
 
   | Workflow | Schedule | Runs |
   |----------|----------|------|
-  | `release.yml` | daily 00:00 | publishes the images whose own files, or the `debian` base every image extends, changed since the last release, plus one rebuild of every image every Monday |
+  | `release.yml` | daily 00:00 | publishes the variants whose own definition, or the `debian` variant they are built FROM, changed since the last release, plus one rebuild of every variant every Monday |
   | `trivy.yml` | Monday 06:00 | scans the published images |
   | `trivyignore-cleanup.yml` | Monday 07:00 | opens a pull request dropping `.trivyignore.yaml` entries left without a finding |
   | `attest-check.yml` | Monday 08:00 | verifies the attestations of the published images |
@@ -49,7 +49,7 @@ renovate.jsonc               # Renovate config
   | `update-zig-master.yml` | daily 05:00 | opens a pull request moving the Zig master pin |
 
   Every version an automation moves arrives as a pull request, so `build-checks.yml` builds it before it can be merged and an upstream that breaks simply stays unmerged.
-- A release rebuilds an image when a file in its directory or in `debian/` changed since the last release tag, judged by `scripts/changed-images.sh`. A change outside the image directories (a workflow, a shared script) reaches the published images with the Monday rebuild, or sooner by running `release.yml` by hand with `force` set.
+- A release publishes single variants, not whole images, judged by `scripts/changed-variants.sh`: a file other than `build.yaml` under an image directory rebuilds every variant of that image, since they share it, while a `build.yaml` change rebuilds the variants whose entry differs from the one the last release tag holds, or every variant of the image when what changed sits outside `variants`, and a rebuilt `debian` variant rebuilds the variants naming it in `debian_variant`. So a Renovate pull request that moves one pinned version, or the `debian` digest of one suite, leaves the rest of the published tags where they are. A change outside the image directories (a workflow, a shared script) reaches the published images with the Monday rebuild, or sooner by running `release.yml` by hand with `force` set. `build-checks.yml` stays at image granularity, by `scripts/changed-images.sh`, so every variant of a changed image is built before the change can merge.
 - `.trivyignore.yaml` is the only place a `CRITICAL`/`HIGH` finding is waived, so an entry is a statement that the image cannot currently do anything about the finding. When a scan fails:
   - Check the latest upstream release of the affected component first. A finding that release already fixes is resolved by taking it — bump the pinned version in `build.yaml`, or let the Renovate pull request do it — and gets no entry.
   - Only a finding whose newest upstream release is still affected is ignored. Record in `statement` what was checked and nothing else: the dependency (or Go toolchain) version the pinned release carries, the version the fix is in, and what upstream carries on the branch the next release comes from. The `id` is the reference for what the finding is, so never restate the advisory.
