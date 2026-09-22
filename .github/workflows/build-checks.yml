@@ -21,9 +21,10 @@ on:
       - .devcontainer/sandbox-**
       - scripts/build-config.sh
       - scripts/changed-images.sh
+      - scripts/check-image-env.sh
+      - scripts/check-image-metadata.sh
       - scripts/check-image-ownership.sh
-      - scripts/check-image-path.sh
-      - scripts/devcontainer-path.sh
+      - scripts/devcontainer-env.sh
       - .trivyignore.yaml
       - '!**.md'
   push:
@@ -47,9 +48,10 @@ on:
       - .devcontainer/sandbox-**
       - scripts/build-config.sh
       - scripts/changed-images.sh
+      - scripts/check-image-env.sh
+      - scripts/check-image-metadata.sh
       - scripts/check-image-ownership.sh
-      - scripts/check-image-path.sh
-      - scripts/devcontainer-path.sh
+      - scripts/devcontainer-env.sh
       - '!**.md'
 
 concurrency:
@@ -151,6 +153,10 @@ jobs:
             done
           done
           exit "$STATUS"
+      - name: Verify image metadata
+        # Not tied to a changed image either, like the sandbox check above, so
+        # the whole repository is checked here.
+        run: bash scripts/check-image-metadata.sh
       - name: Compare the base with the published one
         id: published
         # The published debian image is built from debian/ as of the latest
@@ -264,11 +270,18 @@ jobs:
             | jq -e 'map(select(.remoteUser == "dev")) | length > 0'
       - name: Verify image ownership
         run: bash scripts/check-image-ownership.sh "debian:${{ matrix.variant }}"
-      - name: Verify image PATH
-        run: bash scripts/check-image-path.sh "debian:${{ matrix.variant }}"
+      - name: Verify image environment
+        run: bash scripts/check-image-env.sh "debian:${{ matrix.variant }}"
+      - name: Resolve Dev Container environment
+        # A variable pointing at a directory dev can write is declared in
+        # remoteEnv, which a Dev Container client applies and docker run does
+        # not, so the two steps below take it from this file. It is written to
+        # the workspace because the sandbox dev container reads it as well.
+        run: bash scripts/devcontainer-env.sh "debian:${{ matrix.variant }}" | tee remote-env.txt
       - name: Run smoke test
         run: |
           docker run --rm \
+            --env-file remote-env.txt \
             --mount "type=bind,source=${{ github.workspace }}/debian/smoke-test.sh,target=/smoke-test.sh,readonly" \
             "debian:${{ matrix.variant }}" \
             bash /smoke-test.sh
@@ -276,7 +289,8 @@ jobs:
         # Built with the same args as the build step above, so the Dev Container
         # CLI reuses those layers rather than rebuilding the image. The image
         # contents are already covered by the smoke test, so this asserts only
-        # what the configuration adds: the CLI resolves it and applies remoteUser.
+        # what the configuration adds: the CLI resolves it, applies remoteUser,
+        # and applies the remoteEnv the step above resolved for the smoke test.
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
           DEBIAN_TAG: ${{ steps.read.outputs.debian_tag }}
@@ -287,6 +301,11 @@ jobs:
             set -euo pipefail
             [ "$(id -un)" = "dev" ] \
               || { echo "ERROR: expected user dev, got $(id -un)" >&2; exit 1; }
+            while IFS='=' read -r NAME VALUE; do
+              [ -n "$NAME" ] || continue
+              [ "${!NAME-}" = "$VALUE" ] \
+                || { echo "ERROR: ${NAME} is ${!NAME-<unset>}, expected ${VALUE}" >&2; exit 1; }
+            done < remote-env.txt
       - name: Run Trivy vulnerability scanner
         # Vulnerability findings are identical across architectures; scan once.
         if: matrix.arch == 'amd64'
@@ -448,25 +467,22 @@ jobs:
             | jq -e 'map(select(.remoteUser == "dev")) | length > 0'
       - name: Verify image ownership
         run: bash scripts/check-image-ownership.sh "${{ matrix.image }}:${{ matrix.variant }}"
-      - name: Verify image PATH
-        run: bash scripts/check-image-path.sh "${{ matrix.image }}:${{ matrix.variant }}"
-      - name: Resolve Dev Container PATH
-        id: path
-        # A directory dev can write is declared through remoteEnv rather than
-        # ENV PATH, so the steps below stand in for the client that applies it.
+      - name: Verify image environment
+        run: bash scripts/check-image-env.sh "${{ matrix.image }}:${{ matrix.variant }}"
+      - name: Resolve Dev Container environment
+        # A variable pointing at a directory dev can write is declared in
+        # remoteEnv, which a Dev Container client applies and docker run does
+        # not, so the two steps below take it from this file. It is written to
+        # the workspace because the sandbox dev container reads it as well.
         run: |
-          IMAGE_REF="${{ matrix.image }}:${{ matrix.variant }}"
-          {
-            echo "resolved=$(bash scripts/devcontainer-path.sh resolved "$IMAGE_REF")"
-            echo "declared=$(bash scripts/devcontainer-path.sh declared "$IMAGE_REF")"
-          } >> "$GITHUB_OUTPUT"
+          bash scripts/devcontainer-env.sh "${{ matrix.image }}:${{ matrix.variant }}" \
+            | tee remote-env.txt
       - name: Run smoke test
         env:
           MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}
-          REMOTE_PATH: ${{ steps.path.outputs.resolved }}
         run: |
           docker run --rm \
-            --env PATH="$REMOTE_PATH" \
+            --env-file remote-env.txt \
             ${{ matrix.image == 'mise' && '--env MISE_GITHUB_TOKEN' || '' }} \
             --mount "type=bind,source=${{ github.workspace }}/debian/smoke-test.sh,target=/smoke-test-debian.sh,readonly" \
             --mount "type=bind,source=${{ github.workspace }}/${{ matrix.image }}/smoke-test.sh,target=/smoke-test.sh,readonly" \
@@ -477,8 +493,7 @@ jobs:
         # CLI reuses those layers rather than rebuilding the image. The image
         # contents are already covered by the smoke test, so this asserts only
         # what the configuration adds: the CLI resolves it, applies remoteUser,
-        # and puts the directories the image declares through remoteEnv on PATH,
-        # which is also what the smoke test above stands in for.
+        # and applies the remoteEnv the step above resolved for the smoke test.
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         with:
           configFile: .devcontainer/sandbox-${{ matrix.image }}/devcontainer.json
@@ -487,14 +502,11 @@ jobs:
             set -euo pipefail
             [ "$(id -un)" = "dev" ] \
               || { echo "ERROR: expected user dev, got $(id -un)" >&2; exit 1; }
-            IFS=: read -ra DECLARED <<< '${{ steps.path.outputs.declared }}'
-            for DIR in "${DECLARED[@]}"; do
-              [ -n "$DIR" ] || continue
-              case ":${PATH}:" in
-                *":${DIR}:"*) ;;
-                *) echo "ERROR: ${DIR} is not on PATH: ${PATH}" >&2; exit 1 ;;
-              esac
-            done
+            while IFS='=' read -r NAME VALUE; do
+              [ -n "$NAME" ] || continue
+              [ "${!NAME-}" = "$VALUE" ] \
+                || { echo "ERROR: ${NAME} is ${!NAME-<unset>}, expected ${VALUE}" >&2; exit 1; }
+            done < remote-env.txt
       - name: Run Trivy vulnerability scanner
         # Vulnerability findings are identical across architectures; scan once.
         if: matrix.arch == 'amd64'

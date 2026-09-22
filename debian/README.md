@@ -60,9 +60,9 @@ UID leaves nothing behind: `/workspaces` is created as root and covered by the w
 mount. [The `dev` user](../README.md#the-dev-user) has the details.
 
 `dev`'s login shell is bash, which appends each command to `$HISTFILE` as it is entered rather
-than at exit. `HISTFILE` is `/home/dev/.local/state/bash/history` rather than the default
-`~/.bash_history`, and that directory is created in the image, so mounting a volume on it keeps
-the shell history across container rebuilds, which is what the
+than at exit. Under a Dev Container client, `HISTFILE` is `/home/dev/.local/state/bash/history`
+rather than the default `~/.bash_history`, and that directory is created in the image, so
+mounting a volume on it keeps the shell history across container rebuilds, which is what the
 [Dev Container template](#dev-container-template) does.
 
 ## Not installed

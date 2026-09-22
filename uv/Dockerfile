@@ -40,9 +40,10 @@ COPY --from=builder /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
 COPY --from=builder /usr/share/bash-completion/completions/uv /usr/share/bash-completion/completions/uvx /usr/share/bash-completion/completions/
 
 # dev can write the tool bin directory, so it is declared for the processes a
-# Dev Container client starts rather than in ENV PATH, which root reads too. The
-# label replaces, not merges with, the base image's, so that one is repeated.
-LABEL devcontainer.metadata="[{\"remoteUser\":\"dev\",\"containerUser\":\"dev\",\"remoteEnv\":{\"PATH\":\"/home/dev/.local/bin:\${containerEnv:PATH}\"}}]"
+# Dev Container client starts rather than in ENV PATH, which every user in the
+# container reads. The label replaces, not merges with, the base image's, so
+# its entries are repeated here.
+LABEL devcontainer.metadata="[{\"remoteUser\":\"dev\",\"containerUser\":\"dev\",\"remoteEnv\":{\"HISTFILE\":\"/home/dev/.local/state/bash/history\",\"PATH\":\"/home/dev/.local/bin:\${containerEnv:PATH}\"}}]"
 
 # uv hardlinks from its cache into the project's .venv by default. In a dev container
 # the cache lives in the container filesystem (or a named volume) while the project is
