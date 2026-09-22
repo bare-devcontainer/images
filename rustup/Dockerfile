@@ -10,10 +10,7 @@ ARG TARGETARCH
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# dev can write the Cargo bin directory, so it is declared for the processes a
-# Dev Container client starts rather than in ENV PATH, which every user in the
-# container reads. The label replaces, not merges with, the base image's, so
-# its entries are repeated here.
+# dev can write ~/.cargo/bin, so it is declared here rather than in ENV.
 LABEL devcontainer.metadata='[{ \
   "remoteUser": "dev", \
   "containerUser": "dev", \

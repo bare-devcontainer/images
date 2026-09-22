@@ -40,10 +40,7 @@ USER root
 
 RUN ln -s /opt/pnpm/pnpm /usr/local/bin/pnpm
 
-# dev can write the pnpm home directory, so it and the bin directory under it
-# are declared for the processes a Dev Container client starts rather than in
-# ENV, which every user in the container reads. The label replaces, not merges
-# with, the base image's, so its entries are repeated here.
+# dev can write the pnpm home, so it is declared here rather than in ENV.
 LABEL devcontainer.metadata='[{ \
   "remoteUser": "dev", \
   "containerUser": "dev", \

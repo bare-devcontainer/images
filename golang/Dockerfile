@@ -50,10 +50,7 @@ COPY --from=builder /usr/local/bin/gopls /usr/local/bin/gopls
 
 ENV PATH=/usr/local/go/bin:${PATH}
 
-# dev can write the GOPATH bin directory, so it is declared for the processes a
-# Dev Container client starts rather than in ENV PATH, which every user in the
-# container reads. The label replaces, not merges with, the base image's, so
-# its entries are repeated here.
+# dev can write /home/dev/go/bin, so it is declared here rather than in ENV.
 LABEL devcontainer.metadata='[{ \
   "remoteUser": "dev", \
   "containerUser": "dev", \

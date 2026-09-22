@@ -39,10 +39,7 @@ FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 COPY --from=builder /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
 COPY --from=builder /usr/share/bash-completion/completions/uv /usr/share/bash-completion/completions/uvx /usr/share/bash-completion/completions/
 
-# dev can write the tool bin directory, so it is declared for the processes a
-# Dev Container client starts rather than in ENV PATH, which every user in the
-# container reads. The label replaces, not merges with, the base image's, so
-# its entries are repeated here.
+# dev can write ~/.local/bin, so it is declared here rather than in ENV.
 LABEL devcontainer.metadata='[{ \
   "remoteUser": "dev", \
   "containerUser": "dev", \

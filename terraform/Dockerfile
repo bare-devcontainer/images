@@ -58,10 +58,7 @@ FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 COPY --from=builder /usr/local/bin/terraform /usr/local/bin/terraform-ls /usr/local/bin/
 
-# dev can write the plugin cache, so it is declared for the processes a Dev
-# Container client starts rather than in ENV, which every user in the container
-# reads. The label replaces, not merges with, the base image's, so its entries
-# are repeated here.
+# dev can write the plugin cache, so it is declared here rather than in ENV.
 LABEL devcontainer.metadata='[{ \
   "remoteUser": "dev", \
   "containerUser": "dev", \
