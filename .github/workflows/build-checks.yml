@@ -235,6 +235,13 @@ jobs:
         env:
           # Read by the configuration through ${localEnv:IMAGE_REF}.
           IMAGE_REF: debian:${{ matrix.variant }}
+          # The Dev Container CLI builds with buildx, and the builder this job
+          # set up uses the docker-container driver, which resolves a FROM
+          # against the registry alone. The image built above exists only in
+          # the daemon, and its tag also names a Docker Hub image, so on that
+          # builder the base would silently be the upstream Debian; the default
+          # builder reads the daemon.
+          BUILDX_BUILDER: default
         with:
           configFile: tests/image/devcontainer.json
           push: never
@@ -257,6 +264,9 @@ jobs:
           # Read by the configuration through ${localEnv:IMAGE_REF}, so the
           # Features are layered onto the image this job built.
           IMAGE_REF: debian:${{ matrix.variant }}
+          # The Feature build takes its FROM from the daemon; see the step
+          # above.
+          BUILDX_BUILDER: default
         with:
           configFile: tests/features/devcontainer.json
           push: never
@@ -406,6 +416,13 @@ jobs:
         env:
           # Read by the configuration through ${localEnv:IMAGE_REF}.
           IMAGE_REF: ${{ matrix.image }}:${{ matrix.variant }}
+          # The Dev Container CLI builds with buildx, and the builder this job
+          # set up uses the docker-container driver, which resolves a FROM
+          # against the registry alone. The image built above exists only in
+          # the daemon, and its tag also names a Docker Hub image for several
+          # of these, so on that builder the base would silently be the
+          # upstream one; the default builder reads the daemon.
+          BUILDX_BUILDER: default
         with:
           configFile: tests/image/devcontainer.json
           push: never
