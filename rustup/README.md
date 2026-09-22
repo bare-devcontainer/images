@@ -48,10 +48,9 @@ Everything from the [debian](../debian) base image, plus:
 
 - [rustup](https://rustup.rs/)
 
-`~/.cargo/bin` is on the `PATH` a Dev Container client sets up, so the `rustup`/`cargo` shims
-resolve once a toolchain is installed. `dev` can write that directory, so it is declared
-through `remoteEnv` rather than `ENV PATH` — [The `dev` user](../README.md#the-dev-user) covers
-what that means when the image runs outside such a client.
+`~/.cargo/bin` is on `PATH` under a Dev Container client, so the `rustup`/`cargo` shims resolve
+once a toolchain is installed. Running the image without one (`docker run`, a CI job's
+`container:`) leaves the directory off `PATH`.
 
 ## Not installed
 

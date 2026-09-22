@@ -54,10 +54,9 @@ Everything from the [debian](../debian) base image, plus:
 
 - [mise](https://mise.jdx.dev/)
 
-The shims directory `~/.local/share/mise/shims` is on the `PATH` a Dev Container client sets
-up, so tools resolve as soon as mise installs them. `dev` can write that directory, so it is
-declared through `remoteEnv` rather than `ENV PATH` — [The `dev` user](../README.md#the-dev-user)
-covers what that means when the image runs outside such a client.
+The shims directory `~/.local/share/mise/shims` is on `PATH` under a Dev Container client, so
+tools resolve as soon as mise installs them. Running the image without one (`docker run`, a CI
+job's `container:`) leaves the directory off `PATH`.
 
 ## Not installed
 
