@@ -49,10 +49,10 @@ Everything from the [debian](../debian) base image, plus:
 - [gopls](https://go.dev/gopls/)
 - `pkg-config`, so cgo works out of the box
 
-`/usr/local/go/bin` is on `PATH`. Under a Dev Container client, `GOPATH` is `/home/dev/go` and
-`${GOPATH}/bin` is on `PATH` as well. Running the image without one (`docker run`, a CI job's
-`container:`) declares neither: Go falls back to its own default `GOPATH` of `$HOME/go`, and
-`${GOPATH}/bin` is not on `PATH`.
+`GOPATH` is Go's own default of `$HOME/go`, which is `/home/dev/go`. `/usr/local/go/bin` is on
+`PATH`, and `${GOPATH}/bin` is too under a Dev Container client, so a tool installed with
+`go install` resolves. Running the image without one (`docker run`, a CI job's `container:`)
+leaves `${GOPATH}/bin` off `PATH`.
 
 ## Not installed
 
