@@ -24,7 +24,9 @@ case ":${PATH}:" in
     *":${PNPM_HOME}/bin:"*) ;;
     *) echo "${PNPM_HOME}/bin is not on PATH" >&2; exit 1 ;;
 esac
-[[ "$(pnpm store path)" == "${PNPM_HOME}/"* ]]
+# pnpm keeps its store on a filesystem it can hard link into, so a project on a
+# bind mount moves the store off PNPM_HOME. Record where it landed.
+echo "pnpm store path: $(pnpm store path)"
 
 echo "=== Verifying global runtime installation ==="
 # Any supported major works here; what matters is that it differs from the one
@@ -32,6 +34,9 @@ echo "=== Verifying global runtime installation ==="
 pnpm runtime set node 22 -g
 node --version
 [[ "$(node --version)" == v22.* ]]
+# The runtime is what PNPM_HOME is persisted for, so it has to land under it
+# wherever the store ends up.
+[[ "$(command -v node)" == "${PNPM_HOME}/"* ]]
 
 echo "=== Verifying project-pinned runtime ==="
 TMPDIR=$(mktemp -d)
