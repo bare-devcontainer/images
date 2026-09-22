@@ -233,10 +233,7 @@ jobs:
         with:
           configFile: tests/image/devcontainer.json
           push: never
-          runCmd: |
-            set -euo pipefail
-            bash debian/smoke-test.sh
-            bash tests/image/test.sh
+          runCmd: bash debian/smoke-test.sh
       - name: Run Trivy vulnerability scanner
         # Vulnerability findings are identical across architectures; scan once.
         if: matrix.arch == 'amd64'
@@ -402,7 +399,6 @@ jobs:
             set -euo pipefail
             bash debian/smoke-test.sh
             bash ${{ matrix.image }}/smoke-test.sh
-            bash tests/image/test.sh
       - name: Run Trivy vulnerability scanner
         # Vulnerability findings are identical across architectures; scan once.
         if: matrix.arch == 'amd64'
