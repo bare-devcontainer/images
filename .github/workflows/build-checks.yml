@@ -275,13 +275,14 @@ jobs:
       - name: Resolve Dev Container environment
         # A variable pointing at a directory dev can write is declared in
         # remoteEnv, which a Dev Container client applies and docker run does
-        # not, so the two steps below take it from this file. It is written to
-        # the workspace because the sandbox dev container reads it as well.
-        run: bash scripts/devcontainer-env.sh "debian:${{ matrix.variant }}" | tee remote-env.txt
+        # not, so the smoke test below takes it from this file.
+        run: |
+          bash scripts/devcontainer-env.sh "debian:${{ matrix.variant }}" \
+            | tee "${{ runner.temp }}/remote-env"
       - name: Run smoke test
         run: |
           docker run --rm \
-            --env-file remote-env.txt \
+            --env-file "${{ runner.temp }}/remote-env" \
             --mount "type=bind,source=${{ github.workspace }}/debian/smoke-test.sh,target=/smoke-test.sh,readonly" \
             "debian:${{ matrix.variant }}" \
             bash /smoke-test.sh
@@ -289,8 +290,10 @@ jobs:
         # Built with the same args as the build step above, so the Dev Container
         # CLI reuses those layers rather than rebuilding the image. The image
         # contents are already covered by the smoke test, so this asserts only
-        # what the configuration adds: the CLI resolves it, applies remoteUser,
-        # and applies the remoteEnv the step above resolved for the smoke test.
+        # what the configuration adds: the CLI resolves it and applies remoteUser.
+        # It cannot cover the image's own devcontainer.metadata: for a
+        # configuration that builds a Dockerfile, the CLI takes the label from
+        # the image that Dockerfile is FROM and overwrites it on what it builds.
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
           DEBIAN_TAG: ${{ steps.read.outputs.debian_tag }}
@@ -301,11 +304,6 @@ jobs:
             set -euo pipefail
             [ "$(id -un)" = "dev" ] \
               || { echo "ERROR: expected user dev, got $(id -un)" >&2; exit 1; }
-            while IFS='=' read -r NAME VALUE; do
-              [ -n "$NAME" ] || continue
-              [ "${!NAME-}" = "$VALUE" ] \
-                || { echo "ERROR: ${NAME} is ${!NAME-<unset>}, expected ${VALUE}" >&2; exit 1; }
-            done < remote-env.txt
       - name: Run Trivy vulnerability scanner
         # Vulnerability findings are identical across architectures; scan once.
         if: matrix.arch == 'amd64'
@@ -472,17 +470,16 @@ jobs:
       - name: Resolve Dev Container environment
         # A variable pointing at a directory dev can write is declared in
         # remoteEnv, which a Dev Container client applies and docker run does
-        # not, so the two steps below take it from this file. It is written to
-        # the workspace because the sandbox dev container reads it as well.
+        # not, so the smoke test below takes it from this file.
         run: |
           bash scripts/devcontainer-env.sh "${{ matrix.image }}:${{ matrix.variant }}" \
-            | tee remote-env.txt
+            | tee "${{ runner.temp }}/remote-env"
       - name: Run smoke test
         env:
           MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}
         run: |
           docker run --rm \
-            --env-file remote-env.txt \
+            --env-file "${{ runner.temp }}/remote-env" \
             ${{ matrix.image == 'mise' && '--env MISE_GITHUB_TOKEN' || '' }} \
             --mount "type=bind,source=${{ github.workspace }}/debian/smoke-test.sh,target=/smoke-test-debian.sh,readonly" \
             --mount "type=bind,source=${{ github.workspace }}/${{ matrix.image }}/smoke-test.sh,target=/smoke-test.sh,readonly" \
@@ -492,8 +489,10 @@ jobs:
         # Built with the same args as the build step above, so the Dev Container
         # CLI reuses those layers rather than rebuilding the image. The image
         # contents are already covered by the smoke test, so this asserts only
-        # what the configuration adds: the CLI resolves it, applies remoteUser,
-        # and applies the remoteEnv the step above resolved for the smoke test.
+        # what the configuration adds: the CLI resolves it and applies remoteUser.
+        # It cannot cover the image's own devcontainer.metadata: for a
+        # configuration that builds a Dockerfile, the CLI takes the label from
+        # the image that Dockerfile is FROM and overwrites it on what it builds.
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         with:
           configFile: .devcontainer/sandbox-${{ matrix.image }}/devcontainer.json
@@ -502,11 +501,6 @@ jobs:
             set -euo pipefail
             [ "$(id -un)" = "dev" ] \
               || { echo "ERROR: expected user dev, got $(id -un)" >&2; exit 1; }
-            while IFS='=' read -r NAME VALUE; do
-              [ -n "$NAME" ] || continue
-              [ "${!NAME-}" = "$VALUE" ] \
-                || { echo "ERROR: ${NAME} is ${!NAME-<unset>}, expected ${VALUE}" >&2; exit 1; }
-            done < remote-env.txt
       - name: Run Trivy vulnerability scanner
         # Vulnerability findings are identical across architectures; scan once.
         if: matrix.arch == 'amd64'
