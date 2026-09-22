@@ -1,30 +1,19 @@
-// Verifies the Dev Container Features on an image the way a consumer's client
-// installs them. The image is referenced rather than built from its Dockerfile
-// because that is the only way the Dev Container CLI reads the
-// devcontainer.metadata label the image carries: for a "build" configuration it
-// reads the label of the base image the Dockerfile names, which is the plain
-// Debian image and carries none.
+// Verifies the Dev Container Features on an image, as a consumer's client
+// installs them.
 //
-// The Features are referenced by their major tag so the check keeps verifying
-// whatever a consumer installs today, which is what this configuration exists
-// to prove; pinning them would freeze the check on one released version.
+// The major tag is what a consumer installs; pinning would freeze the check on
+// one released version.
 // decolint-ignore-file pin-feature-exact-version
-// The reference names the image under test, so it carries whatever tag the
-// caller built or published and cannot be pinned here.
 // decolint-ignore-file pin-image-digest
-// "remoteUser" is deliberately absent, so the Features are verified against the
-// user the image's label selects.
+// "remoteUser" is absent so that the Features are verified against the user the
+// image's devcontainer.metadata label selects.
 // decolint-ignore-file require-non-root
 {
-  // Every image extends debian, so the Features are verified on the base alone.
   "name": "features",
-  // Read from the environment without a default, so a run never silently layers
-  // the Features onto an image other than the one the caller meant;
-  // build-checks.yml supplies the image it just built.
   "image": "${localEnv:IMAGE_REF}",
   "features": {
-    // Options stay at their upstream defaults: common-utils only detects the
-    // image's existing dev user while its username option is "automatic".
+    // common-utils adopts the image's existing dev user only while its username
+    // option is "automatic".
     "ghcr.io/devcontainers/features/common-utils:2": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/git-lfs:1": {},

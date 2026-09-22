@@ -1,20 +1,11 @@
-// Verifies an image the way a consumer's Dev Container client reads it. The
-// image is referenced rather than built from its Dockerfile because that is the
-// only way the Dev Container CLI reads the devcontainer.metadata label the image
-// carries: for a "build" configuration it reads the label of the base image the
-// Dockerfile names, which is the plain Debian image and carries none.
+// Verifies an image on its own, as a Dev Container client reads it.
 //
-// The reference names the image under test, so it carries whatever tag the
-// caller built or published and cannot be pinned here.
 // decolint-ignore-file pin-image-digest
-// "remoteUser" is deliberately absent: proving that the image's label supplies
-// it is what this configuration exists for.
+// "remoteUser" is absent so that the image's devcontainer.metadata label has to
+// supply it, which is what this configuration verifies.
 // decolint-ignore-file require-non-root
 {
   "name": "image",
-  // Read from the environment without a default, so a run never silently
-  // verifies an image other than the one the caller meant; build-checks.yml
-  // supplies the image it just built.
   "image": "${localEnv:IMAGE_REF}",
   "runArgs": [
     "--cap-drop=ALL",

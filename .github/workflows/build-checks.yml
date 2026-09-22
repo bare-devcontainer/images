@@ -226,21 +226,14 @@ jobs:
             "debian:${{ matrix.variant }}" \
             bash /smoke-test.sh
       - name: Verify dev container
-        # Verified on the image this job built, not on a build of debian/
-        # Dockerfile, so the Dev Container CLI reads the image the way a
-        # consumer's client does. The image contents are already covered by the
-        # smoke test, so this asserts only what referencing it as a dev
-        # container adds.
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
-          # Read by the configuration through ${localEnv:IMAGE_REF}.
           IMAGE_REF: debian:${{ matrix.variant }}
           # The Dev Container CLI builds with buildx, and the builder this job
           # set up uses the docker-container driver, which resolves a FROM
-          # against the registry alone. The image built above exists only in
-          # the daemon, and its tag also names a Docker Hub image, so on that
-          # builder the base would silently be the upstream Debian; the default
-          # builder reads the daemon.
+          # against the registry alone. The image built above is in the daemon
+          # only, and its tag also names a Docker Hub image, so on that builder
+          # the base would silently be the upstream Debian.
           BUILDX_BUILDER: default
         with:
           configFile: tests/image/devcontainer.json
@@ -261,8 +254,6 @@ jobs:
       - name: Run Dev Container feature tests
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
-          # Read by the configuration through ${localEnv:IMAGE_REF}, so the
-          # Features are layered onto the image this job built.
           IMAGE_REF: debian:${{ matrix.variant }}
           # The Feature build takes its FROM from the daemon; see the step
           # above.
@@ -407,21 +398,15 @@ jobs:
             "${{ matrix.image }}:${{ matrix.variant }}" \
             bash -c "bash /smoke-test-debian.sh && bash /smoke-test.sh"
       - name: Verify dev container
-        # Verified on the image this job built, not on a build of its
-        # Dockerfile, so the Dev Container CLI reads the image the way a
-        # consumer's client does. The image contents are already covered by the
-        # smoke test, so this asserts only what referencing it as a dev
-        # container adds.
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
-          # Read by the configuration through ${localEnv:IMAGE_REF}.
           IMAGE_REF: ${{ matrix.image }}:${{ matrix.variant }}
           # The Dev Container CLI builds with buildx, and the builder this job
           # set up uses the docker-container driver, which resolves a FROM
-          # against the registry alone. The image built above exists only in
-          # the daemon, and its tag also names a Docker Hub image for several
-          # of these, so on that builder the base would silently be the
-          # upstream one; the default builder reads the daemon.
+          # against the registry alone. The image built above is in the daemon
+          # only, and its tag also names a Docker Hub image for several of
+          # these, so on that builder the base would silently be the upstream
+          # one.
           BUILDX_BUILDER: default
         with:
           configFile: tests/image/devcontainer.json

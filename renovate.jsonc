@@ -16,10 +16,8 @@
     ],
     "minimumReleaseAge": null
   },
-  // Renovate's built-in devcontainer manager only inspects the canonical
-  // .devcontainer/devcontainer.json by default, and naming patterns replaces
-  // that default, so the canonical path is repeated alongside the checks under
-  // tests/ whose Dev Container Feature references also get updated.
+  // Naming patterns replaces the manager's default, which is the canonical
+  // .devcontainer/devcontainer.json alone, so that path is listed here too.
   "devcontainer": {
     "managerFilePatterns": [
       "/^\\.devcontainer/devcontainer\\.json$/",
