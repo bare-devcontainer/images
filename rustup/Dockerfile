@@ -10,7 +10,10 @@ ARG TARGETARCH
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ENV PATH=/home/dev/.cargo/bin:${PATH}
+# dev can write the Cargo bin directory, so it is declared for the processes a
+# Dev Container client starts rather than in ENV PATH, which root reads too. The
+# label replaces, not merges with, the base image's, so that one is repeated.
+LABEL devcontainer.metadata="[{\"remoteUser\":\"dev\",\"containerUser\":\"dev\",\"remoteEnv\":{\"PATH\":\"/home/dev/.cargo/bin:\${containerEnv:PATH}\"}}]"
 
 # rustup publishes no signature for rustup-init, so verify it against a
 # checksum file committed to this repository (kept in sync by

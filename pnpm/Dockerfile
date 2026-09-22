@@ -41,7 +41,11 @@ USER root
 RUN ln -s /opt/pnpm/pnpm /usr/local/bin/pnpm
 
 ENV PNPM_HOME=/home/dev/.local/share/pnpm
-ENV PATH=${PNPM_HOME}/bin:${PATH}
+
+# dev can write the pnpm bin directory, so it is declared for the processes a
+# Dev Container client starts rather than in ENV PATH, which root reads too. The
+# label replaces, not merges with, the base image's, so that one is repeated.
+LABEL devcontainer.metadata="[{\"remoteUser\":\"dev\",\"containerUser\":\"dev\",\"remoteEnv\":{\"PATH\":\"${PNPM_HOME}/bin:\${containerEnv:PATH}\"}}]"
 
 USER dev
 

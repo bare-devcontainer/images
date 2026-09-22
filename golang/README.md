@@ -49,7 +49,10 @@ Everything from the [debian](../debian) base image, plus:
 - [gopls](https://go.dev/gopls/)
 - `pkg-config`, so cgo works out of the box
 
-`GOPATH` is `/home/dev/go`, and both `/usr/local/go/bin` and `${GOPATH}/bin` are on `PATH`.
+`GOPATH` is `/home/dev/go`. `/usr/local/go/bin` is on `PATH`, and `${GOPATH}/bin` is on the
+`PATH` a Dev Container client sets up: `dev` can write it, so it is declared through
+`remoteEnv` rather than `ENV PATH` — [The `dev` user](../README.md#the-dev-user) covers what
+that means when the image runs outside such a client.
 
 ## Not installed
 

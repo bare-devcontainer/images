@@ -49,7 +49,12 @@ COPY --from=builder /usr/local/go /usr/local/go
 COPY --from=builder /usr/local/bin/gopls /usr/local/bin/gopls
 
 ENV GOPATH=/home/dev/go
-ENV PATH=/usr/local/go/bin:${GOPATH}/bin:${PATH}
+ENV PATH=/usr/local/go/bin:${PATH}
+
+# dev can write ${GOPATH}/bin, so it is declared for the processes a Dev
+# Container client starts rather than in ENV PATH, which root reads too. The
+# label replaces, not merges with, the base image's, so that one is repeated.
+LABEL devcontainer.metadata="[{\"remoteUser\":\"dev\",\"containerUser\":\"dev\",\"remoteEnv\":{\"PATH\":\"${GOPATH}/bin:\${containerEnv:PATH}\"}}]"
 
 USER dev
 

@@ -54,7 +54,11 @@ with your own `Dockerfile` built `FROM` one of these images.
 
 ## The `dev` user
 
-Every image runs as `dev` (UID/GID 1000), starts in `/workspaces`, and declares `remoteUser` and `containerUser` through the [`devcontainer.metadata` label](https://containers.dev/implementors/reference/#labels), so a Dev Container client picks the user up on its own. `dev` owns its home directory and nothing else, so a client that remaps it to the host user's UID ([`updateRemoteUserUID`](https://containers.dev/implementors/json_reference/), on by default on Linux) leaves no file behind under the old UID. CI asserts this on every image.
+Every image runs as `dev` (UID/GID 1000), starts in `/workspaces`, and declares `remoteUser` and `containerUser` through the [`devcontainer.metadata` label](https://containers.dev/implementors/reference/#labels), so a Dev Container client picks the user up on its own. `dev` owns its home directory and nothing else, so a client that remaps it to the host user's UID ([`updateRemoteUserUID`](https://containers.dev/implementors/json_reference/), on by default on Linux) leaves no file behind under the old UID.
+
+No directory `dev` can write is on the image's `PATH` either. `ENV PATH` applies to every user in the container, so a tool directory under `/home/dev` would sit on the `PATH` of a root shell as well, where a file `dev` wrote could shadow a system command. The images that have such a directory — the mise shims, `~/.cargo/bin`, `~/.local/bin`, `$PNPM_HOME/bin`, `$GOPATH/bin` — declare it through [`remoteEnv`](https://containers.dev/implementors/json_reference/) in the same label instead, which a Dev Container client applies to the processes it starts for `dev`: terminals, tasks, and lifecycle commands. Run such an image without a client (`docker run`, a CI job's `container:`) and that directory is not on `PATH`, so set `PATH` yourself there.
+
+CI asserts both properties on every image.
 
 ## Images
 

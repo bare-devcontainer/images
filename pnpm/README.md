@@ -51,8 +51,11 @@ Everything from the [debian](../debian) base image, plus:
 
 pnpm is installed under `/opt/pnpm` with a `/usr/local/bin/pnpm` symlink, the layout of pnpm's
 own [`ghcr.io/pnpm/pnpm`](https://pnpm.io/docker#official-pnpm-base-image) image. `PNPM_HOME` is
-set to `~/.local/share/pnpm` and its `bin` directory is on `PATH`, so runtimes and globally
-installed packages resolve without further setup.
+set to `~/.local/share/pnpm` and its `bin` directory is on the `PATH` a Dev Container client
+sets up, so runtimes and globally installed packages resolve without further setup. `dev` can
+write that directory, so it is declared through `remoteEnv` rather than `ENV PATH` —
+[The `dev` user](../README.md#the-dev-user) covers what that means when the image runs outside
+such a client.
 
 ## Not installed
 

@@ -22,6 +22,8 @@ on:
       - scripts/build-config.sh
       - scripts/changed-images.sh
       - scripts/check-image-ownership.sh
+      - scripts/check-image-path.sh
+      - scripts/devcontainer-path.sh
       - .trivyignore.yaml
       - '!**.md'
   push:
@@ -46,6 +48,8 @@ on:
       - scripts/build-config.sh
       - scripts/changed-images.sh
       - scripts/check-image-ownership.sh
+      - scripts/check-image-path.sh
+      - scripts/devcontainer-path.sh
       - '!**.md'
 
 concurrency:
@@ -260,6 +264,8 @@ jobs:
             | jq -e 'map(select(.remoteUser == "dev")) | length > 0'
       - name: Verify image ownership
         run: bash scripts/check-image-ownership.sh "debian:${{ matrix.variant }}"
+      - name: Verify image PATH
+        run: bash scripts/check-image-path.sh "debian:${{ matrix.variant }}"
       - name: Run smoke test
         run: |
           docker run --rm \
@@ -442,11 +448,25 @@ jobs:
             | jq -e 'map(select(.remoteUser == "dev")) | length > 0'
       - name: Verify image ownership
         run: bash scripts/check-image-ownership.sh "${{ matrix.image }}:${{ matrix.variant }}"
+      - name: Verify image PATH
+        run: bash scripts/check-image-path.sh "${{ matrix.image }}:${{ matrix.variant }}"
+      - name: Resolve Dev Container PATH
+        id: path
+        # A directory dev can write is declared through remoteEnv rather than
+        # ENV PATH, so the steps below stand in for the client that applies it.
+        run: |
+          IMAGE_REF="${{ matrix.image }}:${{ matrix.variant }}"
+          {
+            echo "resolved=$(bash scripts/devcontainer-path.sh resolved "$IMAGE_REF")"
+            echo "declared=$(bash scripts/devcontainer-path.sh declared "$IMAGE_REF")"
+          } >> "$GITHUB_OUTPUT"
       - name: Run smoke test
         env:
           MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}
+          REMOTE_PATH: ${{ steps.path.outputs.resolved }}
         run: |
           docker run --rm \
+            --env PATH="$REMOTE_PATH" \
             ${{ matrix.image == 'mise' && '--env MISE_GITHUB_TOKEN' || '' }} \
             --mount "type=bind,source=${{ github.workspace }}/debian/smoke-test.sh,target=/smoke-test-debian.sh,readonly" \
             --mount "type=bind,source=${{ github.workspace }}/${{ matrix.image }}/smoke-test.sh,target=/smoke-test.sh,readonly" \
@@ -456,7 +476,9 @@ jobs:
         # Built with the same args as the build step above, so the Dev Container
         # CLI reuses those layers rather than rebuilding the image. The image
         # contents are already covered by the smoke test, so this asserts only
-        # what the configuration adds: the CLI resolves it and applies remoteUser.
+        # what the configuration adds: the CLI resolves it, applies remoteUser,
+        # and puts the directories the image declares through remoteEnv on PATH,
+        # which is also what the smoke test above stands in for.
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         with:
           configFile: .devcontainer/sandbox-${{ matrix.image }}/devcontainer.json
@@ -465,6 +487,14 @@ jobs:
             set -euo pipefail
             [ "$(id -un)" = "dev" ] \
               || { echo "ERROR: expected user dev, got $(id -un)" >&2; exit 1; }
+            IFS=: read -ra DECLARED <<< '${{ steps.path.outputs.declared }}'
+            for DIR in "${DECLARED[@]}"; do
+              [ -n "$DIR" ] || continue
+              case ":${PATH}:" in
+                *":${DIR}:"*) ;;
+                *) echo "ERROR: ${DIR} is not on PATH: ${PATH}" >&2; exit 1 ;;
+              esac
+            done
       - name: Run Trivy vulnerability scanner
         # Vulnerability findings are identical across architectures; scan once.
         if: matrix.arch == 'amd64'

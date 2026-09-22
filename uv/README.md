@@ -48,8 +48,10 @@ Everything from the [debian](../debian) base image, plus:
 
 - [uv](https://docs.astral.sh/uv/) (`uv`, `uvx`), with bash completions installed
 
-`~/.local/bin` is on `PATH`, so tools installed with `uv tool install` resolve without
-further setup.
+`~/.local/bin` is on the `PATH` a Dev Container client sets up, so tools installed with
+`uv tool install` resolve without further setup. `dev` can write that directory, so it is
+declared through `remoteEnv` rather than `ENV PATH` — [The `dev` user](../README.md#the-dev-user)
+covers what that means when the image runs outside such a client.
 
 ## Not installed
 
