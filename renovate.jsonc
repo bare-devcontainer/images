@@ -16,11 +16,10 @@
     ],
     "minimumReleaseAge": null
   },
-  // Naming patterns replaces the manager's default, which is the canonical
-  // .devcontainer/devcontainer.json alone, so that path is listed here too.
+  // Added to the manager's default patterns, which reach .devcontainer only, so
+  // that the Dev Container Feature references under tests/ get updated too.
   "devcontainer": {
     "managerFilePatterns": [
-      "/^\\.devcontainer/devcontainer\\.json$/",
       "/^tests/[^/]+/devcontainer\\.json$/"
     ]
   },
