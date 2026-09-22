@@ -113,7 +113,6 @@ jobs:
             "[" + (if .selected then "RUN " else "SKIP" end) + "] " + .image + ": " + .reason,
             (.files[] | "         " + .)'
       - name: Verify image metadata
-        # Not tied to a changed image, so the whole repository is checked here.
         run: bash scripts/check-image-metadata.sh
       - name: Compare the base with the published one
         id: published
@@ -402,8 +401,6 @@ jobs:
         with:
           configFile: tests/image/devcontainer.json
           push: never
-          # Passed to the container rather than resolved from ${localEnv:...},
-          # so it reaches the smoke test without the configuration naming it.
           env: ${{ matrix.image == 'mise' && format('MISE_GITHUB_TOKEN={0}', github.token) || '' }}
           runCmd: |
             set -euo pipefail

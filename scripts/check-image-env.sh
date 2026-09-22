@@ -10,14 +10,9 @@ set -euo pipefail
 
 IMAGE_REF="${1:?Usage: check-image-env.sh <image_ref>}"
 
-# The environment is the same for every user, so reading it as dev, who then
-# answers whether each path is writable, covers what any other user resolves.
 WRITABLE=$(docker run --rm --user dev "$IMAGE_REF" sh -c '
-  # HOME is the one path dev is meant to own.
   env | grep -v "^HOME=" | while IFS= read -r VARIABLE; do
     NAME="${VARIABLE%%=*}"
-    # A value holds several paths where it extends PATH, and none at all where
-    # it is not a path in the first place.
     echo "${VARIABLE#*=}" | tr ":" "\n" | while IFS= read -r DIR; do
       case "$DIR" in /*) ;; *) continue ;; esac
       # A path the image does not ship is one dev may be free to create, so the

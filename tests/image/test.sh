@@ -9,6 +9,5 @@ echo "=== Verifying devcontainer.metadata ==="
 [ "$HOME" = "/home/dev" ] \
   || { echo "ERROR: expected home /home/dev, got ${HOME}" >&2; exit 1; }
 
-# The base image declares HISTFILE through remoteEnv, so every image carries it.
 [ "${HISTFILE-}" = "/home/dev/.local/state/bash/history" ] \
   || { echo "ERROR: expected HISTFILE /home/dev/.local/state/bash/history, got ${HISTFILE-<unset>}" >&2; exit 1; }
