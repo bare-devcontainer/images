@@ -54,11 +54,7 @@ with your own `Dockerfile` built `FROM` one of these images.
 
 ## The `dev` user
 
-Every image runs as `dev` (UID/GID 1000), starts in `/workspaces`, and declares `remoteUser` and `containerUser` through the [`devcontainer.metadata` label](https://containers.dev/implementors/reference/#labels), so a Dev Container client picks the user up on its own. `dev` owns its home directory and nothing else, so a client that remaps it to the host user's UID ([`updateRemoteUserUID`](https://containers.dev/implementors/json_reference/), on by default on Linux) leaves no file behind under the old UID.
-
-No environment variable the image sets points into that home directory either, so nothing the container runs can shadow a command another user resolves or redirect where another user's tool reads and writes. The variables that do point there — `PATH` entries such as the mise shims and `~/.cargo/bin`, along with `PNPM_HOME`, `TF_PLUGIN_CACHE_DIR`, and `HISTFILE` — are declared through [`remoteEnv`](https://containers.dev/implementors/json_reference/) in the same label, which a Dev Container client applies to the processes it starts for `dev`: terminals, tasks, and lifecycle commands. Run the image without a client (`docker run`, a CI job's `container:`) and those variables are not set, so set them yourself there. Each image README names the ones it declares.
-
-CI asserts both properties on every image.
+Every image runs as `dev` (UID/GID 1000), starts in `/workspaces`, and declares `remoteUser` and `containerUser` through the [`devcontainer.metadata` label](https://containers.dev/implementors/reference/#labels), so a Dev Container client picks the user up on its own. `dev` owns its home directory and nothing else, so a client that remaps it to the host user's UID ([`updateRemoteUserUID`](https://containers.dev/implementors/json_reference/), on by default on Linux) leaves no file behind under the old UID. No environment variable the image sets points into that home directory either, so nothing the container runs can shadow a command another user resolves. CI asserts both on every image.
 
 ## Images
 
