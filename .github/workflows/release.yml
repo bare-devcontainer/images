@@ -105,7 +105,6 @@ jobs:
           # release rules stay verifiable from the log.
           MATRIX='[]'
           BASE_VARIANTS='[]'
-          SKIPPED='[]'
           if [ -n "$LATEST_TAG" ]; then
             echo "=== Changed files (${LATEST_TAG}..HEAD) ==="
             git diff --name-only "$LATEST_TAG" HEAD | tee "$CHANGED_FILES"
@@ -119,17 +118,14 @@ jobs:
             # FROM it, so the debian variants go into a matrix of their own.
             BASE_VARIANTS=$(echo "$REPORT" | jq -c '[.[] | select(.selected and .image == "debian") | .variant]')
             MATRIX=$(echo "$REPORT" | jq -c '[.[] | select(.selected and .image != "debian") | {image, variant, primary_tag}]')
-            SKIPPED=$(echo "$REPORT" | jq -c '[.[] | select(.selected | not) | {image, primary_tag}]')
           fi
 
           if [ "$SCOPE" = "all" ]; then
             BASE_VARIANTS=$(bash scripts/build-config.sh variants debian | jq -c .)
             MATRIX=$(bash scripts/build-config.sh all-matrix)
-            SKIPPED='[]'
           fi
           echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
           echo "base_variants=${BASE_VARIANTS}" >> "$GITHUB_OUTPUT"
-          echo "skipped=${SKIPPED}" >> "$GITHUB_OUTPUT"
 
           if [ "$MATRIX" = "[]" ] && [ "$BASE_VARIANTS" = "[]" ]; then
             echo "No variant changed since ${LATEST_TAG}, skipping."
@@ -150,11 +146,11 @@ jobs:
           LATEST_TAG: ${{ steps.init.outputs.latest_tag }}
           SCOPE: ${{ steps.init.outputs.scope }}
           SCOPE_REASON: ${{ steps.init.outputs.scope_reason }}
-          SKIPPED: ${{ steps.select.outputs.skipped }}
           MATRIX: ${{ steps.select.outputs.matrix }}
           BASE_VARIANTS: ${{ steps.select.outputs.base_variants }}
           REPO_OWNER: ${{ github.repository_owner }}
           BASE_IMAGE_REF: ${{ env.BASE_IMAGE_REF }}
+          README_URL: ${{ github.server_url }}/${{ github.repository }}/blob/main/README.md
           RELEASE_NOTES: ${{ runner.temp }}/release-notes.md
         run: |
           {
@@ -201,13 +197,11 @@ jobs:
                 '.[] | "- `ghcr.io/" + env.REPO_OWNER + "/" + .image + ":" + .primary_tag + "-" + env.BUILD_DATE + "`"'
               echo ""
             fi
-            if [ "$SKIPPED" != "[]" ]; then
-              echo "### Variants left at their previous build"
-              echo ""
-              echo "$SKIPPED" | jq -r \
-                'group_by(.image)[] | "- `ghcr.io/" + env.REPO_OWNER + "/" + .[0].image + "`: "
-                 + (map(.primary_tag) | join(", "))'
-            fi
+            echo "### Verifying these images"
+            echo ""
+            echo "Every tag above ships an attestation, build provenance and an SBOM."
+            echo "See [Verifying Published Images](${README_URL}#verifying-published-images)"
+            echo "for the commands that check them."
           } > "$RELEASE_NOTES"
           {
             echo "## Release: v${BUILD_DATE}"
