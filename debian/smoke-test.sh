@@ -8,7 +8,10 @@ cc --version
 make --version
 
 echo "=== Verifying the shell history directory is writable ==="
-[ -w "${HISTFILE%/*}" ]
+[ -w /home/dev/.local/state/bash ]
+# HISTFILE is declared through remoteEnv, so a Dev Container client sets it and
+# a container started any other way leaves it unset.
+[ "${HISTFILE:-/home/dev/.local/state/bash/history}" = /home/dev/.local/state/bash/history ]
 
 echo "=== Verifying the C toolchain compiles and links ==="
 TMPDIR=$(mktemp -d)
