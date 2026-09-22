@@ -54,7 +54,7 @@ with your own `Dockerfile` built `FROM` one of these images.
 
 ## The `dev` user
 
-Every image runs as `dev` (UID/GID 1000), starts in `/workspaces`, and declares `remoteUser` and `containerUser` through the [`devcontainer.metadata` label](https://containers.dev/implementors/reference/#labels), so a Dev Container client picks the user up on its own. `dev` owns its home directory and nothing else, so a client that remaps it to the host user's UID ([`updateRemoteUserUID`](https://containers.dev/implementors/json_reference/), on by default on Linux) leaves no file behind under the old UID. No environment variable the image sets points into that home directory either, so nothing the container runs can shadow a command another user resolves. CI asserts both on every image.
+Every image runs as `dev` (UID/GID 1000), starts in `/workspaces`, and declares `remoteUser` and `containerUser` through the [`devcontainer.metadata` label](https://containers.dev/implementors/reference/#labels), so a Dev Container client picks the user up on its own. `dev` owns its home directory and nothing else, so a client that remaps it to the host user's UID ([`updateRemoteUserUID`](https://containers.dev/implementors/json_reference/), on by default on Linux) leaves no file behind under the old UID.
 
 ## Images
 
