@@ -54,8 +54,9 @@ Everything from the [debian](../debian) base image, plus:
 
 - [mise](https://mise.jdx.dev/)
 
-The shims directory `~/.local/share/mise/shims` is on `PATH`, so tools resolve as soon as mise
-installs them.
+The shims directory `~/.local/share/mise/shims` is on `PATH` under a Dev Container client, so
+tools resolve as soon as mise installs them. Running the image without one (`docker run`, a CI
+job's `container:`) leaves the directory off `PATH`.
 
 ## Not installed
 

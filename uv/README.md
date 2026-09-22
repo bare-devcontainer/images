@@ -48,8 +48,9 @@ Everything from the [debian](../debian) base image, plus:
 
 - [uv](https://docs.astral.sh/uv/) (`uv`, `uvx`), with bash completions installed
 
-`~/.local/bin` is on `PATH`, so tools installed with `uv tool install` resolve without
-further setup.
+`~/.local/bin` is on `PATH` under a Dev Container client, so tools installed with
+`uv tool install` resolve without further setup. Running the image without one (`docker run`, a
+CI job's `container:`) leaves the directory off `PATH`.
 
 ## Not installed
 

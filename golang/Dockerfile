@@ -48,11 +48,19 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 COPY --from=builder /usr/local/go /usr/local/go
 COPY --from=builder /usr/local/bin/gopls /usr/local/bin/gopls
 
-ENV GOPATH=/home/dev/go
-ENV PATH=/usr/local/go/bin:${GOPATH}/bin:${PATH}
+ENV PATH=/usr/local/go/bin:${PATH}
+
+LABEL devcontainer.metadata='[{ \
+  "remoteUser": "dev", \
+  "containerUser": "dev", \
+  "remoteEnv": { \
+    "HISTFILE": "/home/dev/.local/state/bash/history", \
+    "PATH": "/home/dev/go/bin:${containerEnv:PATH}" \
+  } \
+}]'
 
 USER dev
 
 RUN mkdir -p \
-    "${GOPATH}/pkg/mod" \
+    /home/dev/go/pkg/mod \
     /home/dev/.cache/go-build

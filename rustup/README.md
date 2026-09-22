@@ -48,8 +48,9 @@ Everything from the [debian](../debian) base image, plus:
 
 - [rustup](https://rustup.rs/)
 
-`~/.cargo/bin` is on `PATH`, so the `rustup`/`cargo` shims resolve once a toolchain is
-installed.
+`~/.cargo/bin` is on `PATH` under a Dev Container client, so the `rustup`/`cargo` shims resolve
+once a toolchain is installed. Running the image without one (`docker run`, a CI job's
+`container:`) leaves the directory off `PATH`.
 
 ## Not installed
 

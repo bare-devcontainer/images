@@ -39,7 +39,15 @@ FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 COPY --from=builder /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
 COPY --from=builder /usr/share/bash-completion/completions/uv /usr/share/bash-completion/completions/uvx /usr/share/bash-completion/completions/
 
-ENV PATH=/home/dev/.local/bin:${PATH}
+LABEL devcontainer.metadata='[{ \
+  "remoteUser": "dev", \
+  "containerUser": "dev", \
+  "remoteEnv": { \
+    "HISTFILE": "/home/dev/.local/state/bash/history", \
+    "PATH": "/home/dev/.local/bin:${containerEnv:PATH}" \
+  } \
+}]'
+
 # uv hardlinks from its cache into the project's .venv by default. In a dev container
 # the cache lives in the container filesystem (or a named volume) while the project is
 # a bind mount, so the two are never on the same filesystem and every uv sync/add falls

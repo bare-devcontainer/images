@@ -20,6 +20,7 @@ on:
       - tests/**
       - scripts/build-config.sh
       - scripts/changed-images.sh
+      - scripts/check-image-env.sh
       - scripts/check-image-ownership.sh
       - .trivyignore.yaml
       - '!**.md'
@@ -43,6 +44,7 @@ on:
       - tests/**
       - scripts/build-config.sh
       - scripts/changed-images.sh
+      - scripts/check-image-env.sh
       - scripts/check-image-ownership.sh
       - '!**.md'
 
@@ -219,12 +221,8 @@ jobs:
             | jq -e 'map(select(.remoteUser == "dev")) | length > 0'
       - name: Verify image ownership
         run: bash scripts/check-image-ownership.sh "debian:${{ matrix.variant }}"
-      - name: Run smoke test
-        run: |
-          docker run --rm \
-            --mount "type=bind,source=${{ github.workspace }}/debian/smoke-test.sh,target=/smoke-test.sh,readonly" \
-            "debian:${{ matrix.variant }}" \
-            bash /smoke-test.sh
+      - name: Verify image environment
+        run: bash scripts/check-image-env.sh "debian:${{ matrix.variant }}"
       - name: Verify dev container
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
@@ -235,7 +233,7 @@ jobs:
         with:
           configFile: tests/image/devcontainer.json
           push: never
-          runCmd: bash tests/image/test.sh
+          runCmd: bash debian/smoke-test.sh
       - name: Run Trivy vulnerability scanner
         # Vulnerability findings are identical across architectures; scan once.
         if: matrix.arch == 'amd64'
@@ -384,16 +382,8 @@ jobs:
             | jq -e 'map(select(.remoteUser == "dev")) | length > 0'
       - name: Verify image ownership
         run: bash scripts/check-image-ownership.sh "${{ matrix.image }}:${{ matrix.variant }}"
-      - name: Run smoke test
-        env:
-          MISE_GITHUB_TOKEN: ${{ matrix.image == 'mise' && github.token || '' }}
-        run: |
-          docker run --rm \
-            ${{ matrix.image == 'mise' && '--env MISE_GITHUB_TOKEN' || '' }} \
-            --mount "type=bind,source=${{ github.workspace }}/debian/smoke-test.sh,target=/smoke-test-debian.sh,readonly" \
-            --mount "type=bind,source=${{ github.workspace }}/${{ matrix.image }}/smoke-test.sh,target=/smoke-test.sh,readonly" \
-            "${{ matrix.image }}:${{ matrix.variant }}" \
-            bash -c "bash /smoke-test-debian.sh && bash /smoke-test.sh"
+      - name: Verify image environment
+        run: bash scripts/check-image-env.sh "${{ matrix.image }}:${{ matrix.variant }}"
       - name: Verify dev container
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
@@ -404,7 +394,11 @@ jobs:
         with:
           configFile: tests/image/devcontainer.json
           push: never
-          runCmd: bash tests/image/test.sh
+          env: ${{ matrix.image == 'mise' && format('MISE_GITHUB_TOKEN={0}', github.token) || '' }}
+          runCmd: |
+            set -euo pipefail
+            bash debian/smoke-test.sh
+            bash ${{ matrix.image }}/smoke-test.sh
       - name: Run Trivy vulnerability scanner
         # Vulnerability findings are identical across architectures; scan once.
         if: matrix.arch == 'amd64'

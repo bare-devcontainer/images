@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-[ "$(id -u)" -ne 0 ] || { echo "ERROR: running as root" >&2; exit 1; }
+echo "=== Verifying devcontainer.metadata ==="
+[ "$(id -un)" = "dev" ] \
+  || { echo "ERROR: expected user dev, got $(id -un)" >&2; exit 1; }
+[ "$HOME" = "/home/dev" ] \
+  || { echo "ERROR: expected home /home/dev, got ${HOME}" >&2; exit 1; }
+[ "${HISTFILE-}" = "/home/dev/.local/state/bash/history" ] \
+  || { echo "ERROR: expected HISTFILE /home/dev/.local/state/bash/history, got ${HISTFILE-<unset>}" >&2; exit 1; }
 
 git --version
 cc --version

@@ -48,9 +48,10 @@ Everything from the [debian](../debian) base image, plus:
 - [Terraform](https://www.terraform.io/) (`terraform`)
 - [terraform-ls](https://github.com/hashicorp/terraform-ls) (`terraform-ls`)
 
-`TF_PLUGIN_CACHE_DIR` points at `~/.terraform.d/plugin-cache`, so providers are downloaded once
-and shared across working directories. Persisting that directory as a volume keeps them across
-container rebuilds.
+Under a Dev Container client, `TF_PLUGIN_CACHE_DIR` points at `~/.terraform.d/plugin-cache`, so
+providers are downloaded once and shared across working directories. Persisting that directory
+as a volume keeps them across container rebuilds. Running the image without such a client
+(`docker run`, a CI job's `container:`) leaves the variable unset.
 
 ## Not installed
 

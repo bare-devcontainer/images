@@ -50,9 +50,11 @@ Everything from the [debian](../debian) base image, plus:
 - [pnpm](https://pnpm.io/) (`pnpm`), with bash completions installed
 
 pnpm is installed under `/opt/pnpm` with a `/usr/local/bin/pnpm` symlink, the layout of pnpm's
-own [`ghcr.io/pnpm/pnpm`](https://pnpm.io/docker#official-pnpm-base-image) image. `PNPM_HOME` is
-set to `~/.local/share/pnpm` and its `bin` directory is on `PATH`, so runtimes and globally
-installed packages resolve without further setup.
+own [`ghcr.io/pnpm/pnpm`](https://pnpm.io/docker#official-pnpm-base-image) image. Under a Dev Container
+client, `PNPM_HOME` is `~/.local/share/pnpm` and its `bin` directory is on `PATH`, so runtimes
+and globally installed packages resolve without further setup. Running the image without one
+(`docker run`, a CI job's `container:`) declares neither, so a global install needs both set
+first.
 
 ## Not installed
 

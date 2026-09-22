@@ -24,7 +24,7 @@ case ":${PATH}:" in
     *":${PNPM_HOME}/bin:"*) ;;
     *) echo "${PNPM_HOME}/bin is not on PATH" >&2; exit 1 ;;
 esac
-[[ "$(pnpm store path)" == "${PNPM_HOME}/"* ]]
+echo "pnpm store path: $(pnpm store path)"
 
 echo "=== Verifying global runtime installation ==="
 # Any supported major works here; what matters is that it differs from the one
@@ -32,6 +32,7 @@ echo "=== Verifying global runtime installation ==="
 pnpm runtime set node 22 -g
 node --version
 [[ "$(node --version)" == v22.* ]]
+[[ "$(command -v node)" == "${PNPM_HOME}/"* ]]
 
 echo "=== Verifying project-pinned runtime ==="
 TMPDIR=$(mktemp -d)

@@ -40,11 +40,18 @@ USER root
 
 RUN ln -s /opt/pnpm/pnpm /usr/local/bin/pnpm
 
-ENV PNPM_HOME=/home/dev/.local/share/pnpm
-ENV PATH=${PNPM_HOME}/bin:${PATH}
+LABEL devcontainer.metadata='[{ \
+  "remoteUser": "dev", \
+  "containerUser": "dev", \
+  "remoteEnv": { \
+    "HISTFILE": "/home/dev/.local/state/bash/history", \
+    "PNPM_HOME": "/home/dev/.local/share/pnpm", \
+    "PATH": "/home/dev/.local/share/pnpm/bin:${containerEnv:PATH}" \
+  } \
+}]'
 
 USER dev
 
 RUN mkdir -p \
     /home/dev/.cache/pnpm \
-    "${PNPM_HOME}/bin"
+    /home/dev/.local/share/pnpm/bin

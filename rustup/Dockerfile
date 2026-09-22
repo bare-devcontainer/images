@@ -10,7 +10,14 @@ ARG TARGETARCH
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ENV PATH=/home/dev/.cargo/bin:${PATH}
+LABEL devcontainer.metadata='[{ \
+  "remoteUser": "dev", \
+  "containerUser": "dev", \
+  "remoteEnv": { \
+    "HISTFILE": "/home/dev/.local/state/bash/history", \
+    "PATH": "/home/dev/.cargo/bin:${containerEnv:PATH}" \
+  } \
+}]'
 
 # rustup publishes no signature for rustup-init, so verify it against a
 # checksum file committed to this repository (kept in sync by

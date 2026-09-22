@@ -61,5 +61,13 @@ FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 COPY --from=builder /usr/local/bin/tofu /usr/local/bin/tofu-ls /usr/local/bin/
 
-ENV TF_PLUGIN_CACHE_DIR="/home/dev/.terraform.d/plugin-cache"
-RUN mkdir -p "${TF_PLUGIN_CACHE_DIR}"
+LABEL devcontainer.metadata='[{ \
+  "remoteUser": "dev", \
+  "containerUser": "dev", \
+  "remoteEnv": { \
+    "HISTFILE": "/home/dev/.local/state/bash/history", \
+    "TF_PLUGIN_CACHE_DIR": "/home/dev/.terraform.d/plugin-cache" \
+  } \
+}]'
+
+RUN mkdir -p /home/dev/.terraform.d/plugin-cache

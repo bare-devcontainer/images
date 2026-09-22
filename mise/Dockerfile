@@ -37,7 +37,15 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 COPY --from=builder /usr/local/bin/mise /usr/local/bin/mise
-ENV PATH=/home/dev/.local/share/mise/shims:${PATH}
+
+LABEL devcontainer.metadata='[{ \
+  "remoteUser": "dev", \
+  "containerUser": "dev", \
+  "remoteEnv": { \
+    "HISTFILE": "/home/dev/.local/state/bash/history", \
+    "PATH": "/home/dev/.local/share/mise/shims:${containerEnv:PATH}" \
+  } \
+}]'
 
 # hadolint ignore=SC2016 # intentional single quotes
 RUN mkdir -p \
