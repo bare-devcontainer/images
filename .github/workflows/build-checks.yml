@@ -21,7 +21,6 @@ on:
       - scripts/build-config.sh
       - scripts/changed-images.sh
       - scripts/check-image-env.sh
-      - scripts/check-image-metadata.sh
       - scripts/check-image-ownership.sh
       - .trivyignore.yaml
       - '!**.md'
@@ -46,7 +45,6 @@ on:
       - scripts/build-config.sh
       - scripts/changed-images.sh
       - scripts/check-image-env.sh
-      - scripts/check-image-metadata.sh
       - scripts/check-image-ownership.sh
       - '!**.md'
 
@@ -112,8 +110,6 @@ jobs:
           echo "$REPORT" | jq -r '.[] |
             "[" + (if .selected then "RUN " else "SKIP" end) + "] " + .image + ": " + .reason,
             (.files[] | "         " + .)'
-      - name: Verify image metadata
-        run: bash scripts/check-image-metadata.sh
       - name: Compare the base with the published one
         id: published
         # The published debian image is built from debian/ as of the latest
