@@ -54,7 +54,14 @@ ENV PATH=/usr/local/go/bin:${PATH}
 # Dev Container client starts rather than in ENV PATH, which every user in the
 # container reads. The label replaces, not merges with, the base image's, so
 # its entries are repeated here.
-LABEL devcontainer.metadata="[{\"remoteUser\":\"dev\",\"containerUser\":\"dev\",\"remoteEnv\":{\"HISTFILE\":\"/home/dev/.local/state/bash/history\",\"PATH\":\"/home/dev/go/bin:\${containerEnv:PATH}\"}}]"
+LABEL devcontainer.metadata='[{ \
+  "remoteUser": "dev", \
+  "containerUser": "dev", \
+  "remoteEnv": { \
+    "HISTFILE": "/home/dev/.local/state/bash/history", \
+    "PATH": "/home/dev/go/bin:${containerEnv:PATH}" \
+  } \
+}]'
 
 USER dev
 

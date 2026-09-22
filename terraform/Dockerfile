@@ -62,6 +62,13 @@ COPY --from=builder /usr/local/bin/terraform /usr/local/bin/terraform-ls /usr/lo
 # Container client starts rather than in ENV, which every user in the container
 # reads. The label replaces, not merges with, the base image's, so its entries
 # are repeated here.
-LABEL devcontainer.metadata="[{\"remoteUser\":\"dev\",\"containerUser\":\"dev\",\"remoteEnv\":{\"HISTFILE\":\"/home/dev/.local/state/bash/history\",\"TF_PLUGIN_CACHE_DIR\":\"/home/dev/.terraform.d/plugin-cache\"}}]"
+LABEL devcontainer.metadata='[{ \
+  "remoteUser": "dev", \
+  "containerUser": "dev", \
+  "remoteEnv": { \
+    "HISTFILE": "/home/dev/.local/state/bash/history", \
+    "TF_PLUGIN_CACHE_DIR": "/home/dev/.terraform.d/plugin-cache" \
+  } \
+}]'
 
 RUN mkdir -p /home/dev/.terraform.d/plugin-cache

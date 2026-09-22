@@ -13,10 +13,11 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# LABEL devcontainer.metadata="<JSON, with \" and \$ escaped for the Dockerfile>"
+# LABEL devcontainer.metadata='<JSON>', which the Dockerfile continues across
+# lines and, between single quotes, takes as-is.
 metadata() {
-  sed -n 's/^LABEL devcontainer\.metadata="\(.*\)"$/\1/p' "$1/Dockerfile" \
-    | sed -e 's/\\"/"/g' -e 's/\\\$/$/g'
+  sed -e ':join' -e '/\\$/{N;s/\\\n//;bjoin}' "$1/Dockerfile" \
+    | sed -n "s/^LABEL devcontainer\.metadata='\(.*\)'\$/\1/p"
 }
 
 BASE=$(metadata debian)

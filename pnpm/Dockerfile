@@ -44,7 +44,15 @@ RUN ln -s /opt/pnpm/pnpm /usr/local/bin/pnpm
 # are declared for the processes a Dev Container client starts rather than in
 # ENV, which every user in the container reads. The label replaces, not merges
 # with, the base image's, so its entries are repeated here.
-LABEL devcontainer.metadata="[{\"remoteUser\":\"dev\",\"containerUser\":\"dev\",\"remoteEnv\":{\"HISTFILE\":\"/home/dev/.local/state/bash/history\",\"PNPM_HOME\":\"/home/dev/.local/share/pnpm\",\"PATH\":\"/home/dev/.local/share/pnpm/bin:\${containerEnv:PATH}\"}}]"
+LABEL devcontainer.metadata='[{ \
+  "remoteUser": "dev", \
+  "containerUser": "dev", \
+  "remoteEnv": { \
+    "HISTFILE": "/home/dev/.local/state/bash/history", \
+    "PNPM_HOME": "/home/dev/.local/share/pnpm", \
+    "PATH": "/home/dev/.local/share/pnpm/bin:${containerEnv:PATH}" \
+  } \
+}]'
 
 USER dev
 

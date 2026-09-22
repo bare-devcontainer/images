@@ -43,7 +43,14 @@ COPY --from=builder /usr/share/bash-completion/completions/uv /usr/share/bash-co
 # Dev Container client starts rather than in ENV PATH, which every user in the
 # container reads. The label replaces, not merges with, the base image's, so
 # its entries are repeated here.
-LABEL devcontainer.metadata="[{\"remoteUser\":\"dev\",\"containerUser\":\"dev\",\"remoteEnv\":{\"HISTFILE\":\"/home/dev/.local/state/bash/history\",\"PATH\":\"/home/dev/.local/bin:\${containerEnv:PATH}\"}}]"
+LABEL devcontainer.metadata='[{ \
+  "remoteUser": "dev", \
+  "containerUser": "dev", \
+  "remoteEnv": { \
+    "HISTFILE": "/home/dev/.local/state/bash/history", \
+    "PATH": "/home/dev/.local/bin:${containerEnv:PATH}" \
+  } \
+}]'
 
 # uv hardlinks from its cache into the project's .venv by default. In a dev container
 # the cache lives in the container filesystem (or a named volume) while the project is

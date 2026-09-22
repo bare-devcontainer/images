@@ -18,7 +18,13 @@ ENV LC_ALL=en_US.UTF-8
 # applied automatically by Dev Container clients when this image is referenced.
 # Inherited by every image built FROM this one; re-declaring this label in a
 # child image replaces (does not merge with) this value.
-LABEL devcontainer.metadata="[{\"remoteUser\":\"dev\",\"containerUser\":\"dev\",\"remoteEnv\":{\"HISTFILE\":\"/home/dev/.local/state/bash/history\"}}]"
+LABEL devcontainer.metadata='[{ \
+  "remoteUser": "dev", \
+  "containerUser": "dev", \
+  "remoteEnv": { \
+    "HISTFILE": "/home/dev/.local/state/bash/history" \
+  } \
+}]'
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \

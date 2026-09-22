@@ -42,7 +42,14 @@ COPY --from=builder /usr/local/bin/mise /usr/local/bin/mise
 # Container client starts rather than in ENV PATH, which every user in the
 # container reads. The label replaces, not merges with, the base image's, so
 # its entries are repeated here.
-LABEL devcontainer.metadata="[{\"remoteUser\":\"dev\",\"containerUser\":\"dev\",\"remoteEnv\":{\"HISTFILE\":\"/home/dev/.local/state/bash/history\",\"PATH\":\"/home/dev/.local/share/mise/shims:\${containerEnv:PATH}\"}}]"
+LABEL devcontainer.metadata='[{ \
+  "remoteUser": "dev", \
+  "containerUser": "dev", \
+  "remoteEnv": { \
+    "HISTFILE": "/home/dev/.local/state/bash/history", \
+    "PATH": "/home/dev/.local/share/mise/shims:${containerEnv:PATH}" \
+  } \
+}]'
 
 # hadolint ignore=SC2016 # intentional single quotes
 RUN mkdir -p \
