@@ -11,12 +11,12 @@ scripts/                     # CLI helpers CI calls; each script's header commen
 .github/workflows/
   release.yml                # builds and pushes images to GHCR, then tags the release and publishes a GitHub Release whose notes list the images it rebuilt
   mirror.yml                 # copies published images from GHCR to Docker Hub and sets the description of each Docker Hub repository; called by release.yml, or run by hand for a full sync
-  build-checks.yml           # for each changed image: builds it on the debian base built from the same checkout when the checkout's debian/ differs from the published base (changed in the pull request, or on main since the last release) and on the published one otherwise, smoke-tests it, builds its sandbox dev container, and runs the Dev Container Feature tests on the base
+  build-checks.yml           # for each changed image: builds it on the debian base built from the same checkout when the checkout's debian/ differs from the published base (changed in the pull request, or on main since the last release) and on the published one otherwise, smoke-tests it, verifies it as a dev container, and runs the Dev Container Feature tests on the base
   trivyignore-cleanup.yml    # scans the published images with no ignore file in play and opens a pull request removing the .trivyignore.yaml entries left without a finding
-.devcontainer/
-  default/                   # dev container for working in this repo
-  sandbox-<image>/           # one per image; for manually testing each image. Kept free of Features so it mirrors the published image
-  feature-<image>/           # an image with every verified Dev Container Feature layered on, plus the test.sh covering them
+.devcontainer/               # dev container for working in this repo
+tests/                       # dev container checks; each names the image under test through ${localEnv:IMAGE_REF}
+  image/                     # the image on its own, kept free of Features so it mirrors what a consumer references, plus the test.sh covering what its devcontainer.metadata label supplies
+  features/                  # the image with every verified Dev Container Feature layered on, plus the test.sh covering them
 renovate.jsonc               # Renovate config
 .trivyignore.yaml            # Trivy findings waived until upstream ships a fix
 ```
@@ -29,13 +29,13 @@ renovate.jsonc               # Renovate config
   - Extract an upstream archive with `tar --no-same-owner`; root tar restores the uid it records, and some upstreams build theirs as uid 1000.
   - Create a directory before the `USER` instruction that switches to `dev`, as `/workspaces` is in the base image.
   - Own a directory `dev` writes to outside its home as `root:<group>` with `chmod 2775`, with `dev` in the group. Group membership survives the remap, user ownership does not.
-- No environment variable an image sets points at a directory `dev` can write. `ENV` applies to every user in the container, so such a variable would let anything the container runs shadow a command another user resolves, or redirect where another user's tool reads and writes. Declare it through `remoteEnv` in the `devcontainer.metadata` label instead, which only a Dev Container client's own processes pick up, with `${containerEnv:NAME}` carrying the image's own value over where the variable extends one, as `PATH` does. A re-declared label replaces, rather than merges with, the one inherited from the base image, so repeat everything that label declares; `scripts/check-image-metadata.sh` asserts that. In `build-checks.yml`, `scripts/check-image-env.sh` asserts the rule against the built image, and `scripts/devcontainer-env.sh` resolves the label the way a client does, so the smoke test runs against the environment a client applies.
+- No environment variable an image sets points at a directory `dev` can write. `ENV` applies to every user in the container, so such a variable would let anything the container runs shadow a command another user resolves, or redirect where another user's tool reads and writes. Declare it through `remoteEnv` in the `devcontainer.metadata` label instead, which only a Dev Container client's own processes pick up, with `${containerEnv:NAME}` carrying the image's own value over where the variable extends one, as `PATH` does. A re-declared label replaces, rather than merges with, the one inherited from the base image, so repeat everything that label declares; `scripts/check-image-metadata.sh` asserts that. In `build-checks.yml`, `scripts/check-image-env.sh` asserts the rule against the built image, `scripts/devcontainer-env.sh` resolves the label the way a client does so the smoke test runs against the environment a client applies, and `tests/image/test.sh` holds a client to applying it.
 - GHCR is where every image is published; Docker Hub is a mirror of it. `mirror.yml` copies manifests unchanged, so a tag resolves to the same digest on both registries. A release mirrors the tags `build.yaml` names for each image together with the dated tags of that release, and regsync copies the ones the source registry holds, so an image the release left alone contributes no dated tag while its other tags resolve to the digests already published; the tags of earlier releases and of variants `build.yaml` no longer defines are picked up by running `mirror.yml` by hand with `full` set, which enumerates the source registry instead. The same workflow sets what each Docker Hub repository says about itself: the short description is the `description` of `build.yaml`, and the overview is `dockerhub-overview.sh`'s rendering of `<image>/README.md`, so the README stays the one place the image is documented. Docker Hub renders neither the relative links nor the alert syntax a README may use, so anything the rendering cannot carry over fails the workflow rather than reaching the page.
 - Each image README is also shown on its own, as the Docker Hub overview, so it has to make the case for the image without the root README around it: it opens with the shared statement of what the images are built for and ends with the shared `Verifying the image` section. Keep that wording alike across images, and keep the root README the place the details live; the image README links there and to its own `Supply chain` section.
 - Dev Container Feature checks exist to guarantee that Features can supply tooling the images deliberately omit. When adding one:
   - Cover a Feature when it exercises an install mechanism that no already-covered Feature exercises (user and shell provisioning, a third-party apt repository, a release binary download, an upstream install script). Do not add a second Feature that only repeats a covered mechanism.
   - Cover a Feature only when it complements the images by supplying something they do not provide. A Feature that would replace what an image already ships is out of scope.
-  - Verify against `debian` alone, since every image extends it. Add the Feature to the single `.devcontainer/feature-debian` configuration rather than introducing another one.
+  - Verify against `debian` alone, since every image extends it. Add the Feature to the single `tests/features` configuration rather than introducing another one.
   - Leave Feature options at their upstream defaults, so the check reflects what a consumer gets. Record the reason in a comment whenever a default has to be overridden.
   - Assert only what the Feature and the image are jointly responsible for. The container's runtime flags are Docker's behaviour, not this repository's, so leave them unasserted; the image's own `smoke-test.sh` runs first and covers what the image ships, so never repeat it in `test.sh`.
 - Scheduled workflows, all UTC. Keep a new one off the daily release run at 00:00, and off Monday, which the weekly rebuild and the three checks that read published images already share:
@@ -57,17 +57,13 @@ renovate.jsonc               # Renovate config
   - List the binaries actually reported in `paths`, rather than suppressing the id image-wide, so an entry stops covering a binary as soon as upstream fixes that one. A Debian package finding carries no path, so scope it with `purls` instead, as `pkg:deb/debian/<package>` with no suite, which covers every variant in one entry.
   - Set `expired_at` to when the upstream fix is expected, judged from where the fix sits upstream and the component's release cadence. When that cannot be estimated — upstream carries no fix yet — set a date to re-check by instead, at most three months out. An entry covering several binaries takes the earliest of their dates, so the expiry re-opens the review for all of them.
   - `trivyignore-cleanup.yml` drops entries and paths that no longer suppress anything, but it deliberately leaves expired entries in place: an expired entry fails the scan again, and extending it is a judgement call that belongs to a reviewer who re-checks upstream.
-- The sandbox dev containers take their build args from the environment with no defaults, so `build-checks.yml` can build them with the arguments it just built the image with and reuse those layers. Export the arguments of the variant you want before opening one by hand:
+- The dev container checks under `tests/` reference an image rather than building a Dockerfile, so that they verify what a consumer's client reads. For a `build` configuration the Dev Container CLI takes the `devcontainer.metadata` label off the base image the Dockerfile names — the plain Debian image, which carries none — and the label the images declare is never applied, so a check built that way proves nothing about what is published. The image is named through `${localEnv:IMAGE_REF}`, read with no default so a run never silently verifies another image; `build-checks.yml` passes the image it just built. Export the image you want before running one by hand:
 
   ```sh
-  set -a
-  . <(scripts/build-config.sh build-args node 26-trixie)
-  DEBIAN_TAG=$(scripts/build-config.sh get-field node 26-trixie debian_variant)
-  set +a
-  code .
+  export IMAGE_REF=ghcr.io/bare-devcontainer/node:26-trixie
+  devcontainer up --workspace-folder . --config tests/image/devcontainer.json
+  devcontainer exec --workspace-folder . --config tests/image/devcontainer.json bash tests/image/test.sh
   ```
-
-  `debian` is the exception: its `build-args` already carry `DEBIAN_TAG`, so the second line is unnecessary.
 - Use English for all documentation and comments.
 - Comments are one of two kinds:
   - Documentation comments: the purpose of a file, function, or block, written at the top of it.

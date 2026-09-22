@@ -1,0 +1,26 @@
+// Verifies the Dev Container Features on an image, as a consumer's client
+// installs them.
+//
+// The major tag is what a consumer installs; pinning would freeze the check on
+// one released version.
+// decolint-ignore-file pin-feature-exact-version
+// decolint-ignore-file pin-image-digest
+// "remoteUser" is absent so that the Features are verified against the user the
+// image's devcontainer.metadata label selects.
+// decolint-ignore-file require-non-root
+{
+  "name": "features",
+  "image": "${localEnv:IMAGE_REF}",
+  "features": {
+    // common-utils adopts the image's existing dev user only while its username
+    // option is "automatic".
+    "ghcr.io/devcontainers/features/common-utils:2": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/git-lfs:1": {},
+    "ghcr.io/devcontainers/features/node:2": {}
+  },
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges"
+  ]
+}

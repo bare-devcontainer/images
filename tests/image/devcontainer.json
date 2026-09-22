@@ -1,0 +1,14 @@
+// Verifies an image on its own, as a Dev Container client reads it.
+//
+// decolint-ignore-file pin-image-digest
+// "remoteUser" is absent so that the image's devcontainer.metadata label has to
+// supply it, which is what this configuration verifies.
+// decolint-ignore-file require-non-root
+{
+  "name": "image",
+  "image": "${localEnv:IMAGE_REF}",
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges"
+  ]
+}
