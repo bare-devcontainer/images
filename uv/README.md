@@ -112,7 +112,7 @@ gh attestation verify oci://ghcr.io/bare-devcontainer/uv:<tag>@sha256:<digest> \
   --owner bare-devcontainer
 ```
 
-The attestation is looked up by digest, and the Docker Hub mirror carries the same digests, so
-an image pulled from `docker.io/baredevcontainer/uv` verifies with the same command against its
-own reference. [Verifying Published Images](../README.md#verifying-published-images) covers
-inspecting the provenance and the SBOM as well.
+The Docker Hub mirror carries the same digests, so the same command verifies an image pulled
+from `docker.io/baredevcontainer/uv`.
+[Verifying Published Images](../README.md#verifying-published-images) covers inspecting the
+provenance and the SBOM as well.
