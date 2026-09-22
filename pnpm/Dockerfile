@@ -40,7 +40,6 @@ USER root
 
 RUN ln -s /opt/pnpm/pnpm /usr/local/bin/pnpm
 
-# dev can write the pnpm home, so it is declared here rather than in ENV.
 LABEL devcontainer.metadata='[{ \
   "remoteUser": "dev", \
   "containerUser": "dev", \

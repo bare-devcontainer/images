@@ -61,7 +61,6 @@ FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 COPY --from=builder /usr/local/bin/tofu /usr/local/bin/tofu-ls /usr/local/bin/
 
-# dev can write the plugin cache, so it is declared here rather than in ENV.
 LABEL devcontainer.metadata='[{ \
   "remoteUser": "dev", \
   "containerUser": "dev", \

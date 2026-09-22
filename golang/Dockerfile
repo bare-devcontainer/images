@@ -50,7 +50,6 @@ COPY --from=builder /usr/local/bin/gopls /usr/local/bin/gopls
 
 ENV PATH=/usr/local/go/bin:${PATH}
 
-# dev can write /home/dev/go/bin, so it is declared here rather than in ENV.
 LABEL devcontainer.metadata='[{ \
   "remoteUser": "dev", \
   "containerUser": "dev", \

@@ -38,7 +38,6 @@ FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
 COPY --from=builder /usr/local/bin/mise /usr/local/bin/mise
 
-# dev can write the shims directory, so it is declared here rather than in ENV.
 LABEL devcontainer.metadata='[{ \
   "remoteUser": "dev", \
   "containerUser": "dev", \

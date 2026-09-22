@@ -39,7 +39,6 @@ FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 COPY --from=builder /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
 COPY --from=builder /usr/share/bash-completion/completions/uv /usr/share/bash-completion/completions/uvx /usr/share/bash-completion/completions/
 
-# dev can write ~/.local/bin, so it is declared here rather than in ENV.
 LABEL devcontainer.metadata='[{ \
   "remoteUser": "dev", \
   "containerUser": "dev", \
