@@ -23,20 +23,17 @@
 #       specific to the most general:
 #       - Paths matching IGNORED_PATTERN are dropped before any other rule.
 #       - Files under <image>/ affect that image.
-#       - Files under .devcontainer/feature-<image>/ affect that image, since
-#         that configuration layers the Dev Container Features onto it.
-#       - Files under .devcontainer/sandbox-<image>/ affect that image, since
-#         that configuration builds it as a dev container.
 #       - Files under debian/ affect every image: build-checks.yml builds the
 #         debian base from the checkout and builds each other image FROM it,
 #         so a base image change reaches every image build. It also
 #         bind-mounts debian/smoke-test.sh into each image and runs it before
 #         the image's own one.
 #       - Every path outside an image directory (the workflow definition
-#         itself, the shared scripts, the ignore lists, ...) is a
-#         repository-wide change and affects every image. This is the
-#         catch-all: a path this script does not know about is never silently
-#         skipped, and only the exceptions above have to be maintained by hand.
+#         itself, the shared scripts, the dev container tests, the ignore
+#         lists, ...) is a repository-wide change and affects every image. This
+#         is the catch-all: a path this script does not know about is never
+#         silently skipped, and only the exceptions above have to be maintained
+#         by hand.
 #
 #   release
 #       The images release.yml publishes from the changes since the last
@@ -68,11 +65,9 @@ INPUT="${2:--}"
 
 case "$MODE" in
   build)
-    DEVCONTAINER_OWNED=true
     UNOWNED_REPO_WIDE=true
     ;;
   release)
-    DEVCONTAINER_OWNED=false
     UNOWNED_REPO_WIDE=false
     # No image copies its smoke test in; build-checks.yml bind-mounts them at
     # test time, so a change to one alters nothing that gets published.
@@ -94,17 +89,12 @@ fi
 IMAGES=$(bash "${SCRIPT_DIR}/build-config.sh" images)
 
 jq -n -c --argjson images "$IMAGES" \
-  --argjson devcontainer_owned "$DEVCONTAINER_OWNED" \
   --argjson unowned_repo_wide "$UNOWNED_REPO_WIDE" \
   --arg base_image_dir "$BASE_IMAGE_DIR" \
   --arg ignored "$IGNORED_PATTERN" --arg changed "$CHANGED" '
   # Directory of the image a path belongs to, or null when it belongs to none.
   def owner($path):
-    ($images | map(select(. as $dir | $path | startswith($dir + "/"))) | first)
-    // (if $devcontainer_owned then
-         ($images | map(select(. as $dir | $path | startswith(".devcontainer/feature-" + $dir + "/"))) | first)
-         // ($images | map(select(. as $dir | $path | startswith(".devcontainer/sandbox-" + $dir + "/"))) | first)
-       else null end);
+    ($images | map(select(. as $dir | $path | startswith($dir + "/"))) | first);
 
   ($changed | split("\n") | map(select(length > 0 and (test($ignored) | not)))) as $files
   | ($files | map(select(startswith($base_image_dir)))) as $base_image
