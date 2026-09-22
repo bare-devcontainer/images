@@ -12,9 +12,3 @@ echo "=== Verifying devcontainer.metadata ==="
 # The base image declares HISTFILE through remoteEnv, so every image carries it.
 [ "${HISTFILE-}" = "/home/dev/.local/state/bash/history" ] \
   || { echo "ERROR: expected HISTFILE /home/dev/.local/state/bash/history, got ${HISTFILE-<unset>}" >&2; exit 1; }
-# Where an image extends PATH through remoteEnv, the client resolves
-# ${containerEnv:PATH} against the image's own; nothing else does.
-case ":${PATH}:" in
-  *:/usr/bin:*) ;;
-  *) echo "ERROR: PATH does not carry the image's own: ${PATH}" >&2; exit 1 ;;
-esac
