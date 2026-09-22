@@ -229,11 +229,8 @@ jobs:
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
           IMAGE_REF: debian:${{ matrix.variant }}
-          # The Dev Container CLI builds with buildx, and the builder this job
-          # set up uses the docker-container driver, which resolves a FROM
-          # against the registry alone. The image built above is in the daemon
-          # only, and its tag also names a Docker Hub image, so on that builder
-          # the base would silently be the upstream Debian.
+          # This job's builder resolves a FROM from the registry, where the tag
+          # is an unrelated image; the default builder reads the daemon.
           BUILDX_BUILDER: default
         with:
           configFile: tests/image/devcontainer.json
@@ -255,8 +252,8 @@ jobs:
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
           IMAGE_REF: debian:${{ matrix.variant }}
-          # The Feature build takes its FROM from the daemon; see the step
-          # above.
+          # This job's builder resolves a FROM from the registry, where the tag
+          # is an unrelated image; the default builder reads the daemon.
           BUILDX_BUILDER: default
         with:
           configFile: tests/features/devcontainer.json
@@ -401,12 +398,8 @@ jobs:
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
           IMAGE_REF: ${{ matrix.image }}:${{ matrix.variant }}
-          # The Dev Container CLI builds with buildx, and the builder this job
-          # set up uses the docker-container driver, which resolves a FROM
-          # against the registry alone. The image built above is in the daemon
-          # only, and its tag also names a Docker Hub image for several of
-          # these, so on that builder the base would silently be the upstream
-          # one.
+          # This job's builder resolves a FROM from the registry, where the tag
+          # is an unrelated image; the default builder reads the daemon.
           BUILDX_BUILDER: default
         with:
           configFile: tests/image/devcontainer.json
