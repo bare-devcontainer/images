@@ -86,15 +86,13 @@ from the same server as the binary. The committed checksum files are kept in syn
 pinned `RUSTUP_VERSION` by an automated workflow and reviewed like any other change, so later
 tampering with the download channel cannot affect builds.
 
-rustup's automatic self-update is disabled (`rustup set auto-self-update disable`), so
-`rustup update` and `rustup toolchain install` keep the verified binary instead of replacing it
-with the latest release. `rustup self update` still replaces it when run explicitly, with a
-binary this image's build did not verify.
+Automatic self-update is disabled, so `rustup update` and `rustup toolchain install` keep this
+verified `rustup`. Running `rustup self update` replaces it with a download this image did not
+verify.
 
 Note that this covers `rustup` itself. Toolchains it installs at runtime are downloaded from
-static.rust-lang.org outside this image's build pipeline, and rustup checks them against the
-SHA-256 hashes in the channel manifest it fetches from the same server; it verifies no
-signature.
+static.rust-lang.org outside this image's build pipeline; rustup checks them against SHA-256
+hashes from the same server and verifies no signature.
 
 ## Verifying the image
 

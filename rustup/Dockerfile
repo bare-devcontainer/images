@@ -22,9 +22,9 @@ LABEL devcontainer.metadata='[{ \
 # rustup publishes no signature for rustup-init, so verify it against a
 # checksum file committed to this repository (kept in sync by
 # .github/workflows/update-material.yml and reviewed like any other change)
-# instead of one fetched from the same server as the binary. rustup replaces
-# itself with its latest release on `rustup update` and `rustup toolchain
-# install` unless auto-self-update is disabled, which keeps the verified binary.
+# instead of one fetched from the same server as the binary. Unless
+# auto-self-update is disabled, `rustup update` and `rustup toolchain install`
+# replace that verified binary with rustup's latest release.
 RUN --mount=type=bind,source=rustup-init-amd64.sha256,target=/tmp/rustup-init-amd64.sha256,ro \
     --mount=type=bind,source=rustup-init-arm64.sha256,target=/tmp/rustup-init-arm64.sha256,ro \
     case "${TARGETARCH}" in \
