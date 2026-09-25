@@ -25,7 +25,7 @@ Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well 
 ## Dev Container Template
 
 A ready-to-use Dev Container template for this image is available at
-[bare-devcontainer/templates](https://github.com/bare-devcontainer/templates/tree/main/src/rust).
+[bare-devcontainer/templates](https://github.com/bare-devcontainer/templates/tree/main/src/rustup).
 It provides the recommended configuration for this image, including security hardening and
 volume mounts that persist cache directories for faster rebuilds.
 
@@ -67,8 +67,9 @@ once a toolchain is installed. Running the image without one (`docker run`, a CI
 
 A project that pins its toolchain in `rust-toolchain.toml` needs no setup: the first `cargo`
 or `rustc` invocation installs the pinned toolchain. To install it up front instead of on
-first use, run `rustup show` from a `postCreateCommand`. Without a `rust-toolchain.toml`,
-install a toolchain explicitly with `rustup toolchain install stable`.
+first use, run `rustup toolchain install` from a `postCreateCommand`; with no arguments it
+installs the toolchain the project pins. Without a `rust-toolchain.toml`, install a toolchain
+explicitly with `rustup toolchain install stable`.
 
 Two directories are worth persisting across container rebuilds as volumes:
 
