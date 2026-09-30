@@ -367,3 +367,324 @@ vulnerabilities:
       OpenTofu Language Server 0.5.3 was built with Go 1.26.0, and the fix is
       in Go 1.26.3. The upstream development branch still declares go 1.26.0,
       so no fixed release is available yet.
+
+  - id: CVE-2025-22104
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2025-38206
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-43198
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-53010
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-53089
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-74268
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-74753
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-80521
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-80844
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-80951
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-81000
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89479
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89480
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89481
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89487
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89488
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89526
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89530
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89536
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89545
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89563
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89564
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89569
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89603
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89607
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89652
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89653
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89656
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89659
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89663
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89669
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89676
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89690
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89708
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89713
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-89846
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-93817
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-97417
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-98039
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
+  - id: CVE-2026-98116
+    purls:
+      - "pkg:deb/debian/linux-libc-dev"
+    expired_at: 2026-10-06
+    statement: |
+      The published trixie variant of debian carries linux-libc-dev
+      6.12.107-1, and the fix is in 6.12.111-1, which trixie-security already
+      ships (DSA-6528-1). The debian image takes it on its next rebuild.
