@@ -35,9 +35,9 @@ volume mounts that persist cache directories for faster rebuilds.
 <!-- tags:begin -->
 | Tags | Debian variant |
 |------|----------------|
-| `2026.9.17-trixie`, `2026.9.17`, `trixie` | trixie |
+| `2026.10.0-trixie`, `2026.10.0`, `trixie` | trixie |
 
-Tags are also published with a date suffix on each build (e.g., `2026.9.17-trixie-<YYYYMMDD>`).
+Tags are also published with a date suffix on each build (e.g., `2026.10.0-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
 > [!NOTE]
