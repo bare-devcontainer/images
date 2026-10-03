@@ -22,6 +22,13 @@ Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well 
 }
 ```
 
+## Dev Container Template
+
+A ready-to-use Dev Container template for this image is available at
+[bare-devcontainer/templates](https://github.com/bare-devcontainer/templates/tree/main/src/lean).
+It provides the recommended configuration for this image, including security hardening and
+volume mounts that persist cache directories for faster rebuilds.
+
 ## Tags
 
 <!-- tags:begin -->
@@ -65,8 +72,10 @@ A project depending on Mathlib can download its prebuilt build outputs with
 
 Two directories are worth persisting across container rebuilds as volumes:
 
-- `~/.elan` — the installed toolchains. Toolchains are re-downloaded on every rebuild unless
-  this directory survives.
+- `~/.elan/toolchains` — the installed toolchains. Toolchains are re-downloaded on every
+  rebuild unless this directory survives. Persist it rather than all of `~/.elan`, whose `bin`
+  holds the `elan` this image verified; a volume there would keep the old `elan` after the
+  image is updated.
 - `~/.cache/mathlib` — the prebuilt Mathlib outputs `lake exe cache get` downloads.
 
 ## Supply chain

@@ -36,4 +36,7 @@ RUN --mount=type=bind,source=elan-amd64.sha256,target=/tmp/elan-amd64.sha256,ro 
     && env --chdir="${ELAN_TMPDIR}" sha256sum -c "${ELAN_SHA256_FILE}" \
     && tar --no-same-owner -xzf "${ELAN_TMPDIR}/${ELAN_TARBALL}" -C "${ELAN_TMPDIR}" \
     && "${ELAN_TMPDIR}/elan-init" -y --no-modify-path --default-toolchain none \
-    && rm -rf "${ELAN_TMPDIR}"
+    && rm -rf "${ELAN_TMPDIR}" \
+    && mkdir -p \
+        /home/dev/.elan/toolchains \
+        /home/dev/.cache/mathlib
