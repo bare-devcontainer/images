@@ -8,6 +8,7 @@ on:
       - debian/**
       - deno/**
       - golang/**
+      - lean/**
       - mise/**
       - node/**
       - opentofu/**
@@ -32,6 +33,7 @@ on:
       - debian/**
       - deno/**
       - golang/**
+      - lean/**
       - mise/**
       - node/**
       - opentofu/**
