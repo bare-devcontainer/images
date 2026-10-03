@@ -68,9 +68,9 @@ declare -A DESCRIPTIONS OVERVIEWS
 
 for IMAGE in "${IMAGES[@]}"; do
   DESCRIPTION=$(bash "${SCRIPT_DIR}/build-config.sh" description "$IMAGE")
-  [ -n "$DESCRIPTION" ] || fail "${IMAGE}/build.yaml defines no description"
+  [ -n "$DESCRIPTION" ] || fail "src/${IMAGE}/build.yaml defines no description"
   [ "${#DESCRIPTION}" -le "$MAX_DESCRIPTION" ] ||
-    fail "${IMAGE}/build.yaml: the description is ${#DESCRIPTION} characters, past the ${MAX_DESCRIPTION} character limit"
+    fail "src/${IMAGE}/build.yaml: the description is ${#DESCRIPTION} characters, past the ${MAX_DESCRIPTION} character limit"
 
   DESCRIPTIONS["$IMAGE"]="$DESCRIPTION"
   OVERVIEWS["$IMAGE"]=$(bash "${SCRIPT_DIR}/dockerhub-overview.sh" \

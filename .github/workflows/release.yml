@@ -168,11 +168,11 @@ jobs:
               # exclusions mirror the patterns changed-images.sh drops.
               PATHS=$(jq -r -n --argjson matrix "$MATRIX" --argjson base "$BASE_VARIANTS" \
                 '[$matrix[].image] + (if ($base | length) > 0 then ["debian"] else [] end)
-                 | unique | .[] + "/"')
+                 | unique | "src/" + .[] + "/"')
               mapfile -t IMAGE_PATHS <<< "$PATHS"
               # shellcheck disable=SC2016  # backticks are literal Markdown code spans
               UPDATES=$(git log --format='- `%h` %s' "${LATEST_TAG}..HEAD" \
-                -- "${IMAGE_PATHS[@]}" ':(exclude)*.md' ':(exclude)*/smoke-test.sh')
+                -- "${IMAGE_PATHS[@]}" ':(exclude)*.md' ':(exclude)src/*/smoke-test.sh')
               if [ -n "$UPDATES" ]; then
                 echo "$UPDATES"
               else

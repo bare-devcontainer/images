@@ -5,7 +5,7 @@ runtime installed, built on the [debian](../debian) base image.
 
 Like every image in this repository, it is minimal, built only from upstreams verified at build
 time, and published with SLSA provenance, a GitHub artifact attestation, and an SBOM; it runs as
-the non-root user `dev`. [Why these images](../README.md#why-these-images) explains the
+the non-root user `dev`. [Why these images](../../README.md#why-these-images) explains the
 reasoning, and [Verifying the image](#verifying-the-image) below shows how to check a build.
 
 ## Image
@@ -61,7 +61,7 @@ Completions are generated at build time with `deno completions bash` and install
 `deno` is downloaded directly from [GitHub Releases](https://github.com/denoland/deno/releases).
 Deno publishes neither a signature nor build provenance for its release archives, only a SHA-256
 checksum on the same release, so each archive is verified against a copy of that checksum
-committed to this repository (`deno/deno-<arch>.sha256`) rather than one fetched at build time.
+committed to this repository (`src/deno/deno-<arch>.sha256`) rather than one fetched at build time.
 The checksum files are taken from the release when the pinned `DENO_VERSION` changes, by an
 automated workflow, and reviewed like any other change, so a build accepts only the archive that
 was published when the version was pinned, and later tampering with the download channel cannot
@@ -80,5 +80,5 @@ gh attestation verify oci://ghcr.io/bare-devcontainer/deno:<tag>@sha256:<digest>
 
 The Docker Hub mirror carries the same digests, so the same command verifies an image pulled
 from `docker.io/baredevcontainer/deno`.
-[Verifying Published Images](../README.md#verifying-published-images) covers inspecting the
+[Verifying Published Images](../../README.md#verifying-published-images) covers inspecting the
 provenance and the SBOM as well.

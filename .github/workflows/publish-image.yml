@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       image:
-        description: 'Image name matching the subdirectory that contains the Dockerfile (e.g. debian, golang)'
+        description: 'Image name matching the subdirectory of src/ that contains the Dockerfile (e.g. debian, golang)'
         type: string
         required: true
       variant:
@@ -178,7 +178,7 @@ jobs:
       - name: Build linux/${{ matrix.arch }}
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
-          context: ./${{ inputs.image }}
+          context: ./src/${{ inputs.image }}
           platforms: linux/${{ matrix.arch }}
           push: false
           outputs: type=oci,dest=/tmp/image,tar=false

@@ -3,7 +3,7 @@
 This repository builds and publishes minimal Debian-based Docker images for use as dev containers, published to `ghcr.io/bare-devcontainer/<image>`.
 
 ```
-<image>/
+src/<image>/
   Dockerfile    # image build instructions
   build.yaml    # image description, variant definitions (tags, build args, debian_variant), and trusted material sources (materials)
   README.md     # image docs; the Tags table between <!-- tags:begin/end --> markers is generated
@@ -11,7 +11,7 @@ scripts/                     # CLI helpers CI calls; each script's header commen
 .github/workflows/
   release.yml                # builds and pushes images to GHCR, then tags the release and publishes a GitHub Release whose notes list the images it rebuilt
   mirror.yml                 # copies published images from GHCR to Docker Hub and sets the description of each Docker Hub repository; called by release.yml, or run by hand for a full sync
-  build-checks.yml           # for each changed image: builds it on the debian base built from the same checkout when the checkout's debian/ differs from the published base (changed in the pull request, or on main since the last release) and on the published one otherwise, verifies it as a dev container and smoke-tests it there, and runs the Dev Container Feature tests on the base
+  build-checks.yml           # for each changed image: builds it on the debian base built from the same checkout when the checkout's src/debian/ differs from the published base (changed in the pull request, or on main since the last release) and on the published one otherwise, verifies it as a dev container and smoke-tests it there, and runs the Dev Container Feature tests on the base
   trivyignore-cleanup.yml    # scans the published images with no ignore file in play and opens a pull request removing the .trivyignore.yaml entries left without a finding
 .devcontainer/               # dev container for working in this repo
 tests/                       # dev container checks; each names the image under test through ${localEnv:IMAGE_REF}
@@ -21,6 +21,7 @@ renovate.jsonc               # Renovate config
 .trivyignore.yaml            # Trivy findings waived until upstream ships a fix
 ```
 
+- Every image lives in its own directory under `src/`, named after the image, so a workflow addresses all of them as `src/**` rather than listing each one.
 - Images are organized in two layers:
   - base image(`debian`); all other images extend it
   - language-specific images built on the debian base
@@ -29,8 +30,8 @@ renovate.jsonc               # Renovate config
   - Extract an upstream archive with `tar --no-same-owner`; root tar restores the uid it records, and some upstreams build theirs as uid 1000.
   - Create a directory before the `USER` instruction that switches to `dev`, as `/workspaces` is in the base image.
   - Own a directory `dev` writes to outside its home as `root:<group>` with `chmod 2775`, with `dev` in the group. Group membership survives the remap, user ownership does not.
-- No environment variable an image sets points at a directory `dev` can write. `ENV` applies to every user in the container, so such a variable would let anything the container runs shadow a command another user resolves, or redirect where another user's tool reads and writes. Declare it through `remoteEnv` in the `devcontainer.metadata` label instead, which only a Dev Container client's own processes pick up, with `${containerEnv:NAME}` carrying the image's own value over where the variable extends one, as `PATH` does. A re-declared label replaces, rather than merges with, the one inherited from the base image, so repeat everything that label declares. In `build-checks.yml`, `scripts/check-image-env.sh` asserts the rule against the built image, and the smoke tests run in the `tests/image` dev container, since the tools they reach for are on the `PATH` a client assembles, not the image's own. `debian/smoke-test.sh` runs for every image, ahead of the image's own, so it holds the client to applying the entries the base image declares.
-- GHCR is where every image is published; Docker Hub is a mirror of it. `mirror.yml` copies manifests unchanged, so a tag resolves to the same digest on both registries. A release mirrors the tags `build.yaml` names for each image together with the dated tags of that release, and regsync copies the ones the source registry holds, so an image the release left alone contributes no dated tag while its other tags resolve to the digests already published; the tags of earlier releases and of variants `build.yaml` no longer defines are picked up by running `mirror.yml` by hand with `full` set, which enumerates the source registry instead. The same workflow sets what each Docker Hub repository says about itself: the short description is the `description` of `build.yaml`, and the overview is `dockerhub-overview.sh`'s rendering of `<image>/README.md`, so the README stays the one place the image is documented. Docker Hub renders neither the relative links nor the alert syntax a README may use, so anything the rendering cannot carry over fails the workflow rather than reaching the page.
+- No environment variable an image sets points at a directory `dev` can write. `ENV` applies to every user in the container, so such a variable would let anything the container runs shadow a command another user resolves, or redirect where another user's tool reads and writes. Declare it through `remoteEnv` in the `devcontainer.metadata` label instead, which only a Dev Container client's own processes pick up, with `${containerEnv:NAME}` carrying the image's own value over where the variable extends one, as `PATH` does. A re-declared label replaces, rather than merges with, the one inherited from the base image, so repeat everything that label declares. In `build-checks.yml`, `scripts/check-image-env.sh` asserts the rule against the built image, and the smoke tests run in the `tests/image` dev container, since the tools they reach for are on the `PATH` a client assembles, not the image's own. `src/debian/smoke-test.sh` runs for every image, ahead of the image's own, so it holds the client to applying the entries the base image declares.
+- GHCR is where every image is published; Docker Hub is a mirror of it. `mirror.yml` copies manifests unchanged, so a tag resolves to the same digest on both registries. A release mirrors the tags `build.yaml` names for each image together with the dated tags of that release, and regsync copies the ones the source registry holds, so an image the release left alone contributes no dated tag while its other tags resolve to the digests already published; the tags of earlier releases and of variants `build.yaml` no longer defines are picked up by running `mirror.yml` by hand with `full` set, which enumerates the source registry instead. The same workflow sets what each Docker Hub repository says about itself: the short description is the `description` of `build.yaml`, and the overview is `dockerhub-overview.sh`'s rendering of `src/<image>/README.md`, so the README stays the one place the image is documented. Docker Hub renders neither the relative links nor the alert syntax a README may use, so anything the rendering cannot carry over fails the workflow rather than reaching the page.
 - Each image README is also shown on its own, as the Docker Hub overview, so it has to make the case for the image without the root README around it: it opens with the shared statement of what the images are built for and ends with the shared `Verifying the image` section. Keep that wording alike across images, and keep the root README the place the details live; the image README links there and to its own `Supply chain` section.
 - Dev Container Feature checks exist to guarantee that Features can supply tooling the images deliberately omit. When adding one:
   - Cover a Feature when it exercises an install mechanism that no already-covered Feature exercises (user and shell provisioning, a third-party apt repository, a release binary download, an upstream install script). Do not add a second Feature that only repeats a covered mechanism.
@@ -62,8 +63,8 @@ renovate.jsonc               # Renovate config
   ```sh
   export IMAGE_REF=ghcr.io/bare-devcontainer/node:26-trixie
   devcontainer up --workspace-folder . --config tests/image/devcontainer.json
-  devcontainer exec --workspace-folder . --config tests/image/devcontainer.json bash debian/smoke-test.sh
-  devcontainer exec --workspace-folder . --config tests/image/devcontainer.json bash node/smoke-test.sh
+  devcontainer exec --workspace-folder . --config tests/image/devcontainer.json bash src/debian/smoke-test.sh
+  devcontainer exec --workspace-folder . --config tests/image/devcontainer.json bash src/node/smoke-test.sh
   ```
 - Use English for all documentation and comments.
 - Comments are one of two kinds:

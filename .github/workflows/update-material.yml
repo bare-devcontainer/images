@@ -19,9 +19,9 @@ on:
       - scripts/update-material.sh
       - scripts/build-config.sh
       # Regenerates the materials an image derives itself when its script changes.
-      - '*/checksum.sh'
+      - 'src/*/checksum.sh'
       # Re-syncs commit_to_pr materials when Renovate bumps a pinned version.
-      - '*/build.yaml'
+      - 'src/*/build.yaml'
   schedule:
     - cron: '0 6 * * 3'
   workflow_dispatch:

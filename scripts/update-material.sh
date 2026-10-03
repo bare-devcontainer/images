@@ -22,11 +22,11 @@ set -euo pipefail
 
 IMAGE="${1:?Usage: update-material.sh <image> [--commit-to-pr-only]}"
 FILTER="${2:-}"
-FILE="${IMAGE}/build.yaml"
+FILE="src/${IMAGE}/build.yaml"
 
 BUILD_ARGS=$(yq -o json '.variants[0].build_args // {}' "$FILE")
 FILES=$(IMAGE="$IMAGE" yq -o json \
-  '[(.materials // [])[] | {"path": (strenv(IMAGE) + "/" + .path), "url": .url, "command": .command, "version_key": .version_key, "commit_to_pr": (.commit_to_pr // false)}]' \
+  '[(.materials // [])[] | {"path": ("src/" + strenv(IMAGE) + "/" + .path), "url": .url, "command": .command, "version_key": .version_key, "commit_to_pr": (.commit_to_pr // false)}]' \
   "$FILE" | \
   jq -c --argjson args "$BUILD_ARGS" \
     'map(
@@ -63,7 +63,7 @@ while IFS= read -r entry; do
     # The loop's stdin is the list of materials, and the body inherits it. A
     # command that reads stdin would swallow the entries after its own, leaving
     # them silently unprocessed.
-    env "${env_args[@]}" bash "${IMAGE}/${argv[0]}" "${argv[@]:1}" < /dev/null > "$tmp"
+    env "${env_args[@]}" bash "src/${IMAGE}/${argv[0]}" "${argv[@]:1}" < /dev/null > "$tmp"
   fi
   if cmp -s "$tmp" "$path" 2>/dev/null; then
     echo "  unchanged" >&2

@@ -4,7 +4,7 @@ Dev container image with the Zig compiler installed, built on the [debian](../de
 
 Like every image in this repository, it is minimal, built only from upstreams verified at build
 time, and published with SLSA provenance, a GitHub artifact attestation, and an SBOM; it runs as
-the non-root user `dev`. [Why these images](../README.md#why-these-images) explains the
+the non-root user `dev`. [Why these images](../../README.md#why-these-images) explains the
 reasoning, and [Verifying the image](#verifying-the-image) below shows how to check a build.
 
 ## Image
@@ -65,9 +65,9 @@ across container rebuilds.
 
 The Zig tarball is downloaded from a [community mirror](https://ziglang.org/download/community-mirrors.txt)
 with ziglang.org as the fallback, then verified with a minisign signature against Zig's public
-key (`zig/zig-minisign.pub`); the signature's trusted comment is checked to name the requested
+key (`src/zig/zig-minisign.pub`); the signature's trusted comment is checked to name the requested
 file, so a valid signature for a different release cannot be substituted. ZLS is verified the
-same way against its own key (`zig/zls-minisign.pub`). Both keys are committed to this
+same way against its own key (`src/zig/zls-minisign.pub`). Both keys are committed to this
 repository and reviewed like any other change.
 
 Shell completions are fetched from [ziglang/shell-completions] with `git` at a pinned commit
@@ -87,7 +87,7 @@ gh attestation verify oci://ghcr.io/bare-devcontainer/zig:<tag>@sha256:<digest> 
 
 The Docker Hub mirror carries the same digests, so the same command verifies an image pulled
 from `docker.io/baredevcontainer/zig`.
-[Verifying Published Images](../README.md#verifying-published-images) covers inspecting the
+[Verifying Published Images](../../README.md#verifying-published-images) covers inspecting the
 provenance and the SBOM as well.
 
 [ziglang/shell-completions]: https://codeberg.org/ziglang/shell-completions

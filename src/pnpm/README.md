@@ -6,7 +6,7 @@ the project rather than baked into the image.
 
 Like every image in this repository, it is minimal, built only from upstreams verified at build
 time, and published with SLSA provenance, a GitHub artifact attestation, and an SBOM; it runs as
-the non-root user `dev`. [Why these images](../README.md#why-these-images) explains the
+the non-root user `dev`. [Why these images](../../README.md#why-these-images) explains the
 reasoning, and [Verifying the image](#verifying-the-image) below shows how to check a build.
 
 ## Image
@@ -35,10 +35,10 @@ volume mounts that persist cache directories for faster rebuilds.
 <!-- tags:begin -->
 | Tags | Debian variant |
 |------|----------------|
-| `12.9.0-trixie`, `12-trixie`, `12.9.0`, `12`, `trixie` | trixie |
-| `12.9.0-bookworm`, `12-bookworm`, `bookworm` | bookworm |
+| `12.9.1-trixie`, `12-trixie`, `12.9.1`, `12`, `trixie` | trixie |
+| `12.9.1-bookworm`, `12-bookworm`, `bookworm` | bookworm |
 
-Tags are also published with a date suffix on each build (e.g., `12.9.0-trixie-<YYYYMMDD>`).
+Tags are also published with a date suffix on each build (e.g., `12.9.1-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
 The version in these tags is the version of pnpm itself, not of any Node.js runtime.
@@ -100,11 +100,11 @@ Two directories are worth persisting across container rebuilds as volumes:
 
 pnpm is downloaded from [GitHub Releases](https://github.com/pnpm/pnpm/releases), the same archive
 pnpm's own container image installs, and verified against a checksum committed to this repository
-(`pnpm/pnpm-amd64.sha256`, `pnpm/pnpm-arm64.sha256`).
+(`src/pnpm/pnpm-amd64.sha256`, `src/pnpm/pnpm-arm64.sha256`).
 
 pnpm publishes neither a checksum nor a detached signature, so that checksum is not fetched from
 upstream — it is derived here, and only from an archive whose origin has been established.
-`.github/workflows/update-material.yml` runs `pnpm/checksum.sh` whenever the pinned version changes,
+`.github/workflows/update-material.yml` runs `src/pnpm/checksum.sh` whenever the pinned version changes,
 and the script records a digest only after `gh attestation verify` has confirmed that the archive's
 [build provenance](https://github.com/pnpm/pnpm/blob/main/.github/workflows/release.yml) was signed
 by pnpm's release workflow at that version's tag. The resulting checksum is committed and reviewed
@@ -127,5 +127,5 @@ gh attestation verify oci://ghcr.io/bare-devcontainer/pnpm:<tag>@sha256:<digest>
 
 The Docker Hub mirror carries the same digests, so the same command verifies an image pulled
 from `docker.io/baredevcontainer/pnpm`.
-[Verifying Published Images](../README.md#verifying-published-images) covers inspecting the
+[Verifying Published Images](../../README.md#verifying-published-images) covers inspecting the
 provenance and the SBOM as well.

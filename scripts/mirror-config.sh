@@ -16,7 +16,7 @@
 #
 # Modes:
 #   release
-#       One entry per image, allowing every tag <image>/build.yaml defines plus
+#       One entry per image, allowing every tag src/<image>/build.yaml defines plus
 #       each variant's primary tag carrying the date suffix. regsync lists the
 #       tags the source repository holds and copies the ones the allow list
 #       matches, so a release that built only some of the images needs no say
@@ -92,7 +92,7 @@ emit_release() {
   local variants variant primary tags allow patterns pattern
 
   variants=$(build_config variants "$image" | jq -r '.[]')
-  [ -n "$variants" ] || fail "${image}/build.yaml defines no variant"
+  [ -n "$variants" ] || fail "src/${image}/build.yaml defines no variant"
 
   emit_entry "$image"
   printf -- '      allow:\n'

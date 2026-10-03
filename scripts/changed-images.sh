@@ -9,9 +9,9 @@
 # "-", and prints a JSON array with one entry per image directory:
 #
 #   [{"image": "node", "selected": true, "reason": "own files changed",
-#     "files": ["node/Dockerfile"]}, ...]
+#     "files": ["src/node/Dockerfile"]}, ...]
 #
-# "files" lists the changes under <image>/; changes that select every image
+# "files" lists the changes under src/<image>/; changes that select every image
 # are named by "reason" instead, so the report does not repeat them for every
 # image.
 #
@@ -22,11 +22,11 @@
 #       The pull request checks of build-checks.yml. Rules, from the most
 #       specific to the most general:
 #       - Paths matching IGNORED_PATTERN are dropped before any other rule.
-#       - Files under <image>/ affect that image.
-#       - Files under debian/ affect every image: build-checks.yml builds the
+#       - Files under src/<image>/ affect that image.
+#       - Files under src/debian/ affect every image: build-checks.yml builds the
 #         debian base from the checkout and builds each other image FROM it,
 #         so a base image change reaches every image build. It also
-#         bind-mounts debian/smoke-test.sh into each image and runs it before
+#         bind-mounts src/debian/smoke-test.sh into each image and runs it before
 #         the image's own one.
 #       - Every path outside an image directory (the workflow definition
 #         itself, the shared scripts, the dev container tests, the ignore
@@ -39,8 +39,8 @@
 #       The images release.yml publishes from the changes since the last
 #       release. Rules:
 #       - Paths matching IGNORED_PATTERN are dropped before any other rule.
-#       - Files under <image>/ affect that image.
-#       - Files under debian/ affect every image: release.yml publishes debian
+#       - Files under src/<image>/ affect that image.
+#       - Files under src/debian/ affect every image: release.yml publishes debian
 #         first and builds each derived image FROM the digest it just
 #         published, so a base image change reaches every derived image. The
 #         smoke tests are the exception; the pattern above drops them.
@@ -56,7 +56,7 @@ IGNORED_PATTERN='\.md$'
 
 # The image every other image is built FROM, so a change under it reaches
 # every image.
-BASE_IMAGE_DIR='debian/'
+BASE_IMAGE_DIR='src/debian/'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -71,7 +71,7 @@ case "$MODE" in
     UNOWNED_REPO_WIDE=false
     # No image copies its smoke test in; build-checks.yml bind-mounts them at
     # test time, so a change to one alters nothing that gets published.
-    IGNORED_PATTERN="${IGNORED_PATTERN}|^[^/]+/smoke-test\.sh$"
+    IGNORED_PATTERN="${IGNORED_PATTERN}|^src/[^/]+/smoke-test\.sh$"
     ;;
   *)
     echo "Unknown mode: $MODE" >&2
@@ -94,7 +94,7 @@ jq -n -c --argjson images "$IMAGES" \
   --arg ignored "$IGNORED_PATTERN" --arg changed "$CHANGED" '
   # Directory of the image a path belongs to, or null when it belongs to none.
   def owner($path):
-    ($images | map(select(. as $dir | $path | startswith($dir + "/"))) | first);
+    ($images | map(select(. as $dir | $path | startswith("src/" + $dir + "/"))) | first);
 
   ($changed | split("\n") | map(select(length > 0 and (test($ignored) | not)))) as $files
   | ($files | map(select(startswith($base_image_dir)))) as $base_image

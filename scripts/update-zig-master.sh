@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# update-zig-master.sh — refresh the Zig master build pinned in zig/build.yaml
+# update-zig-master.sh — refresh the Zig master build pinned in src/zig/build.yaml
 #
 # Usage:
 #   update-zig-master.sh
@@ -11,7 +11,7 @@
 # operations, like update-material.sh.
 set -euo pipefail
 
-FILE="zig/build.yaml"
+FILE="src/zig/build.yaml"
 VARIANT="master-trixie"
 TARGETS=(x86_64-linux aarch64-linux)
 
