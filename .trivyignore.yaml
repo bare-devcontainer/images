@@ -1,18 +1,7 @@
 vulnerabilities:
-  - id: CVE-2026-103111
-    purls:
-      - "pkg:deb/debian/libpcre2-8-0"
-    expired_at: 2026-10-31
-    statement: |
-      debian:trixie-20260918, the latest trixie image, carries pcre2
-      10.46-1~deb13u2. The fix is in 10.46-1~deb13u3, published to
-      trixie-security with DSA-6530-1 on 2026-09-29, after that image was
-      built, so the fix is expected in the next trixie image.
-
   - id: CVE-2026-56852
     paths:
       - "usr/local/bin/gopls"
-      - "usr/local/bin/tofu"
     expired_at: 2026-10-31
     statement: |
       gopls 0.23.0, the latest release, depends on golang.org/x/text v0.38.0
@@ -61,7 +50,6 @@ vulnerabilities:
 
   - id: CVE-2026-46600
     paths:
-      - "usr/local/bin/tofu"
       - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
@@ -78,7 +66,6 @@ vulnerabilities:
   - id: CVE-2026-39821
     paths:
       - "usr/local/bin/terraform-ls"
-      - "usr/local/bin/tofu"
       - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
@@ -176,7 +163,6 @@ vulnerabilities:
   - id: CVE-2026-56854
     paths:
       - "usr/local/bin/terraform-ls"
-      - "usr/local/bin/tofu"
       - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
@@ -189,15 +175,6 @@ vulnerabilities:
       each. The OpenTofu Language Server development branch still carries
       v0.53.0, so that one has no fixed release yet.
 
-  - id: CVE-2026-84304
-    paths:
-      - "usr/local/bin/tofu"
-    expired_at: 2026-10-31
-    statement: |
-      OpenTofu 1.12.6 depends on google.golang.org/grpc v1.79.3, and the fix is
-      in v1.83.1. The v1.12 branch the next patch release comes from carries
-      v1.79.3 and the v1.13 branch 1.13.0-beta1 was cut from v1.83.0, so no
-      fixed release is available yet.
   - id: CVE-2026-84445
     paths:
       - "usr/local/bin/tofu"
@@ -235,60 +212,8 @@ vulnerabilities:
       pins Go 1.26.4 on the v1.16 branch the next patch release comes from and
       the OpenTofu language server still declares go 1.26.0, so neither has a
       fixed release yet.
-  - id: GHSA-hrxh-6v49-42gf
-    paths:
-      - "usr/local/bin/tofu"
-    expired_at: 2026-10-31
-    statement: |
-      OpenTofu 1.12.6 depends on google.golang.org/grpc v1.79.3, and the fix is
-      in v1.82.1. The v1.12 branch the next patch release comes from still
-      carries v1.79.3, and the v1.13 branch 1.13.0-beta1 was cut from carries
-      v1.83.0, so the fix is expected in OpenTofu 1.13.0.
 
   # opentofu
-  - id: CVE-2026-39883
-    paths:
-      - "usr/local/bin/tofu"
-    expired_at: 2026-10-31
-    statement: |
-      OpenTofu 1.12.6 depends on go.opentelemetry.io/otel/sdk v1.42.0, and the
-      fix is in v1.43.0. The v1.12 branch the next patch release comes from
-      still carries v1.42.0, and the v1.13 branch 1.13.0-beta1 was cut from
-      carries v1.45.0, so the fix is expected in OpenTofu 1.13.0.
-  - id: CVE-2026-25681
-    paths:
-      - "usr/local/bin/tofu"
-    expired_at: 2026-10-31
-    statement: |
-      OpenTofu 1.12.6 depends on golang.org/x/net v0.54.0, and the fix is in
-      v0.55.0. The v1.12 branch the next patch release comes from carries
-      v0.57.0, so the fix is expected in the next OpenTofu release.
-  - id: CVE-2026-27136
-    paths:
-      - "usr/local/bin/tofu"
-    expired_at: 2026-10-31
-    statement: |
-      OpenTofu 1.12.6 depends on golang.org/x/net v0.54.0, and the fix is in
-      v0.55.0. The v1.12 branch the next patch release comes from carries
-      v0.57.0, so the fix is expected in the next OpenTofu release.
-  - id: CVE-2026-50163
-    paths:
-      - "usr/local/bin/tofu"
-    expired_at: 2026-10-31
-    statement: |
-      OpenTofu 1.12.6 depends on oras.land/oras-go/v2 v2.6.1, and the fix is in
-      v2.6.2. The v1.12 branch the next patch release comes from still carries
-      v2.6.1, and the v1.13 branch 1.13.0-beta1 was cut from carries v2.6.2, so
-      the fix is expected in OpenTofu 1.13.0.
-  - id: CVE-2026-85731
-    paths:
-      - "usr/local/bin/tofu"
-    expired_at: 2026-10-31
-    statement: |
-      OpenTofu 1.12.6 depends on oras.land/oras-go/v2 v2.6.1, and the fix is in
-      v2.6.2. The v1.12 branch the next patch release comes from still carries
-      v2.6.1, and the v1.13 branch 1.13.0-rc1 was cut from carries v2.6.2, so
-      the fix is expected in OpenTofu 1.13.0.
   - id: CVE-2026-25679
     paths:
       - "usr/local/bin/tofu-ls"
