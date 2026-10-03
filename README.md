@@ -46,8 +46,8 @@ README says otherwise:
   extensions compile, but a library a project links against brings its own `-dev` package.
 - **No editors, shells, or CLI tooling beyond the basics.** `bash` and `vim-tiny` are present;
   editors, alternative shells, cloud CLIs, and linters are not.
-- **No language toolchain in the version-manager images.** `mise`, `pnpm`, `rustup`, and `uv`
-  install the version the project declares rather than one baked into the image.
+- **No language toolchain in the version-manager images.** `lean`, `mise`, `pnpm`, `rustup`,
+  and `uv` install the version the project declares rather than one baked into the image.
 
 Add what a project needs with a [Dev Container Feature](https://containers.dev/features), or
 with your own `Dockerfile` built `FROM` one of these images.
@@ -64,6 +64,7 @@ Every image runs as `dev` (UID/GID 1000), starts in `/workspaces`, and declares 
 | [debian](debian/README.md) | `ghcr.io/bare-devcontainer/debian` | The base for every other image; language-agnostic projects |
 | [deno](deno/README.md) | `ghcr.io/bare-devcontainer/deno` | JavaScript/TypeScript with the Deno runtime |
 | [golang](golang/README.md) | `ghcr.io/bare-devcontainer/golang` | Go, with the toolchain version pinned by tag |
+| [lean](lean/README.md) | `ghcr.io/bare-devcontainer/lean` | Lean 4, with the toolchain chosen by the project |
 | [mise](mise/README.md) | `ghcr.io/bare-devcontainer/mise` | Polyglot projects that pin their own runtimes |
 | [node](node/README.md) | `ghcr.io/bare-devcontainer/node` | Node.js, with Corepack instead of npm |
 | [opentofu](opentofu/README.md) | `ghcr.io/bare-devcontainer/opentofu` | Infrastructure as code with OpenTofu |

@@ -1,0 +1,45 @@
+description: "Minimal Dev Container image for Lean 4 with elan: Debian, verified upstreams, SLSA provenance"
+materials:
+  - path: elan-amd64.sha256
+    command: ["checksum.sh", "amd64"]
+    version_key: ELAN_VERSION
+    commit_to_pr: true
+    description: >-
+      Checksum for elan's amd64 release tarball, matching the pinned
+      ELAN_VERSION. elan publishes neither a checksum, a signature, nor build
+      provenance for its release tarballs, so checksum.sh derives this one from
+      the tarball, after checking it against the digest GitHub recorded for the
+      release asset. This committed file is the trust anchor the Dockerfile
+      verifies the downloaded tarball against.
+  - path: elan-arm64.sha256
+    command: ["checksum.sh", "arm64"]
+    version_key: ELAN_VERSION
+    commit_to_pr: true
+    description: >-
+      Checksum for elan's arm64 release tarball; same trust anchor as the
+      amd64 entry.
+variants:
+  - variant: "4-trixie"
+    tags:
+      # renovate: datasource=github-releases depName=leanprover/elan versioning=semver extractVersion=^v(?<version>.+)
+      - "4.2.4-trixie"
+      - "4-trixie"
+      - "trixie"
+      # renovate: datasource=github-releases depName=leanprover/elan versioning=semver extractVersion=^v(?<version>.+)
+      - "4.2.4"
+      - "4"
+    debian_variant: "trixie"
+    build_args:
+      # renovate: datasource=github-releases depName=leanprover/elan versioning=semver extractVersion=^v(?<version>.+)
+      ELAN_VERSION: "4.2.4"
+
+  - variant: "4-bookworm"
+    tags:
+      # renovate: datasource=github-releases depName=leanprover/elan versioning=semver extractVersion=^v(?<version>.+)
+      - "4.2.4-bookworm"
+      - "4-bookworm"
+      - "bookworm"
+    debian_variant: "bookworm"
+    build_args:
+      # renovate: datasource=github-releases depName=leanprover/elan versioning=semver extractVersion=^v(?<version>.+)
+      ELAN_VERSION: "4.2.4"
