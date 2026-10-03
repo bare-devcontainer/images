@@ -4,7 +4,7 @@ Dev container image with Node.js installed, built on the [debian](../debian) bas
 
 Like every image in this repository, it is minimal, built only from upstreams verified at build
 time, and published with SLSA provenance, a GitHub artifact attestation, and an SBOM; it runs as
-the non-root user `dev`. [Why these images](../README.md#why-these-images) explains the
+the non-root user `dev`. [Why these images](../../README.md#why-these-images) explains the
 reasoning, and [Verifying the image](#verifying-the-image) below shows how to check a build.
 
 ## Image
@@ -61,7 +61,7 @@ Everything from the [debian](../debian) base image, plus:
 
 The Node.js binary is downloaded from [nodejs.org](https://nodejs.org/dist/), and its checksum
 is verified against `SHASUMS256.txt.asc`, signed by the Node.js Release Team. The keyring
-(`node/node-keyring.kbx`) is committed to this repository, so signatures are checked against
+(`src/node/node-keyring.kbx`) is committed to this repository, so signatures are checked against
 keys reviewed here rather than keys fetched at build time.
 
 ## Verifying the image
@@ -77,5 +77,5 @@ gh attestation verify oci://ghcr.io/bare-devcontainer/node:<tag>@sha256:<digest>
 
 The Docker Hub mirror carries the same digests, so the same command verifies an image pulled
 from `docker.io/baredevcontainer/node`.
-[Verifying Published Images](../README.md#verifying-published-images) covers inspecting the
+[Verifying Published Images](../../README.md#verifying-published-images) covers inspecting the
 provenance and the SBOM as well.

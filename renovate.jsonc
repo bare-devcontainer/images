@@ -115,7 +115,7 @@
     {
       "description": "Create separate patch update branches so older Go release lines (e.g. 1.25.x) still receive patch updates while minor updates are disabled below.",
       "matchFileNames": [
-        "golang/build.yaml"
+        "src/golang/build.yaml"
       ],
       "matchPackageNames": [
         "golang"
@@ -124,7 +124,7 @@
     },
     {
       "matchFileNames": [
-        "golang/build.yaml"
+        "src/golang/build.yaml"
       ],
       "matchPackageNames": [
         "golang"
@@ -137,7 +137,7 @@
     },
     {
       "matchFileNames": [
-        "zig/build.yaml"
+        "src/zig/build.yaml"
       ],
       "matchPackageNames": [
         "ziglang/zig",

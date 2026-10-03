@@ -11,8 +11,8 @@
 #       Used to generate the GitHub Actions job matrix.
 #
 #   images
-#       Output the names of every image directory (one containing a
-#       build.yaml) as a JSON array. Used by update-material.yml to loop
+#       Output the names of every image directory under src/ (one containing
+#       a build.yaml) as a JSON array. Used by update-material.yml to loop
 #       over every image and refresh its trust material, if any.
 #
 #   description <image>
@@ -41,13 +41,12 @@ set -euo pipefail
 
 COMMAND="${1:?Usage: build-config.sh <command> [image] [args...]}"
 IMAGE_NAME="${2:-}"
-FILE="${IMAGE_NAME:+${IMAGE_NAME}/build.yaml}"
+FILE="${IMAGE_NAME:+src/${IMAGE_NAME}/build.yaml}"
 
 case "$COMMAND" in
   images)
-    find . -maxdepth 2 -name build.yaml \
-      ! -path './.devcontainer/*' \
-      -printf '%h\n' | sed 's|^\./||' | sort | \
+    find src -mindepth 2 -maxdepth 2 -name build.yaml \
+      -printf '%h\n' | sed 's|^src/||' | sort | \
     jq -c -R -s 'split("\n") | map(select(. != ""))'
     ;;
   variants)
@@ -79,14 +78,13 @@ case "$COMMAND" in
       "$FILE"
     ;;
   all-matrix)
-    find . -maxdepth 2 -name build.yaml \
-      ! -path './debian/*' \
-      ! -path './.devcontainer/*' \
-      -printf '%h\n' | sed 's|^\./||' | sort | \
+    find src -mindepth 2 -maxdepth 2 -name build.yaml \
+      ! -path 'src/debian/*' \
+      -printf '%h\n' | sed 's|^src/||' | sort | \
     while IFS= read -r IMG; do
       IMAGE="$IMG" yq -o json \
         '[.variants[] | {"image": strenv(IMAGE), "variant": .variant, "primary_tag": .tags[0]}]' \
-        "${IMG}/build.yaml"
+        "src/${IMG}/build.yaml"
     done | jq -c -s 'add // []'
     ;;
   *)

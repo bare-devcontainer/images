@@ -60,20 +60,20 @@ Every image runs as `dev` (UID/GID 1000), starts in `/workspaces`, and declares 
 
 | Image | Registry | Use it for |
 |-------|----------|------------|
-| [bun](bun/README.md) | `ghcr.io/bare-devcontainer/bun` | JavaScript/TypeScript with the Bun runtime |
-| [debian](debian/README.md) | `ghcr.io/bare-devcontainer/debian` | The base for every other image; language-agnostic projects |
-| [deno](deno/README.md) | `ghcr.io/bare-devcontainer/deno` | JavaScript/TypeScript with the Deno runtime |
-| [golang](golang/README.md) | `ghcr.io/bare-devcontainer/golang` | Go, with the toolchain version pinned by tag |
-| [lean](lean/README.md) | `ghcr.io/bare-devcontainer/lean` | Lean 4, with the toolchain chosen by the project |
-| [mise](mise/README.md) | `ghcr.io/bare-devcontainer/mise` | Polyglot projects that pin their own runtimes |
-| [node](node/README.md) | `ghcr.io/bare-devcontainer/node` | Node.js, with Corepack instead of npm |
-| [opentofu](opentofu/README.md) | `ghcr.io/bare-devcontainer/opentofu` | Infrastructure as code with OpenTofu |
-| [pnpm](pnpm/README.md) | `ghcr.io/bare-devcontainer/pnpm` | Node.js, with the runtime version managed by pnpm |
-| [rustup](rustup/README.md) | `ghcr.io/bare-devcontainer/rustup` | Rust, with the toolchain chosen by the project |
-| [temurin](temurin/README.md) | `ghcr.io/bare-devcontainer/temurin` | Java, with the Eclipse Temurin JDK version pinned by tag |
-| [terraform](terraform/README.md) | `ghcr.io/bare-devcontainer/terraform` | Infrastructure as code with Terraform |
-| [uv](uv/README.md) | `ghcr.io/bare-devcontainer/uv` | Python, with the interpreter managed by uv |
-| [zig](zig/README.md) | `ghcr.io/bare-devcontainer/zig` | Zig, with the compiler version pinned by tag |
+| [bun](src/bun/README.md) | `ghcr.io/bare-devcontainer/bun` | JavaScript/TypeScript with the Bun runtime |
+| [debian](src/debian/README.md) | `ghcr.io/bare-devcontainer/debian` | The base for every other image; language-agnostic projects |
+| [deno](src/deno/README.md) | `ghcr.io/bare-devcontainer/deno` | JavaScript/TypeScript with the Deno runtime |
+| [golang](src/golang/README.md) | `ghcr.io/bare-devcontainer/golang` | Go, with the toolchain version pinned by tag |
+| [lean](src/lean/README.md) | `ghcr.io/bare-devcontainer/lean` | Lean 4, with the toolchain chosen by the project |
+| [mise](src/mise/README.md) | `ghcr.io/bare-devcontainer/mise` | Polyglot projects that pin their own runtimes |
+| [node](src/node/README.md) | `ghcr.io/bare-devcontainer/node` | Node.js, with Corepack instead of npm |
+| [opentofu](src/opentofu/README.md) | `ghcr.io/bare-devcontainer/opentofu` | Infrastructure as code with OpenTofu |
+| [pnpm](src/pnpm/README.md) | `ghcr.io/bare-devcontainer/pnpm` | Node.js, with the runtime version managed by pnpm |
+| [rustup](src/rustup/README.md) | `ghcr.io/bare-devcontainer/rustup` | Rust, with the toolchain chosen by the project |
+| [temurin](src/temurin/README.md) | `ghcr.io/bare-devcontainer/temurin` | Java, with the Eclipse Temurin JDK version pinned by tag |
+| [terraform](src/terraform/README.md) | `ghcr.io/bare-devcontainer/terraform` | Infrastructure as code with Terraform |
+| [uv](src/uv/README.md) | `ghcr.io/bare-devcontainer/uv` | Python, with the interpreter managed by uv |
+| [zig](src/zig/README.md) | `ghcr.io/bare-devcontainer/zig` | Zig, with the compiler version pinned by tag |
 
 Every image is published for `linux/amd64` and `linux/arm64`. See each image's README for its
 available tags, the software it ships, and how its upstreams are verified.

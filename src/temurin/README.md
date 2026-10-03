@@ -5,7 +5,7 @@ JDK installed, built on the [debian](../debian) base image.
 
 Like every image in this repository, it is minimal, built only from upstreams verified at build
 time, and published with SLSA provenance, a GitHub artifact attestation, and an SBOM; it runs as
-the non-root user `dev`. [Why these images](../README.md#why-these-images) explains the
+the non-root user `dev`. [Why these images](../../README.md#why-these-images) explains the
 reasoning, and [Verifying the image](#verifying-the-image) below shows how to check a build.
 
 ## Image
@@ -85,7 +85,7 @@ The JDK is installed with `apt` from the
 [Adoptium package repository](https://packages.adoptium.net/), the channel Adoptium documents
 for Debian, pinned in `build.yaml` to an exact package version. `apt` verifies the repository
 index against Adoptium's signing key on every install, and the key
-(`temurin/adoptium-signing-key.asc`) is committed to this repository, so the index is checked
+(`src/temurin/adoptium-signing-key.asc`) is committed to this repository, so the index is checked
 against a key reviewed here rather than one fetched at build time.
 
 ## Verifying the image
@@ -101,5 +101,5 @@ gh attestation verify oci://ghcr.io/bare-devcontainer/temurin:<tag>@sha256:<dige
 
 The Docker Hub mirror carries the same digests, so the same command verifies an image pulled
 from `docker.io/baredevcontainer/temurin`.
-[Verifying Published Images](../README.md#verifying-published-images) covers inspecting the
+[Verifying Published Images](../../README.md#verifying-published-images) covers inspecting the
 provenance and the SBOM as well.

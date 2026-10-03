@@ -4,7 +4,7 @@ Dev container image with [mise](https://mise.jdx.dev/) installed, built on the [
 
 Like every image in this repository, it is minimal, built only from upstreams verified at build
 time, and published with SLSA provenance, a GitHub artifact attestation, and an SBOM; it runs as
-the non-root user `dev`. [Why these images](../README.md#why-these-images) explains the
+the non-root user `dev`. [Why these images](../../README.md#why-these-images) explains the
 reasoning, and [Verifying the image](#verifying-the-image) below shows how to check a build.
 
 mise is a polyglot runtime manager that can install and manage multiple language toolchains (Node.js, Python, Ruby, Go, etc.) per project.
@@ -35,9 +35,9 @@ volume mounts that persist cache directories for faster rebuilds.
 <!-- tags:begin -->
 | Tags | Debian variant |
 |------|----------------|
-| `2026.10.0-trixie`, `2026.10.0`, `trixie` | trixie |
+| `2026.10.1-trixie`, `2026.10.1`, `trixie` | trixie |
 
-Tags are also published with a date suffix on each build (e.g., `2026.10.0-trixie-<YYYYMMDD>`).
+Tags are also published with a date suffix on each build (e.g., `2026.10.1-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
 > [!NOTE]
@@ -84,7 +84,7 @@ Two directories are worth persisting across container rebuilds as volumes:
 
 The mise binary is downloaded from [GitHub Releases](https://github.com/jdx/mise/releases). Its
 checksum is verified against `SHASUMS256.txt`, whose minisign signature is verified against
-mise's public key (`mise/mise-minisign.pub`) before installation. The key is committed to this
+mise's public key (`src/mise/mise-minisign.pub`) before installation. The key is committed to this
 repository, so signatures are checked against a key reviewed here rather than one fetched at
 build time.
 
@@ -104,5 +104,5 @@ gh attestation verify oci://ghcr.io/bare-devcontainer/mise:<tag>@sha256:<digest>
 
 The Docker Hub mirror carries the same digests, so the same command verifies an image pulled
 from `docker.io/baredevcontainer/mise`.
-[Verifying Published Images](../README.md#verifying-published-images) covers inspecting the
+[Verifying Published Images](../../README.md#verifying-published-images) covers inspecting the
 provenance and the SBOM as well.

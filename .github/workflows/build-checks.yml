@@ -4,20 +4,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/build-checks.yml
-      - bun/**
-      - debian/**
-      - deno/**
-      - golang/**
-      - lean/**
-      - mise/**
-      - node/**
-      - opentofu/**
-      - pnpm/**
-      - rustup/**
-      - temurin/**
-      - terraform/**
-      - uv/**
-      - zig/**
+      - src/**
       - tests/**
       - scripts/build-config.sh
       - scripts/changed-images.sh
@@ -29,20 +16,7 @@ on:
     branches:
       - main
     paths:
-      - bun/**
-      - debian/**
-      - deno/**
-      - golang/**
-      - lean/**
-      - mise/**
-      - node/**
-      - opentofu/**
-      - pnpm/**
-      - rustup/**
-      - temurin/**
-      - terraform/**
-      - uv/**
-      - zig/**
+      - src/**
       - tests/**
       - scripts/build-config.sh
       - scripts/changed-images.sh
@@ -114,7 +88,7 @@ jobs:
             (.files[] | "         " + .)'
       - name: Compare the base with the published one
         id: published
-        # The published debian image is built from debian/ as of the latest
+        # The published debian image is built from src/debian/ as of the latest
         # release tag: release.yml rebuilds it whenever that directory changed
         # since the previous tag, judged by the release rules, and leaves it
         # alone otherwise. So the published base can stand in for the checkout's
@@ -200,7 +174,7 @@ jobs:
       - name: Build debian image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
-          context: ./debian
+          context: ./src/debian
           outputs: |
             type=docker,name=debian:${{ matrix.variant }}
             type=oci,dest=${{ runner.temp }}/base,tar=false
@@ -235,7 +209,7 @@ jobs:
         with:
           configFile: tests/image/devcontainer.json
           push: never
-          runCmd: bash debian/smoke-test.sh
+          runCmd: bash src/debian/smoke-test.sh
       - name: Run Trivy vulnerability scanner
         # Vulnerability findings are identical across architectures; scan once.
         if: matrix.arch == 'amd64'
@@ -260,7 +234,7 @@ jobs:
           push: never
           runCmd: |
             set -euo pipefail
-            bash debian/smoke-test.sh
+            bash src/debian/smoke-test.sh
             bash tests/features/test.sh
 
   check-image:
@@ -362,7 +336,7 @@ jobs:
       - name: Build language image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
-          context: ./${{ matrix.image }}
+          context: ./src/${{ matrix.image }}
           push: false
           load: true
           tags: ${{ matrix.image }}:${{ matrix.variant }}
@@ -399,8 +373,8 @@ jobs:
           env: ${{ matrix.image == 'mise' && format('MISE_GITHUB_TOKEN={0}', github.token) || '' }}
           runCmd: |
             set -euo pipefail
-            bash debian/smoke-test.sh
-            bash ${{ matrix.image }}/smoke-test.sh
+            bash src/debian/smoke-test.sh
+            bash src/${{ matrix.image }}/smoke-test.sh
       - name: Run Trivy vulnerability scanner
         # Vulnerability findings are identical across architectures; scan once.
         if: matrix.arch == 'amd64'

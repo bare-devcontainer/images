@@ -5,7 +5,7 @@ built on the [debian](../debian) base image.
 
 Like every image in this repository, it is minimal, built only from upstreams verified at build
 time, and published with SLSA provenance, a GitHub artifact attestation, and an SBOM; it runs as
-the non-root user `dev`. [Why these images](../README.md#why-these-images) explains the
+the non-root user `dev`. [Why these images](../../README.md#why-these-images) explains the
 reasoning, and [Verifying the image](#verifying-the-image) below shows how to check a build.
 
 ## Image
@@ -81,7 +81,7 @@ Two directories are worth persisting across container rebuilds as volumes:
 
 `rustup` is downloaded directly from the official [rustup release archive](https://static.rust-lang.org/rustup/).
 rustup publishes no signature for `rustup-init`, so it is verified against a SHA-256 checksum
-file committed to this repository (`rustup/rustup-init-<arch>.sha256`) rather than one fetched
+file committed to this repository (`src/rustup/rustup-init-<arch>.sha256`) rather than one fetched
 from the same server as the binary. The committed checksum files are kept in sync with the
 pinned `RUSTUP_VERSION` by an automated workflow and reviewed like any other change, so later
 tampering with the download channel cannot affect builds.
@@ -107,5 +107,5 @@ gh attestation verify oci://ghcr.io/bare-devcontainer/rustup:<tag>@sha256:<diges
 
 The Docker Hub mirror carries the same digests, so the same command verifies an image pulled
 from `docker.io/baredevcontainer/rustup`.
-[Verifying Published Images](../README.md#verifying-published-images) covers inspecting the
+[Verifying Published Images](../../README.md#verifying-published-images) covers inspecting the
 provenance and the SBOM as well.

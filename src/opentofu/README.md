@@ -1,32 +1,32 @@
-# terraform
+# opentofu
 
-Dev container image for infrastructure-as-code development, with the [Terraform](https://www.terraform.io/)
-CLI and [terraform-ls](https://github.com/hashicorp/terraform-ls) language server installed, built on the
+Dev container image for infrastructure-as-code development, with the [OpenTofu](https://opentofu.org/)
+CLI and [tofu-ls](https://github.com/opentofu/tofu-ls) language server installed, built on the
 [debian](../debian) base image.
 
 Like every image in this repository, it is minimal, built only from upstreams verified at build
 time, and published with SLSA provenance, a GitHub artifact attestation, and an SBOM; it runs as
-the non-root user `dev`. [Why these images](../README.md#why-these-images) explains the
+the non-root user `dev`. [Why these images](../../README.md#why-these-images) explains the
 reasoning, and [Verifying the image](#verifying-the-image) below shows how to check a build.
 
 ## Image
 
 ```
-ghcr.io/bare-devcontainer/terraform:<tag>
+ghcr.io/bare-devcontainer/opentofu:<tag>
 ```
 
 Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well as the tag:
 
 ```json
 {
-  "image": "ghcr.io/bare-devcontainer/terraform:1@sha256:<digest>"
+  "image": "ghcr.io/bare-devcontainer/opentofu:1@sha256:<digest>"
 }
 ```
 
 ## Dev Container Template
 
 A ready-to-use Dev Container template for this image is available at
-[bare-devcontainer/templates](https://github.com/bare-devcontainer/templates/tree/main/src/terraform).
+[bare-devcontainer/templates](https://github.com/bare-devcontainer/templates/tree/main/src/opentofu).
 It provides the recommended configuration for this image, including security hardening and
 volume mounts that persist cache directories for faster rebuilds.
 
@@ -35,18 +35,18 @@ volume mounts that persist cache directories for faster rebuilds.
 <!-- tags:begin -->
 | Tags | Debian variant |
 |------|----------------|
-| `1.16.5-trixie`, `1-trixie`, `1.16.5`, `1`, `trixie` | trixie |
-| `1.16.5-bookworm`, `1-bookworm`, `bookworm` | bookworm |
+| `1.13.1-trixie`, `1-trixie`, `1.13.1`, `1`, `trixie` | trixie |
+| `1.13.1-bookworm`, `1-bookworm`, `bookworm` | bookworm |
 
-Tags are also published with a date suffix on each build (e.g., `1.16.5-trixie-<YYYYMMDD>`).
+Tags are also published with a date suffix on each build (e.g., `1.13.1-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
 ## Installed software
 
 Everything from the [debian](../debian) base image, plus:
 
-- [Terraform](https://www.terraform.io/) (`terraform`)
-- [terraform-ls](https://github.com/hashicorp/terraform-ls) (`terraform-ls`)
+- [OpenTofu](https://opentofu.org/) (`tofu`)
+- [tofu-ls](https://github.com/opentofu/tofu-ls) (`tofu-ls`)
 
 Under a Dev Container client, `TF_PLUGIN_CACHE_DIR` points at `~/.terraform.d/plugin-cache`, so
 providers are downloaded once and shared across working directories. Persisting that directory
@@ -59,20 +59,24 @@ as a volume keeps them across container rebuilds. Running the image without such
   needs through a Dev Container Feature or your own `Dockerfile`.
 - **No credential helpers or authentication.** Nothing in the image logs in to a cloud
   account; supply credentials the way you would outside a container.
-- **No adjacent Terraform tooling.** `terragrunt`, `tflint`, `tfsec`, and similar are left to
+- **No adjacent OpenTofu tooling.** `terragrunt`, `tflint`, `tfsec`, and similar are left to
   the project.
 
 ## Supply chain
 
-`terraform` and `terraform-ls` are downloaded directly from
-[HashiCorp's release server](https://releases.hashicorp.com/). Each binary's checksum is verified against
-its `SHA256SUMS`, whose GPG signature (`SHA256SUMS.sig`) is verified against HashiCorp's release signing
-key before installation. The key (`terraform/hashicorp-signing-key.asc`) is committed to this
+`tofu` is downloaded directly from the
+[OpenTofu release page](https://github.com/opentofu/opentofu/releases). Its checksum is verified against
+its `SHA256SUMS`, whose GPG signature (`SHA256SUMS.gpgsig`) is verified against OpenTofu's release signing
+key before installation. The key (`src/opentofu/opentofu-signing-key.asc`) is committed to this
 repository, so signatures are checked against a key reviewed here rather than one fetched at
 build time.
 
-Note that this covers the CLI. Providers that `terraform init` downloads at runtime come from
-the Terraform Registry under Terraform's own checksum and signature verification, outside this
+`tofu-ls` publishes no signature, so its `checksums.txt` (`src/opentofu/tofu-ls-checksums.txt`) is
+committed to this repository instead and refreshed whenever the pinned version changes. The
+archive is verified against that reviewed copy rather than the one served from its own release.
+
+Note that this covers the CLI. Providers that `tofu init` downloads at runtime come from the
+OpenTofu Registry under OpenTofu's own checksum and signature verification, outside this
 image's build pipeline.
 
 ## Verifying the image
@@ -82,11 +86,11 @@ attestation confirms that an image was built by the release workflow of this rep
 not been altered since:
 
 ```sh
-gh attestation verify oci://ghcr.io/bare-devcontainer/terraform:<tag>@sha256:<digest> \
+gh attestation verify oci://ghcr.io/bare-devcontainer/opentofu:<tag>@sha256:<digest> \
   --owner bare-devcontainer
 ```
 
 The Docker Hub mirror carries the same digests, so the same command verifies an image pulled
-from `docker.io/baredevcontainer/terraform`.
-[Verifying Published Images](../README.md#verifying-published-images) covers inspecting the
+from `docker.io/baredevcontainer/opentofu`.
+[Verifying Published Images](../../README.md#verifying-published-images) covers inspecting the
 provenance and the SBOM as well.

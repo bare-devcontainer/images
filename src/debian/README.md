@@ -4,7 +4,7 @@ Minimal Debian base image for dev containers. All other images in this repositor
 
 Like every image in this repository, it is minimal, built only from upstreams verified at build
 time, and published with SLSA provenance, a GitHub artifact attestation, and an SBOM; it runs as
-the non-root user `dev`. [Why these images](../README.md#why-these-images) explains the
+the non-root user `dev`. [Why these images](../../README.md#why-these-images) explains the
 reasoning, and [Verifying the image](#verifying-the-image) below shows how to check a build.
 
 ## Image
@@ -57,7 +57,7 @@ inherits that label.
 
 `dev` owns its home directory and nothing else, so a client that remaps it to the host user's
 UID leaves nothing behind: `/workspaces` is created as root and covered by the workspace bind
-mount. [The `dev` user](../README.md#the-dev-user) has the details.
+mount. [The `dev` user](../../README.md#the-dev-user) has the details.
 
 `dev`'s login shell is bash, which appends each command to `$HISTFILE` as it is entered rather
 than at exit. Under a Dev Container client, `HISTFILE` is `/home/dev/.local/state/bash/history`
@@ -98,5 +98,5 @@ gh attestation verify oci://ghcr.io/bare-devcontainer/debian:<tag>@sha256:<diges
 
 The Docker Hub mirror carries the same digests, so the same command verifies an image pulled
 from `docker.io/baredevcontainer/debian`.
-[Verifying Published Images](../README.md#verifying-published-images) covers inspecting the
+[Verifying Published Images](../../README.md#verifying-published-images) covers inspecting the
 provenance and the SBOM as well.

@@ -28,9 +28,9 @@
 # them, which leaves a comment, a key order or an indentation change equal.
 #
 # Rules, applied per image:
-#   - A file other than build.yaml changed under <image>/ (the Dockerfile, a
+#   - A file other than build.yaml changed under src/<image>/ (the Dockerfile, a
 #     trust material, an asset): every variant, since they share it.
-#   - <base-ref> holds no <image>/build.yaml: every variant.
+#   - <base-ref> holds no src/<image>/build.yaml: every variant.
 #   - build.yaml changed outside .variants (description, materials): every
 #     variant. The description reaches the published image as an OCI label.
 #   - A variant entry was added or differs: that variant.
@@ -78,10 +78,10 @@ mapfile -t ENTRIES <<< "$REPORT_ENTRIES"
 RECORDS=()
 for ENTRY in "${ENTRIES[@]}"; do
   IMAGE=$(echo "$ENTRY" | jq -r '.image')
-  NEW=$(config_json "${IMAGE}/build.yaml")
+  NEW=$(config_json "src/${IMAGE}/build.yaml")
   OLD=null
   # The build.yaml of an earlier revision is not on disk, so git supplies it.
-  if OLD_YAML=$(git show "${BASE_REF}:${IMAGE}/build.yaml" 2> /dev/null); then
+  if OLD_YAML=$(git show "${BASE_REF}:src/${IMAGE}/build.yaml" 2> /dev/null); then
     OLD=$(config_json <<< "$OLD_YAML")
   fi
   RECORDS+=("$(jq -c -n --argjson entry "$ENTRY" --argjson new "$NEW" --argjson old "$OLD" \
@@ -93,7 +93,7 @@ printf '%s\n' "${RECORDS[@]}" | jq -s -c '
   # before the base image is taken into account.
   def reasons($record):
     [$record.new.variants[].variant] as $all
-    | ($record.files | map(select(. != ($record.image + "/build.yaml")))) as $other
+    | ($record.files | map(select(. != ("src/" + $record.image + "/build.yaml")))) as $other
     | if ($record.files | length) == 0 then {}
       elif $record.old == null then
         ($all | map({key: ., value: "image added"}) | from_entries)

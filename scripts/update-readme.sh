@@ -4,17 +4,19 @@
 # Usage:
 #   update-readme.sh [image...]
 #
-# With no arguments, every directory containing a build.yaml is updated.
+# With no arguments, every image build-config.sh lists is updated.
 # The table is rendered between the <!-- tags:begin --> and <!-- tags:end -->
-# markers in <image>/README.md; content outside the markers is preserved.
+# markers in src/<image>/README.md; content outside the markers is preserved.
 # Fails if a README is missing the markers.
 set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 BEGIN_MARK='<!-- tags:begin -->'
 END_MARK='<!-- tags:end -->'
 
 generate_block() {
-  local file="$1/build.yaml"
+  local file="src/$1/build.yaml"
   echo '| Tags | Debian variant |'
   echo '|------|----------------|'
   # shellcheck disable=SC2016  # backticks are literal Markdown code spans
@@ -27,8 +29,8 @@ generate_block() {
 }
 
 update_readme() {
-  local dir="$1"
-  local readme="${dir}/README.md"
+  local image="$1"
+  local readme="src/${image}/README.md"
   if ! grep -qxF "$BEGIN_MARK" "$readme" || ! grep -qxF "$END_MARK" "$readme"; then
     echo "error: ${readme} is missing ${BEGIN_MARK} / ${END_MARK} markers" >&2
     exit 1
@@ -37,7 +39,7 @@ update_readme() {
   tmp=$(mktemp)
   # The block is passed through the environment because awk -v mangles
   # backslash escapes in values.
-  BLOCK="$(generate_block "$dir")" awk -v begin="$BEGIN_MARK" -v end="$END_MARK" '
+  BLOCK="$(generate_block "$image")" awk -v begin="$BEGIN_MARK" -v end="$END_MARK" '
     $0 == begin { print; print ENVIRON["BLOCK"]; inside=1; next }
     $0 == end   { inside=0 }
     !inside     { print }
@@ -48,9 +50,10 @@ update_readme() {
 if [ "$#" -gt 0 ]; then
   IMAGES=("$@")
 else
-  mapfile -t IMAGES < <(find . -maxdepth 2 -name build.yaml \
-    ! -path './.devcontainer/*' \
-    -printf '%h\n' | sed 's|^\./||' | sort)
+  # Captured by assignment before it is read. mapfile reading a process
+  # substitution succeeds even when the command inside it failed.
+  IMAGE_LIST=$(bash "${SCRIPT_DIR}/build-config.sh" images | jq -r '.[]')
+  mapfile -t IMAGES <<< "$IMAGE_LIST"
 fi
 
 for IMG in "${IMAGES[@]}"; do

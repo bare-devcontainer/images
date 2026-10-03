@@ -16,7 +16,7 @@
 #   - opens with a note that the Docker Hub repository is a mirror, and that
 #     the README lives in the GitHub repository the supply chain sections mean
 #     by "this repository",
-#   - rewrites each ../<image> and ../README.md link to its address on GitHub,
+#   - rewrites each ../<image> and ../../README.md link to its address on GitHub,
 #   - turns the > [!NOTE] alert syntax into a bold lead-in, and
 #   - drops the <!-- tags:begin/end --> markers update-readme.sh writes between.
 #
@@ -30,7 +30,7 @@ SOURCE_PREFIX="${2:?Missing source_prefix}"
 TARGET_PREFIX="${3:?Missing target_prefix}"
 REPOSITORY_URL="${4:?Missing repository_url}"
 
-README="${IMAGE}/README.md"
+README="src/${IMAGE}/README.md"
 
 # https://docs.docker.com/reference/api/hub/latest/ gives full_description this
 # maximum; the API rejects the whole request past it.
@@ -51,7 +51,7 @@ emit_banner() {
 > \`${TARGET_PREFIX}/${IMAGE}\`.
 >
 > This page is rendered from the image's README in
-> [${slug}](${REPOSITORY_URL}/tree/main/${IMAGE}).
+> [${slug}](${REPOSITORY_URL}/tree/main/src/${IMAGE}).
 > That is the repository "this repository" refers to below.
 EOF
 }
@@ -80,8 +80,8 @@ RENDERED=$(
     { print }
   ' "$README" |
     sed -E \
-      -e "s|\]\(\.\./([a-z0-9][a-z0-9-]*)\)|](${REPOSITORY_URL}/tree/main/\1)|g" \
-      -e "s|\]\(\.\./README\.md(#[a-z0-9-]+)?\)|](${REPOSITORY_URL}/blob/main/README.md\1)|g" \
+      -e "s|\]\(\.\./([a-z0-9][a-z0-9-]*)\)|](${REPOSITORY_URL}/tree/main/src/\1)|g" \
+      -e "s|\]\(\.\./\.\./README\.md(#[a-z0-9-]+)?\)|](${REPOSITORY_URL}/blob/main/README.md\1)|g" \
       -e 's|^> \[!([A-Z]+)\][[:space:]]*$|> **\L\u\1**|' \
       -e '/^<!-- tags:(begin|end) -->$/d'
 )
