@@ -1,4 +1,14 @@
 vulnerabilities:
+  - id: CVE-2026-103111
+    purls:
+      - "pkg:deb/debian/libpcre2-8-0"
+    expired_at: 2026-10-31
+    statement: |
+      debian:trixie-20260918, the latest trixie image, carries pcre2
+      10.46-1~deb13u2. The fix is in 10.46-1~deb13u3, published to
+      trixie-security with DSA-6530-1 on 2026-09-29, after that image was
+      built, so the fix is expected in the next trixie image.
+
   - id: CVE-2026-56852
     paths:
       - "usr/local/bin/gopls"
