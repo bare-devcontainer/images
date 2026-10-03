@@ -31,6 +31,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     rm -f /etc/apt/apt.conf.d/docker-clean \
         && export DEBIAN_FRONTEND=noninteractive \
         && apt-get update \
+        && apt-get upgrade -y \
         && apt-get --no-install-recommends install -y \
                 # Git essentials
                 git openssh-client gnupg2 \
