@@ -22,7 +22,7 @@ variants:
       # renovate: datasource=golang-version depName=golang
       GOLANG_VERSION: "1.27.2"
       # renovate: datasource=go depName=golang.org/x/tools/gopls
-      GOPLS_VERSION: "v0.23.0"
+      GOPLS_VERSION: "v0.24.0"
 
   - variant: "1.27-bookworm"
     tags:
@@ -36,7 +36,7 @@ variants:
       # renovate: datasource=golang-version depName=golang
       GOLANG_VERSION: "1.27.2"
       # renovate: datasource=go depName=golang.org/x/tools/gopls
-      GOPLS_VERSION: "v0.23.0"
+      GOPLS_VERSION: "v0.24.0"
 
   - variant: "1.26-trixie"
     tags:
@@ -51,7 +51,7 @@ variants:
       # renovate: datasource=golang-version depName=golang
       GOLANG_VERSION: "1.26.9"
       # renovate: datasource=go depName=golang.org/x/tools/gopls
-      GOPLS_VERSION: "v0.23.0"
+      GOPLS_VERSION: "v0.24.0"
 
   - variant: "1.26-bookworm"
     tags:
@@ -63,4 +63,4 @@ variants:
       # renovate: datasource=golang-version depName=golang
       GOLANG_VERSION: "1.26.9"
       # renovate: datasource=go depName=golang.org/x/tools/gopls
-      GOPLS_VERSION: "v0.23.0"
+      GOPLS_VERSION: "v0.24.0"
