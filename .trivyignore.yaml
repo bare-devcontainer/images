@@ -1,19 +1,6 @@
 vulnerabilities:
-  - id: CVE-2026-56852
-    paths:
-      - "usr/local/bin/gopls"
-    expired_at: 2026-10-31
-    statement: |
-      gopls 0.23.0, the latest release, depends on golang.org/x/text v0.38.0
-      and OpenTofu 1.12.6 on v0.37.0. The fix is in v0.39.0. The gopls
-      development branch carries v0.42.0, and OpenTofu v0.41.0 on both the
-      v1.12 branch the next patch release comes from and the v1.13 branch
-      1.13.0-beta1 was cut from, so the fix is expected in the next release of
-      each.
-
   - id: CVE-2026-56864
     paths:
-      - "usr/local/bin/gopls"
       - "usr/local/bin/terraform-ls"
       - "usr/local/bin/tofu"
     expired_at: 2026-10-31
@@ -31,7 +18,6 @@ vulnerabilities:
       fixed release yet.
   - id: CVE-2026-56865
     paths:
-      - "usr/local/bin/gopls"
       - "usr/local/bin/terraform-ls"
       - "usr/local/bin/tofu"
     expired_at: 2026-10-31
