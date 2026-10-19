@@ -17,7 +17,7 @@ Reference it from `.devcontainer/devcontainer.json`, pinning the digest as well 
 
 ```json
 {
-  "image": "ghcr.io/bare-devcontainer/zig:0.16@sha256:<digest>"
+  "image": "ghcr.io/bare-devcontainer/zig:0.17@sha256:<digest>"
 }
 ```
 
@@ -33,13 +33,13 @@ volume mounts that persist cache directories for faster rebuilds.
 <!-- tags:begin -->
 | Tags | Debian variant |
 |------|----------------|
-| `0.16.0-trixie`, `0.16-trixie`, `0-trixie`, `trixie`, `0.16.0`, `0.16`, `0` | trixie |
-| `0.16.0-bookworm`, `0.16-bookworm`, `bookworm` | bookworm |
-| `0.15.2-trixie`, `0.15-trixie`, `0.15.2`, `0.15` | trixie |
-| `0.15.2-bookworm`, `0.15-bookworm` | bookworm |
+| `0.17.0-trixie`, `0.17-trixie`, `0-trixie`, `trixie`, `0.17.0`, `0.17`, `0` | trixie |
+| `0.17.0-bookworm`, `0.17-bookworm`, `bookworm` | bookworm |
+| `0.16.0-trixie`, `0.16-trixie`, `0.16.0`, `0.16` | trixie |
+| `0.16.0-bookworm`, `0.16-bookworm` | bookworm |
 | `master-trixie`, `master` | trixie |
 
-Tags are also published with a date suffix on each build (e.g., `0.16.0-trixie-<YYYYMMDD>`).
+Tags are also published with a date suffix on each build (e.g., `0.17.0-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
 Besides the release tags, the `master` tags carry the master builds Zig publishes, refreshed
