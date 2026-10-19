@@ -360,3 +360,16 @@ vulnerabilities:
       Language Server development branch pins Go 1.26.8 and the OpenTofu
       Language Server development branch still declares go 1.26.0, so none of
       those three has a fixed release yet.
+
+  - id: CVE-2026-56851
+    paths:
+      - "usr/local/bin/terraform-ls"
+      - "usr/local/bin/tofu-ls"
+    expired_at: 2026-11-30
+    statement: |
+      Terraform Language Server 0.39.0, the latest release, depends on
+      golang.org/x/text v0.40.0 and OpenTofu Language Server 0.5.3, the latest
+      release, on v0.39.0. The fix is in v0.41.0. The Terraform Language Server
+      development branch carries v0.43.0, so the fix is expected in its next
+      release. The OpenTofu Language Server development branch still carries
+      v0.39.0, so no fixed release is available yet.
