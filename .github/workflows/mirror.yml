@@ -54,7 +54,7 @@ env:
   TARGET_IMAGE_PREFIX: docker.io/baredevcontainer
   CONFIG_DIR: ${{ github.workspace }}/regsync
   # renovate: datasource=docker registryUrl=https://ghcr.io depName=regclient/regsync versioning=docker
-  REGSYNC_TAG: "v0.11.6@sha256:09ebf5172332f4c79c0383ada9d352dd7f47686898d09a22a44f02d338a6f9f0"
+  REGSYNC_TAG: "v0.11.7@sha256:2dcbb388aa34d57c71f8675f14f8e906ecbc05c7d08816cc5c79079bf6b85def"
 
 jobs:
   mirror:
