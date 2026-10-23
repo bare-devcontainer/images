@@ -34,10 +34,10 @@ volume mounts that persist cache directories for faster rebuilds.
 <!-- tags:begin -->
 | Tags | Debian variant |
 |------|----------------|
-| `1.29.0-trixie`, `1-trixie`, `trixie`, `1.29.0`, `1` | trixie |
-| `1.29.0-bookworm`, `1-bookworm`, `bookworm` | bookworm |
+| `1.29.2-trixie`, `1-trixie`, `trixie`, `1.29.2`, `1` | trixie |
+| `1.29.2-bookworm`, `1-bookworm`, `bookworm` | bookworm |
 
-Tags are also published with a date suffix on each build (e.g., `1.29.0-trixie-<YYYYMMDD>`).
+Tags are also published with a date suffix on each build (e.g., `1.29.2-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
 The version in these tags is the version of `rustup` itself, not of any Rust toolchain.
