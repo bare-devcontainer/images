@@ -37,23 +37,27 @@ defaults:
 
 env:
   BASE_IMAGE_REF: ghcr.io/${{ github.repository_owner }}/debian
+  # renovate: datasource=github-releases depName=aquasecurity/trivy
+  TRIVY_VERSION: "v0.75.0"
+  TRIVY_SEVERITY: CRITICAL,HIGH
 
 jobs:
-  setup:
+  scope:
     permissions:
       contents: read
     runs-on: ubuntu-slim
     timeout-minutes: 5
     outputs:
       build_date: ${{ steps.init.outputs.build_date }}
-      should_run: ${{ steps.select.outputs.should_run }}
-      matrix: ${{ steps.select.outputs.matrix }}
-      base_variants: ${{ steps.select.outputs.base_variants }}
+      latest_tag: ${{ steps.init.outputs.latest_tag }}
+      scope: ${{ steps.init.outputs.scope }}
+      scope_reason: ${{ steps.init.outputs.scope_reason }}
+      scan_variants: ${{ steps.init.outputs.scan_variants }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Full history so the release tags and the diff from the latest one
+          # Full history so the latest release tag and the build.yaml it holds
           # can be resolved.
           fetch-depth: 0
           persist-credentials: false
@@ -75,8 +79,21 @@ jobs:
             echo "scope_reason=$1" >> "$GITHUB_OUTPUT"
             exit 0
           }
+          # The base variants the latest release published, which are the
+          # tags scan-base reads from the registry.
+          scan_published_base() {
+            SCAN_VARIANTS=$(git show "${LATEST_TAG}:src/debian/build.yaml" \
+              | yq -o json -I0 '[.variants[].variant]')
+            echo "Scanning the published base: ${SCAN_VARIANTS}."
+            echo "scan_variants=${SCAN_VARIANTS}" >> "$GITHUB_OUTPUT"
+          }
 
           if [ "${EVENT_NAME}" = "pull_request" ]; then
+            # The scan cannot widen a scope that is already every variant,
+            # but the dry run exercises it before a change to it merges.
+            if [ -n "$LATEST_TAG" ]; then
+              scan_published_base
+            fi
             every_variant "pull request dry run"
           fi
           if [ "${FORCE}" = "true" ]; then
@@ -94,11 +111,130 @@ jobs:
 
           echo "Building the variants changed since ${LATEST_TAG}."
           echo "scope=changed" >> "$GITHUB_OUTPUT"
+          scan_published_base
+
+  # The base runs apt-get upgrade on every build, so a Debian security fix that
+  # reaches the package archive is in a rebuild of the base and every variant
+  # built FROM it, whether or not any definition changed. This scan finds the
+  # days that holds before the Monday rebuild would.
+  scan-base:
+    permissions:
+      contents: read
+    cache-mode: write
+    needs: [scope]
+    if: needs.scope.outputs.scan_variants != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: ${{ fromJson(needs.scope.outputs.scan_variants) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Vulnerability findings are identical across architectures, so the
+      # runner's own architecture is scanned, as in build-checks.yml.
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: ${{ env.TRIVY_VERSION }}
+          image-ref: ${{ env.BASE_IMAGE_REF }}:${{ matrix.variant }}
+          format: json
+          output: ${{ runner.temp }}/report.json
+          severity: ${{ env.TRIVY_SEVERITY }}
+          ignore-unfixed: true
+          trivyignores: .trivyignore.yaml
+          exit-code: '0'
+      - name: Extract fixable package findings
+        env:
+          VARIANT: ${{ matrix.variant }}
+          REPORT: ${{ runner.temp }}/report.json
+          FINDINGS: ${{ runner.temp }}/findings/${{ matrix.variant }}.json
+        run: |
+          # Only the Debian packages are fixed by a rebuild; a finding in a
+          # pinned binary waits for a build.yaml change instead.
+          mkdir -p "$(dirname "$FINDINGS")"
+          jq --arg variant "$VARIANT" '[.Results[]? | select(.Class == "os-pkgs")
+            | .Vulnerabilities[]?
+            | {variant: $variant, id: .VulnerabilityID, severity: .Severity,
+               package: .PkgName, installed: .InstalledVersion, fixed: .FixedVersion}]' \
+            "$REPORT" > "$FINDINGS"
+          echo "$(jq length "$FINDINGS") fixable package finding(s) in ${BASE_IMAGE_REF}:${VARIANT}."
+      - name: Upload findings
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: base-scan-${{ matrix.variant }}
+          path: ${{ runner.temp }}/findings/${{ matrix.variant }}.json
+          if-no-files-found: error
+          retention-days: 1
+
+  setup:
+    permissions:
+      contents: read
+    needs: [scope, scan-base]
+    # A failed scan leaves the scope where the scope job put it rather than
+    # holding back the release; the Monday rebuild still catches the fixes.
+    if: ${{ !cancelled() && needs.scope.result == 'success' }}
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    outputs:
+      build_date: ${{ needs.scope.outputs.build_date }}
+      should_run: ${{ steps.select.outputs.should_run }}
+      matrix: ${{ steps.select.outputs.matrix }}
+      base_variants: ${{ steps.select.outputs.base_variants }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history so the diff from the latest release tag can be
+          # resolved.
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Download base scan findings
+        if: needs.scan-base.result == 'success'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: base-scan-*
+          path: ${{ runner.temp }}/base-scan
+          merge-multiple: true
+      - name: Apply base scan findings
+        id: init
+        env:
+          SCOPE: ${{ needs.scope.outputs.scope }}
+          SCOPE_REASON: ${{ needs.scope.outputs.scope_reason }}
+          SCAN_RESULT: ${{ needs.scan-base.result }}
+          FINDINGS_DIR: ${{ runner.temp }}/base-scan
+          BASE_FINDINGS: ${{ runner.temp }}/base-findings.md
+        run: |
+          case "$SCAN_RESULT" in
+            success)
+              FINDINGS=$(jq -s 'add // []' "$FINDINGS_DIR"/*.json)
+              COUNT=$(jq length <<< "$FINDINGS")
+              echo "=== Fixable package findings in the published base (${COUNT}) ==="
+              # shellcheck disable=SC2016  # backticks are literal Markdown code spans
+              jq -r '.[] | "- `" + env.BASE_IMAGE_REF + ":" + .variant + "` "
+                + .id + " (" + .severity + "): " + .package
+                + " " + .installed + " → " + .fixed' <<< "$FINDINGS" \
+                | tee "$BASE_FINDINGS"
+              if [ "$SCOPE" = "changed" ] && [ "$COUNT" -gt 0 ]; then
+                SCOPE=all
+                SCOPE_REASON="fixable vulnerabilities in the published debian base"
+                echo "Building every variant: ${SCOPE_REASON}."
+              fi
+              ;;
+            failure)
+              echo "::warning::The scan of the published base failed; releasing the variants changed since the last release only."
+              ;;
+          esac
+          echo "scope=${SCOPE}" >> "$GITHUB_OUTPUT"
+          echo "scope_reason=${SCOPE_REASON}" >> "$GITHUB_OUTPUT"
       - name: Select variants
         id: select
         env:
           SCOPE: ${{ steps.init.outputs.scope }}
-          LATEST_TAG: ${{ steps.init.outputs.latest_tag }}
+          LATEST_TAG: ${{ needs.scope.outputs.latest_tag }}
           CHANGED_FILES: ${{ runner.temp }}/changed-files.txt
         run: |
           # The diff is reported even when the scope is every variant, so the
@@ -142,10 +278,11 @@ jobs:
       - name: Write release notes
         if: steps.select.outputs.should_run == 'true'
         env:
-          BUILD_DATE: ${{ steps.init.outputs.build_date }}
-          LATEST_TAG: ${{ steps.init.outputs.latest_tag }}
+          BUILD_DATE: ${{ needs.scope.outputs.build_date }}
+          LATEST_TAG: ${{ needs.scope.outputs.latest_tag }}
           SCOPE: ${{ steps.init.outputs.scope }}
           SCOPE_REASON: ${{ steps.init.outputs.scope_reason }}
+          BASE_FINDINGS: ${{ runner.temp }}/base-findings.md
           MATRIX: ${{ steps.select.outputs.matrix }}
           BASE_VARIANTS: ${{ steps.select.outputs.base_variants }}
           REPO_OWNER: ${{ github.repository_owner }}
@@ -160,6 +297,11 @@ jobs:
               echo "Scope: variants changed since ${LATEST_TAG}"
             fi
             echo ""
+            if [ -s "$BASE_FINDINGS" ]; then
+              echo "### Fixable findings in the published debian base"
+              cat "$BASE_FINDINGS"
+              echo ""
+            fi
             if [ -n "$LATEST_TAG" ]; then
               echo "### Image changes since ${LATEST_TAG}"
               # git log takes paths, so this is the coarser view of a selection
@@ -220,11 +362,14 @@ jobs:
   gate:
     permissions: {}
     needs: [setup]
-    # Skipping the build jobs on PRs from forks.
+    # Skipping the build jobs on PRs from forks. !cancelled() lets this run
+    # when scan-base was skipped, so the setup result is checked explicitly.
     if: >-
+      ${{ !cancelled() &&
+      needs.setup.result == 'success' &&
       needs.setup.outputs.should_run == 'true' &&
       (github.event_name != 'pull_request' ||
-      github.event.pull_request.head.repo.full_name == github.repository)
+      github.event.pull_request.head.repo.full_name == github.repository) }}
     environment: ${{ github.event_name != 'pull_request' && 'release' || 'ci' }}
     runs-on: ubuntu-slim
     timeout-minutes: 5
@@ -241,7 +386,11 @@ jobs:
       packages: write
     cache-mode: write
     needs: [setup, gate]
-    if: needs.setup.outputs.should_run == 'true' && needs.setup.outputs.base_variants != '[]'
+    # !cancelled() for the same reason as in gate.
+    if: >-
+      ${{ !cancelled() &&
+      needs.gate.result == 'success' &&
+      needs.setup.outputs.base_variants != '[]' }}
     strategy:
       fail-fast: false
       matrix:
