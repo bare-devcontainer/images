@@ -125,6 +125,10 @@ jobs:
     if: needs.scope.outputs.scan_variants != ''
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      # The runner drops an empty output, so a leg that finds nothing leaves
+      # the value another leg set in place.
+      fixable: ${{ steps.check.outputs.fixable }}
     strategy:
       fail-fast: false
       matrix:
@@ -147,35 +151,33 @@ jobs:
           ignore-unfixed: true
           trivyignores: .trivyignore.yaml
           exit-code: '0'
-      - name: Extract fixable package findings
+      - name: Check for fixable package findings
+        id: check
         env:
           VARIANT: ${{ matrix.variant }}
           REPORT: ${{ runner.temp }}/report.json
-          FINDINGS: ${{ runner.temp }}/findings/${{ matrix.variant }}.json
         run: |
           # Only the Debian packages are fixed by a rebuild; a finding in a
           # pinned binary waits for a build.yaml change instead.
-          mkdir -p "$(dirname "$FINDINGS")"
-          jq --arg variant "$VARIANT" '[.Results[]? | select(.Class == "os-pkgs")
-            | .Vulnerabilities[]?
-            | {variant: $variant, id: .VulnerabilityID, severity: .Severity,
-               package: .PkgName, installed: .InstalledVersion, fixed: .FixedVersion}]' \
-            "$REPORT" > "$FINDINGS"
-          echo "$(jq length "$FINDINGS") fixable package finding(s) in ${BASE_IMAGE_REF}:${VARIANT}."
-      - name: Upload findings
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: base-scan-${{ matrix.variant }}
-          path: ${{ runner.temp }}/findings/${{ matrix.variant }}.json
-          if-no-files-found: error
-          retention-days: 1
+          FINDINGS=$(jq -r '.Results[]? | select(.Class == "os-pkgs") | .Vulnerabilities[]?
+            | "- " + .VulnerabilityID + " (" + .Severity + "): " + .PkgName
+              + " " + .InstalledVersion + " → " + .FixedVersion' "$REPORT")
+          if [ -z "$FINDINGS" ]; then
+            echo "No fixable package finding in ${BASE_IMAGE_REF}:${VARIANT}."
+            exit 0
+          fi
+          {
+            echo "### Fixable package findings in ${BASE_IMAGE_REF}:${VARIANT}"
+            echo "$FINDINGS"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "fixable=true" >> "$GITHUB_OUTPUT"
 
   setup:
     permissions:
       contents: read
     needs: [scope, scan-base]
-    # A failed scan leaves the scope where the scope job put it rather than
-    # holding back the release; the Monday rebuild still catches the fixes.
+    # A failed scan leg holds back neither the release nor what the other legs
+    # found; the Monday rebuild still catches what it missed.
     if: ${{ !cancelled() && needs.scope.result == 'success' }}
     runs-on: ubuntu-slim
     timeout-minutes: 5
@@ -192,42 +194,22 @@ jobs:
           # resolved.
           fetch-depth: 0
           persist-credentials: false
-      - name: Download base scan findings
-        if: needs.scan-base.result == 'success'
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          pattern: base-scan-*
-          path: ${{ runner.temp }}/base-scan
-          merge-multiple: true
-      - name: Apply base scan findings
+      - name: Apply base scan result
         id: init
         env:
           SCOPE: ${{ needs.scope.outputs.scope }}
           SCOPE_REASON: ${{ needs.scope.outputs.scope_reason }}
           SCAN_RESULT: ${{ needs.scan-base.result }}
-          FINDINGS_DIR: ${{ runner.temp }}/base-scan
-          BASE_FINDINGS: ${{ runner.temp }}/base-findings.md
+          FIXABLE: ${{ needs.scan-base.outputs.fixable }}
         run: |
-          case "$SCAN_RESULT" in
-            success)
-              FINDINGS=$(jq -s 'add // []' "$FINDINGS_DIR"/*.json)
-              COUNT=$(jq length <<< "$FINDINGS")
-              echo "=== Fixable package findings in the published base (${COUNT}) ==="
-              # shellcheck disable=SC2016  # backticks are literal Markdown code spans
-              jq -r '.[] | "- `" + env.BASE_IMAGE_REF + ":" + .variant + "` "
-                + .id + " (" + .severity + "): " + .package
-                + " " + .installed + " → " + .fixed' <<< "$FINDINGS" \
-                | tee "$BASE_FINDINGS"
-              if [ "$SCOPE" = "changed" ] && [ "$COUNT" -gt 0 ]; then
-                SCOPE=all
-                SCOPE_REASON="fixable vulnerabilities in the published debian base"
-                echo "Building every variant: ${SCOPE_REASON}."
-              fi
-              ;;
-            failure)
-              echo "::warning::The scan of the published base failed; releasing the variants changed since the last release only."
-              ;;
-          esac
+          if [ "$SCAN_RESULT" = "failure" ]; then
+            echo "::warning::The scan of the published base failed; its findings are applied only from the variants it did scan."
+          fi
+          if [ "$SCOPE" = "changed" ] && [ "$FIXABLE" = "true" ]; then
+            SCOPE=all
+            SCOPE_REASON="fixable vulnerabilities in the published debian base"
+            echo "Building every variant: ${SCOPE_REASON}."
+          fi
           echo "scope=${SCOPE}" >> "$GITHUB_OUTPUT"
           echo "scope_reason=${SCOPE_REASON}" >> "$GITHUB_OUTPUT"
       - name: Select variants
@@ -282,7 +264,6 @@ jobs:
           LATEST_TAG: ${{ needs.scope.outputs.latest_tag }}
           SCOPE: ${{ steps.init.outputs.scope }}
           SCOPE_REASON: ${{ steps.init.outputs.scope_reason }}
-          BASE_FINDINGS: ${{ runner.temp }}/base-findings.md
           MATRIX: ${{ steps.select.outputs.matrix }}
           BASE_VARIANTS: ${{ steps.select.outputs.base_variants }}
           REPO_OWNER: ${{ github.repository_owner }}
@@ -297,11 +278,6 @@ jobs:
               echo "Scope: variants changed since ${LATEST_TAG}"
             fi
             echo ""
-            if [ -s "$BASE_FINDINGS" ]; then
-              echo "### Fixable findings in the published debian base"
-              cat "$BASE_FINDINGS"
-              echo ""
-            fi
             if [ -n "$LATEST_TAG" ]; then
               echo "### Image changes since ${LATEST_TAG}"
               # git log takes paths, so this is the coarser view of a selection
