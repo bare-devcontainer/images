@@ -43,7 +43,7 @@ renovate.jsonc               # Renovate config
 
   | Workflow | Schedule | Runs |
   |----------|----------|------|
-  | `release.yml` | daily 00:00 | publishes the variants whose own definition, or the `debian` variant they are built FROM, changed since the last release, plus a rebuild of every variant every Monday and on any day Trivy finds a fixable `CRITICAL`/`HIGH` Debian package vulnerability in the published `debian` base |
+  | `release.yml` | daily 00:00 | publishes the variants whose own definition, or the `debian` variant they are built FROM, changed since the last release, plus a rebuild of every variant every Monday and on any day the Debian security archive holds an update `apt-get upgrade` would install in the published `debian` base |
   | `trivy.yml` | Monday 06:00 | scans the published images |
   | `trivyignore-cleanup.yml` | Monday 07:00 | opens a pull request dropping `.trivyignore.yaml` entries left without a finding |
   | `attest-check.yml` | Monday 08:00 | verifies the attestations of the published images |
