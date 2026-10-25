@@ -83,7 +83,9 @@ download at runtime.
 
 The JDK is installed with `apt` from the
 [Adoptium package repository](https://packages.adoptium.net/), the channel Adoptium documents
-for Debian, pinned in `build.yaml` to an exact package version. `apt` verifies the repository
+for Debian, pinned in `build.yaml` to an exact JDK release and build. The Debian packaging
+revision is left to the newest one the repository has for each architecture, since Adoptium
+publishes a new revision for one architecture ahead of the other. `apt` verifies the repository
 index against Adoptium's signing key on every install, and the key
 (`src/temurin/adoptium-signing-key.asc`) is committed to this repository, so the index is checked
 against a key reviewed here rather than one fetched at build time.
