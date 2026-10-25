@@ -22,7 +22,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && printf 'Types: deb\nURIs: https://packages.adoptium.net/artifactory/deb\nSuites: %s\nComponents: main\nSigned-By: /etc/apt/keyrings/adoptium.asc\n' \
         "${VERSION_CODENAME}" > /etc/apt/sources.list.d/adoptium.sources \
     && apt-get update \
-    && apt-get --no-install-recommends install -y "temurin-${TEMURIN_VERSION%%.*}-jdk=${TEMURIN_VERSION}" \
+    # TEMURIN_VERSION carries no Debian revision; the glob takes the newest one
+    # the repository has for this architecture.
+    && apt-get --no-install-recommends install -y "temurin-${TEMURIN_VERSION%%.*}-jdk=${TEMURIN_VERSION}-*" \
     # The package installs under a directory naming the feature release and the
     # architecture. The symlink gives every variant of this image the same
     # JAVA_HOME, so a devcontainer.json can point a Java extension at the JDK
