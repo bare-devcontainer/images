@@ -42,87 +42,40 @@ env:
   TRIVY_SEVERITY: CRITICAL,HIGH
 
 jobs:
-  scope:
+  base-variants:
     permissions:
       contents: read
     runs-on: ubuntu-slim
     timeout-minutes: 5
     outputs:
-      build_date: ${{ steps.init.outputs.build_date }}
-      latest_tag: ${{ steps.init.outputs.latest_tag }}
-      scope: ${{ steps.init.outputs.scope }}
-      scope_reason: ${{ steps.init.outputs.scope_reason }}
-      scan_variants: ${{ steps.init.outputs.scan_variants }}
+      variants: ${{ steps.list.outputs.variants }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Full history so the latest release tag and the build.yaml it holds
-          # can be resolved.
           fetch-depth: 0
           persist-credentials: false
-      - name: Resolve release scope
-        id: init
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          FORCE: ${{ inputs.force || false }}
+      - name: List the published base variants
+        id: list
         run: |
-          BUILD_DATE=$(date -u +%Y%m%d)
-          echo "build_date=${BUILD_DATE}" >> "$GITHUB_OUTPUT"
-
           LATEST_TAG=$(git tag --list 'v[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]' | sort | tail -1)
-          echo "latest_tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
-
-          every_variant() {
-            echo "Building every variant: $1."
-            echo "scope=all" >> "$GITHUB_OUTPUT"
-            echo "scope_reason=$1" >> "$GITHUB_OUTPUT"
-            exit 0
-          }
-          # The base variants the latest release published, which are the
-          # tags scan-base reads from the registry.
-          scan_published_base() {
-            SCAN_VARIANTS=$(git show "${LATEST_TAG}:src/debian/build.yaml" \
+          VARIANTS='[]'
+          if [ -n "$LATEST_TAG" ]; then
+            VARIANTS=$(git show "${LATEST_TAG}:src/debian/build.yaml" \
               | yq -o json -I0 '[.variants[].variant]')
-            echo "Scanning the published base: ${SCAN_VARIANTS}."
-            echo "scan_variants=${SCAN_VARIANTS}" >> "$GITHUB_OUTPUT"
-          }
-
-          if [ "${EVENT_NAME}" = "pull_request" ]; then
-            # The scan cannot widen a scope that is already every variant,
-            # but the dry run exercises it before a change to it merges.
-            if [ -n "$LATEST_TAG" ]; then
-              scan_published_base
-            fi
-            every_variant "pull request dry run"
           fi
-          if [ "${FORCE}" = "true" ]; then
-            every_variant "force run requested"
-          fi
-          # Guarantee at least one release per week so Debian security
-          # updates from the package archive are picked up even when no
-          # variant has changed since the last release.
-          if [ "${EVENT_NAME}" = "schedule" ] && [ "$(date -u +%u)" = "1" ]; then
-            every_variant "weekly scheduled rebuild"
-          fi
-          if [ -z "$LATEST_TAG" ]; then
-            every_variant "no release tag found"
-          fi
-
-          echo "Building the variants changed since ${LATEST_TAG}."
-          echo "scope=changed" >> "$GITHUB_OUTPUT"
-          scan_published_base
+          echo "Base variants published by ${LATEST_TAG:-no release}: ${VARIANTS}"
+          echo "variants=${VARIANTS}" >> "$GITHUB_OUTPUT"
 
   # The base runs apt-get upgrade on every build, so a Debian security fix that
   # reaches the package archive is in a rebuild of the base and every variant
-  # built FROM it, whether or not any definition changed. This scan finds the
-  # days that holds before the Monday rebuild would.
+  # built FROM it, whether or not any definition changed.
   scan-base:
     permissions:
       contents: read
     cache-mode: write
-    needs: [scope]
-    if: needs.scope.outputs.scan_variants != ''
+    needs: [base-variants]
+    if: needs.base-variants.outputs.variants != '[]'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     outputs:
@@ -132,7 +85,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: ${{ fromJson(needs.scope.outputs.scan_variants) }}
+        variant: ${{ fromJson(needs.base-variants.outputs.variants) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -175,14 +128,14 @@ jobs:
   setup:
     permissions:
       contents: read
-    needs: [scope, scan-base]
-    # A failed scan leg holds back neither the release nor what the other legs
-    # found; the Monday rebuild still catches what it missed.
-    if: ${{ !cancelled() && needs.scope.result == 'success' }}
+    needs: [scan-base]
+    # A failed scan holds back neither the release nor what the other scan
+    # legs found; the Monday rebuild still catches what it missed.
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-slim
     timeout-minutes: 5
     outputs:
-      build_date: ${{ needs.scope.outputs.build_date }}
+      build_date: ${{ steps.init.outputs.build_date }}
       should_run: ${{ steps.select.outputs.should_run }}
       matrix: ${{ steps.select.outputs.matrix }}
       base_variants: ${{ steps.select.outputs.base_variants }}
@@ -190,33 +143,60 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Full history so the diff from the latest release tag can be
-          # resolved.
+          # Full history so the release tags and the diff from the latest one
+          # can be resolved.
           fetch-depth: 0
           persist-credentials: false
-      - name: Apply base scan result
+      - name: Resolve release scope
         id: init
         env:
-          SCOPE: ${{ needs.scope.outputs.scope }}
-          SCOPE_REASON: ${{ needs.scope.outputs.scope_reason }}
+          EVENT_NAME: ${{ github.event_name }}
+          FORCE: ${{ inputs.force || false }}
           SCAN_RESULT: ${{ needs.scan-base.result }}
           FIXABLE: ${{ needs.scan-base.outputs.fixable }}
         run: |
-          if [ "$SCAN_RESULT" = "failure" ]; then
-            echo "::warning::The scan of the published base failed; its findings are applied only from the variants it did scan."
+          BUILD_DATE=$(date -u +%Y%m%d)
+          echo "build_date=${BUILD_DATE}" >> "$GITHUB_OUTPUT"
+
+          LATEST_TAG=$(git tag --list 'v[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]' | sort | tail -1)
+          echo "latest_tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
+
+          every_variant() {
+            echo "Building every variant: $1."
+            echo "scope=all" >> "$GITHUB_OUTPUT"
+            echo "scope_reason=$1" >> "$GITHUB_OUTPUT"
+            exit 0
+          }
+
+          if [ "${EVENT_NAME}" = "pull_request" ]; then
+            every_variant "pull request dry run"
           fi
-          if [ "$SCOPE" = "changed" ] && [ "$FIXABLE" = "true" ]; then
-            SCOPE=all
-            SCOPE_REASON="fixable vulnerabilities in the published debian base"
-            echo "Building every variant: ${SCOPE_REASON}."
+          if [ "${FORCE}" = "true" ]; then
+            every_variant "force run requested"
           fi
-          echo "scope=${SCOPE}" >> "$GITHUB_OUTPUT"
-          echo "scope_reason=${SCOPE_REASON}" >> "$GITHUB_OUTPUT"
+          # Guarantee at least one release per week so Debian security
+          # updates from the package archive are picked up even when no
+          # variant has changed since the last release.
+          if [ "${EVENT_NAME}" = "schedule" ] && [ "$(date -u +%u)" = "1" ]; then
+            every_variant "weekly scheduled rebuild"
+          fi
+          if [ "${SCAN_RESULT}" = "failure" ]; then
+            echo "::warning::The scan of the published base failed; only the variants it did scan are judged."
+          fi
+          if [ "${FIXABLE}" = "true" ]; then
+            every_variant "fixable vulnerabilities in the published debian base"
+          fi
+          if [ -z "$LATEST_TAG" ]; then
+            every_variant "no release tag found"
+          fi
+
+          echo "Building the variants changed since ${LATEST_TAG}."
+          echo "scope=changed" >> "$GITHUB_OUTPUT"
       - name: Select variants
         id: select
         env:
           SCOPE: ${{ steps.init.outputs.scope }}
-          LATEST_TAG: ${{ needs.scope.outputs.latest_tag }}
+          LATEST_TAG: ${{ steps.init.outputs.latest_tag }}
           CHANGED_FILES: ${{ runner.temp }}/changed-files.txt
         run: |
           # The diff is reported even when the scope is every variant, so the
@@ -260,8 +240,8 @@ jobs:
       - name: Write release notes
         if: steps.select.outputs.should_run == 'true'
         env:
-          BUILD_DATE: ${{ needs.scope.outputs.build_date }}
-          LATEST_TAG: ${{ needs.scope.outputs.latest_tag }}
+          BUILD_DATE: ${{ steps.init.outputs.build_date }}
+          LATEST_TAG: ${{ steps.init.outputs.latest_tag }}
           SCOPE: ${{ steps.init.outputs.scope }}
           SCOPE_REASON: ${{ steps.init.outputs.scope_reason }}
           MATRIX: ${{ steps.select.outputs.matrix }}
@@ -338,8 +318,8 @@ jobs:
   gate:
     permissions: {}
     needs: [setup]
-    # Skipping the build jobs on PRs from forks. !cancelled() lets this run
-    # when scan-base was skipped, so the setup result is checked explicitly.
+    # Skipping the build jobs on PRs from forks. !cancelled() keeps a failed
+    # scan-base from skipping this, so the setup result is checked explicitly.
     if: >-
       ${{ !cancelled() &&
       needs.setup.result == 'success' &&
