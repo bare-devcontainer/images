@@ -18,47 +18,47 @@ variants:
   - variant: "25-trixie"
     tags:
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=trixie&components=main&binaryArch=amd64 depName=temurin-25-jdk versioning=deb extractVersion=^(?<version>\d+\.\d+\.\d+(?:\.[1-9]\d*)?)(?:\.0)*\+
-      - "25.0.4.1-trixie"
+      - "25.0.5-trixie"
       - "25-trixie"
       - "trixie"
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=trixie&components=main&binaryArch=amd64 depName=temurin-25-jdk versioning=deb extractVersion=^(?<version>\d+\.\d+\.\d+(?:\.[1-9]\d*)?)(?:\.0)*\+
-      - "25.0.4.1"
+      - "25.0.5"
       - "25"
     debian_variant: "trixie"
     build_args:
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=trixie&components=main&binaryArch=amd64 depName=temurin-25-jdk versioning=deb extractVersion=^(?<version>.+)-\d+$
-      TEMURIN_VERSION: "25.0.4.1.0+1"
+      TEMURIN_VERSION: "25.0.5.0.0+8"
 
   - variant: "25-bookworm"
     tags:
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=bookworm&components=main&binaryArch=amd64 depName=temurin-25-jdk versioning=deb extractVersion=^(?<version>\d+\.\d+\.\d+(?:\.[1-9]\d*)?)(?:\.0)*\+
-      - "25.0.4.1-bookworm"
+      - "25.0.5-bookworm"
       - "25-bookworm"
       - "bookworm"
     debian_variant: "bookworm"
     build_args:
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=bookworm&components=main&binaryArch=amd64 depName=temurin-25-jdk versioning=deb extractVersion=^(?<version>.+)-\d+$
-      TEMURIN_VERSION: "25.0.4.1.0+1"
+      TEMURIN_VERSION: "25.0.5.0.0+8"
 
   - variant: "21-trixie"
     tags:
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=trixie&components=main&binaryArch=amd64 depName=temurin-21-jdk versioning=deb extractVersion=^(?<version>\d+\.\d+\.\d+(?:\.[1-9]\d*)?)(?:\.0)*\+
-      - "21.0.12.1-trixie"
+      - "21.0.13-trixie"
       - "21-trixie"
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=trixie&components=main&binaryArch=amd64 depName=temurin-21-jdk versioning=deb extractVersion=^(?<version>\d+\.\d+\.\d+(?:\.[1-9]\d*)?)(?:\.0)*\+
-      - "21.0.12.1"
+      - "21.0.13"
       - "21"
     debian_variant: "trixie"
     build_args:
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=trixie&components=main&binaryArch=amd64 depName=temurin-21-jdk versioning=deb extractVersion=^(?<version>.+)-\d+$
-      TEMURIN_VERSION: "21.0.12.1.0+1"
+      TEMURIN_VERSION: "21.0.13.0.0+9"
 
   - variant: "21-bookworm"
     tags:
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=bookworm&components=main&binaryArch=amd64 depName=temurin-21-jdk versioning=deb extractVersion=^(?<version>\d+\.\d+\.\d+(?:\.[1-9]\d*)?)(?:\.0)*\+
-      - "21.0.12.1-bookworm"
+      - "21.0.13-bookworm"
       - "21-bookworm"
     debian_variant: "bookworm"
     build_args:
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=bookworm&components=main&binaryArch=amd64 depName=temurin-21-jdk versioning=deb extractVersion=^(?<version>.+)-\d+$
-      TEMURIN_VERSION: "21.0.12.1.0+1"
+      TEMURIN_VERSION: "21.0.13.0.0+9"
