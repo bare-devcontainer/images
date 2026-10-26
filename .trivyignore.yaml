@@ -291,9 +291,7 @@ vulnerabilities:
 
   - id: CVE-2026-78667
     paths:
-      - "usr/local/bin/terraform"
       - "usr/local/bin/terraform-ls"
-      - "usr/local/bin/tofu"
       - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
@@ -308,9 +306,7 @@ vulnerabilities:
       so none of those three has a fixed release yet.
   - id: CVE-2026-97031
     paths:
-      - "usr/local/bin/terraform"
       - "usr/local/bin/terraform-ls"
-      - "usr/local/bin/tofu"
       - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
@@ -325,7 +321,6 @@ vulnerabilities:
       so none of those three has a fixed release yet.
   - id: CVE-2026-78669
     paths:
-      - "usr/local/bin/terraform"
       - "usr/local/bin/terraform-ls"
       - "usr/local/bin/tofu"
       - "usr/local/bin/tofu-ls"
