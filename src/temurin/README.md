@@ -34,12 +34,12 @@ volume mounts that persist cache directories for faster rebuilds.
 <!-- tags:begin -->
 | Tags | Debian variant |
 |------|----------------|
-| `25.0.4.1-trixie`, `25-trixie`, `trixie`, `25.0.4.1`, `25` | trixie |
-| `25.0.4.1-bookworm`, `25-bookworm`, `bookworm` | bookworm |
-| `21.0.12.1-trixie`, `21-trixie`, `21.0.12.1`, `21` | trixie |
-| `21.0.12.1-bookworm`, `21-bookworm` | bookworm |
+| `25.0.5-trixie`, `25-trixie`, `trixie`, `25.0.5`, `25` | trixie |
+| `25.0.5-bookworm`, `25-bookworm`, `bookworm` | bookworm |
+| `21.0.13-trixie`, `21-trixie`, `21.0.13`, `21` | trixie |
+| `21.0.13-bookworm`, `21-bookworm` | bookworm |
 
-Tags are also published with a date suffix on each build (e.g., `25.0.4.1-trixie-<YYYYMMDD>`).
+Tags are also published with a date suffix on each build (e.g., `25.0.5-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
 The version in these tags is the version of the JDK, as Temurin numbers its releases
