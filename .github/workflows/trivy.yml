@@ -18,7 +18,7 @@ defaults:
 env:
   BASE_IMAGE_REF: ghcr.io/${{ github.repository_owner }}/debian
   # renovate: datasource=github-releases depName=aquasecurity/trivy
-  TRIVY_VERSION: "v0.75.0"
+  TRIVY_VERSION: "v0.76.0"
   TRIVY_SEVERITY: CRITICAL,HIGH
 
 jobs:
@@ -87,7 +87,7 @@ jobs:
           ignore-unfixed: true
           exit-code: '0'
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+        uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
         if: always() && github.event_name != 'pull_request'
         with:
           sarif_file: trivy-debian-${{ matrix.variant }}-${{ steps.prep.outputs.platform_safe }}.sarif
@@ -123,7 +123,7 @@ jobs:
           ignore-unfixed: true
           exit-code: '0'
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+        uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
         if: always() && github.event_name != 'pull_request'
         with:
           sarif_file: trivy-${{ matrix.image }}-${{ matrix.variant }}-${{ steps.prep.outputs.platform_safe }}.sarif

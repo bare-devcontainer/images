@@ -291,9 +291,7 @@ vulnerabilities:
 
   - id: CVE-2026-78667
     paths:
-      - "usr/local/bin/terraform"
       - "usr/local/bin/terraform-ls"
-      - "usr/local/bin/tofu"
       - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
@@ -308,9 +306,7 @@ vulnerabilities:
       so none of those three has a fixed release yet.
   - id: CVE-2026-97031
     paths:
-      - "usr/local/bin/terraform"
       - "usr/local/bin/terraform-ls"
-      - "usr/local/bin/tofu"
       - "usr/local/bin/tofu-ls"
     expired_at: 2026-10-31
     statement: |
@@ -325,7 +321,6 @@ vulnerabilities:
       so none of those three has a fixed release yet.
   - id: CVE-2026-78669
     paths:
-      - "usr/local/bin/terraform"
       - "usr/local/bin/terraform-ls"
       - "usr/local/bin/tofu"
       - "usr/local/bin/tofu-ls"
@@ -369,6 +364,29 @@ vulnerabilities:
       Terraform Language Server 0.39.0, the latest release, was built with Go
       1.25.12 and OpenTofu Language Server 0.5.3, the latest release, with Go
       1.26.0. The fix is in Go 1.26.10 and Go 1.27.3. The Terraform Language
+      Server development branch pins Go 1.26.8 and the OpenTofu Language Server
+      development branch still declares go 1.26.0, so neither has a fixed
+      release yet.
+
+  - id: CVE-2026-116587
+    paths:
+      - "usr/local/bin/tofu"
+    expired_at: 2026-11-30
+    statement: |
+      OpenTofu 1.13.2, the latest release, depends on
+      github.com/go-jose/go-jose/v4 v4.1.4, and the fix is in v4.1.6. OpenTofu
+      carries v4.1.4 on the v1.13 branch the next patch release comes from and
+      on its development branch, so no fixed release is available yet.
+
+  - id: CVE-2026-56857
+    paths:
+      - "usr/local/bin/terraform-ls"
+      - "usr/local/bin/tofu-ls"
+    expired_at: 2026-11-30
+    statement: |
+      Terraform Language Server 0.39.1, the latest release, was built with Go
+      1.26.8 and OpenTofu Language Server 0.5.3, the latest release, with Go
+      1.26.0. The fix is in Go 1.26.9 and Go 1.27.2. The Terraform Language
       Server development branch pins Go 1.26.8 and the OpenTofu Language Server
       development branch still declares go 1.26.0, so neither has a fixed
       release yet.
