@@ -73,7 +73,7 @@ variants:
       - "master"
     debian_variant: "trixie"
     build_args:
-      ZIG_VERSION: "0.18.0-dev.855+aa2d45d91"
+      ZIG_VERSION: "0.18.0-dev.860+8e8cf3835"
       ZLS_VERSION: "0.18.0-dev.31+b3e65123"
       # renovate: datasource=gitea-commits registryUrl=https://codeberg.org depName=ziglang/shell-completions
       SHELL_COMPLETIONS_COMMIT: "c2983a75dcbcaf3a1df74ab563a9bd3c8e7f448e"
