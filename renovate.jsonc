@@ -136,6 +136,24 @@
       "enabled": false
     },
     {
+      // Every Node.js release line in this file shares depName `node`, and
+      // Renovate names a major update's branch after the new major
+      // (`node-26.x`), the same branch the newest line's minor update uses, so
+      // a major update would land in that pull request and move an older line
+      // onto the newest major. A new major is added as a variant by hand.
+      "description": "Keep each Node.js variant on its own major release line.",
+      "matchFileNames": [
+        "src/node/build.yaml"
+      ],
+      "matchPackageNames": [
+        "node"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": false
+    },
+    {
       "matchFileNames": [
         "src/zig/build.yaml"
       ],
