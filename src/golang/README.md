@@ -33,12 +33,12 @@ volume mounts that persist cache directories for faster rebuilds.
 <!-- tags:begin -->
 | Tags | Debian variant |
 |------|----------------|
-| `1.27.3-trixie`, `1.27-trixie`, `1-trixie`, `trixie`, `1.27.3`, `1.27`, `1` | trixie |
-| `1.27.3-bookworm`, `1.27-bookworm`, `1-bookworm`, `bookworm` | bookworm |
-| `1.26.10-trixie`, `1.26-trixie`, `1.26.10`, `1.26` | trixie |
-| `1.26.10-bookworm`, `1.26-bookworm` | bookworm |
+| `1.27.4-trixie`, `1.27-trixie`, `1-trixie`, `trixie`, `1.27.4`, `1.27`, `1` | trixie |
+| `1.27.4-bookworm`, `1.27-bookworm`, `1-bookworm`, `bookworm` | bookworm |
+| `1.26.11-trixie`, `1.26-trixie`, `1.26.11`, `1.26` | trixie |
+| `1.26.11-bookworm`, `1.26-bookworm` | bookworm |
 
-Tags are also published with a date suffix on each build (e.g., `1.27.3-trixie-<YYYYMMDD>`).
+Tags are also published with a date suffix on each build (e.g., `1.27.4-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
 ## Installed software
