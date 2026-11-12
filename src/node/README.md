@@ -32,12 +32,12 @@ It provides the recommended configuration for this image, including security har
 <!-- tags:begin -->
 | Tags | Debian variant |
 |------|----------------|
-| `26.13.0-trixie`, `26-trixie`, `trixie`, `26.13.0`, `26` | trixie |
-| `26.13.0-bookworm`, `26-bookworm`, `bookworm` | bookworm |
-| `24.22.2-trixie`, `24-trixie`, `24.22.2`, `24` | trixie |
-| `24.22.2-bookworm`, `24-bookworm` | bookworm |
+| `26.13.1-trixie`, `26-trixie`, `trixie`, `26.13.1`, `26` | trixie |
+| `26.13.1-bookworm`, `26-bookworm`, `bookworm` | bookworm |
+| `24.22.3-trixie`, `24-trixie`, `24.22.3`, `24` | trixie |
+| `24.22.3-bookworm`, `24-bookworm` | bookworm |
 
-Tags are also published with a date suffix on each build (e.g., `26.13.0-trixie-<YYYYMMDD>`).
+Tags are also published with a date suffix on each build (e.g., `26.13.1-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
 ## Installed software
