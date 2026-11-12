@@ -9,55 +9,55 @@ variants:
   - variant: "26-trixie"
     tags:
       # renovate: datasource=node-version depName=node versioning=node
-      - "26.13.0-trixie"
+      - "26.13.1-trixie"
       - "26-trixie"
       - "trixie"
       # renovate: datasource=node-version depName=node versioning=node
-      - "26.13.0"
+      - "26.13.1"
       - "26"
     debian_variant: "trixie"
     build_args:
       # renovate: datasource=node-version depName=node versioning=node
-      NODE_VERSION: "26.13.0"
+      NODE_VERSION: "26.13.1"
       # renovate: datasource=npm depName=corepack versioning=semver
       COREPACK_VERSION: "0.36.0"
 
   - variant: "26-bookworm"
     tags:
       # renovate: datasource=node-version depName=node versioning=node
-      - "26.13.0-bookworm"
+      - "26.13.1-bookworm"
       - "26-bookworm"
       - "bookworm"
     debian_variant: "bookworm"
     build_args:
       # renovate: datasource=node-version depName=node versioning=node
-      NODE_VERSION: "26.13.0"
+      NODE_VERSION: "26.13.1"
       # renovate: datasource=npm depName=corepack versioning=semver
       COREPACK_VERSION: "0.36.0"
 
   - variant: "24-trixie"
     tags:
       # renovate: datasource=node-version depName=node versioning=node
-      - "24.22.2-trixie"
+      - "24.22.3-trixie"
       - "24-trixie"
       # renovate: datasource=node-version depName=node versioning=node
-      - "24.22.2"
+      - "24.22.3"
       - "24"
     debian_variant: "trixie"
     build_args:
       # renovate: datasource=node-version depName=node versioning=node
-      NODE_VERSION: "24.22.2"
+      NODE_VERSION: "24.22.3"
       # renovate: datasource=npm depName=corepack versioning=semver
       COREPACK_VERSION: "0.36.0"
 
   - variant: "24-bookworm"
     tags:
       # renovate: datasource=node-version depName=node versioning=node
-      - "24.22.2-bookworm"
+      - "24.22.3-bookworm"
       - "24-bookworm"
     debian_variant: "bookworm"
     build_args:
       # renovate: datasource=node-version depName=node versioning=node
-      NODE_VERSION: "24.22.2"
+      NODE_VERSION: "24.22.3"
       # renovate: datasource=npm depName=corepack versioning=semver
       COREPACK_VERSION: "0.36.0"
