@@ -34,10 +34,10 @@ volume mounts that persist cache directories for faster rebuilds.
 <!-- tags:begin -->
 | Tags | Debian variant |
 |------|----------------|
-| `0.13.7-trixie`, `0.13.7`, `trixie` | trixie |
-| `0.13.7-bookworm`, `bookworm` | bookworm |
+| `0.13.8-trixie`, `0.13.8`, `trixie` | trixie |
+| `0.13.8-bookworm`, `bookworm` | bookworm |
 
-Tags are also published with a date suffix on each build (e.g., `0.13.7-trixie-<YYYYMMDD>`).
+Tags are also published with a date suffix on each build (e.g., `0.13.8-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
 The version in these tags is the version of `uv` itself, not of any Python interpreter.
