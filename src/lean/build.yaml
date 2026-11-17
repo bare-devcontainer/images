@@ -22,24 +22,24 @@ variants:
   - variant: "4-trixie"
     tags:
       # renovate: datasource=github-releases depName=leanprover/elan versioning=semver extractVersion=^v(?<version>.+)
-      - "4.2.4-trixie"
+      - "4.3.0-trixie"
       - "4-trixie"
       - "trixie"
       # renovate: datasource=github-releases depName=leanprover/elan versioning=semver extractVersion=^v(?<version>.+)
-      - "4.2.4"
+      - "4.3.0"
       - "4"
     debian_variant: "trixie"
     build_args:
       # renovate: datasource=github-releases depName=leanprover/elan versioning=semver extractVersion=^v(?<version>.+)
-      ELAN_VERSION: "4.2.4"
+      ELAN_VERSION: "4.3.0"
 
   - variant: "4-bookworm"
     tags:
       # renovate: datasource=github-releases depName=leanprover/elan versioning=semver extractVersion=^v(?<version>.+)
-      - "4.2.4-bookworm"
+      - "4.3.0-bookworm"
       - "4-bookworm"
       - "bookworm"
     debian_variant: "bookworm"
     build_args:
       # renovate: datasource=github-releases depName=leanprover/elan versioning=semver extractVersion=^v(?<version>.+)
-      ELAN_VERSION: "4.2.4"
+      ELAN_VERSION: "4.3.0"
