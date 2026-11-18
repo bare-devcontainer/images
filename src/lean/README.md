@@ -34,10 +34,10 @@ volume mounts that persist cache directories for faster rebuilds.
 <!-- tags:begin -->
 | Tags | Debian variant |
 |------|----------------|
-| `4.2.4-trixie`, `4-trixie`, `trixie`, `4.2.4`, `4` | trixie |
-| `4.2.4-bookworm`, `4-bookworm`, `bookworm` | bookworm |
+| `4.3.0-trixie`, `4-trixie`, `trixie`, `4.3.0`, `4` | trixie |
+| `4.3.0-bookworm`, `4-bookworm`, `bookworm` | bookworm |
 
-Tags are also published with a date suffix on each build (e.g., `4.2.4-trixie-<YYYYMMDD>`).
+Tags are also published with a date suffix on each build (e.g., `4.3.0-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
 The version in these tags is the version of `elan` itself, not of any Lean toolchain.
