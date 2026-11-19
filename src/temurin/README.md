@@ -42,8 +42,10 @@ volume mounts that persist cache directories for faster rebuilds.
 Tags are also published with a date suffix on each build (e.g., `25.0.5-trixie-<YYYYMMDD>`).
 <!-- tags:end -->
 
-The version in these tags is the version of the JDK, as Temurin numbers its releases
-(`21.0.12.1` is the JDK 21.0.12.1 release); the build number is not part of the tag.
+The version in these tags is the JDK update release (`21.0.13` is JDK 21.0.13). Temurin
+sometimes ships a respin of an update release for some architectures only, such as `21.0.13.1`
+for x64; each architecture gets the newest respin Temurin ships for it, so the respin and the
+build number are not part of the tag.
 
 ## Installed software
 

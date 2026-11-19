@@ -5,7 +5,8 @@
 ARG DEBIAN_TAG
 FROM ghcr.io/bare-devcontainer/debian:${DEBIAN_TAG}
 
-ARG TEMURIN_VERSION
+ARG TEMURIN_VERSION_AMD64
+ARG TEMURIN_VERSION_ARM64
 ARG TARGETARCH
 
 USER root
@@ -17,6 +18,17 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     --mount=type=bind,source=adoptium-signing-key.asc,target=/tmp/adoptium-signing-key.asc,ro \
     export DEBIAN_FRONTEND=noninteractive \
+    # A tag names one update release for both architectures, so the build args
+    # may differ in the respin and build number only.
+    && if [ "$(cut -d. -f1-3 <<< "${TEMURIN_VERSION_AMD64}")" != "$(cut -d. -f1-3 <<< "${TEMURIN_VERSION_ARM64}")" ]; then \
+         echo "TEMURIN_VERSION_AMD64 (${TEMURIN_VERSION_AMD64}) and TEMURIN_VERSION_ARM64 (${TEMURIN_VERSION_ARM64}) name different update releases" >&2; \
+         exit 1; \
+       fi \
+    && case "${TARGETARCH}" in \
+         amd64) TEMURIN_VERSION="${TEMURIN_VERSION_AMD64}" ;; \
+         arm64) TEMURIN_VERSION="${TEMURIN_VERSION_ARM64}" ;; \
+         *) echo "Unsupported architecture: ${TARGETARCH}" >&2; exit 1 ;; \
+       esac \
     && install -D -m 0644 /tmp/adoptium-signing-key.asc /etc/apt/keyrings/adoptium.asc \
     && . /etc/os-release \
     && printf 'Types: deb\nURIs: https://packages.adoptium.net/artifactory/deb\nSuites: %s\nComponents: main\nSigned-By: /etc/apt/keyrings/adoptium.asc\n' \
