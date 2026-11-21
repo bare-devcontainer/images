@@ -31,7 +31,7 @@ variants:
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=trixie&components=main&binaryArch=amd64 depName=temurin-25-jdk versioning=deb extractVersion=^(?<version>.+)-\d+$
       TEMURIN_VERSION_AMD64: "25.0.5.1.0+2"
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=trixie&components=main&binaryArch=arm64 depName=temurin-25-jdk versioning=deb extractVersion=^(?<version>.+)-\d+$
-      TEMURIN_VERSION_ARM64: "25.0.5.0.0+8"
+      TEMURIN_VERSION_ARM64: "25.0.5.1.0+2"
 
   - variant: "25-bookworm"
     tags:
@@ -44,7 +44,7 @@ variants:
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=bookworm&components=main&binaryArch=amd64 depName=temurin-25-jdk versioning=deb extractVersion=^(?<version>.+)-\d+$
       TEMURIN_VERSION_AMD64: "25.0.5.1.0+2"
       # renovate: datasource=deb registryUrl=https://packages.adoptium.net/artifactory/deb?suite=bookworm&components=main&binaryArch=arm64 depName=temurin-25-jdk versioning=deb extractVersion=^(?<version>.+)-\d+$
-      TEMURIN_VERSION_ARM64: "25.0.5.0.0+8"
+      TEMURIN_VERSION_ARM64: "25.0.5.1.0+2"
 
   - variant: "21-trixie"
     tags:
